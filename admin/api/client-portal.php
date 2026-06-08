@@ -145,6 +145,9 @@ function portalCurrentClient(PDO $db) {
             c.nom AS contact_lastname,
             c.email,
             c.telephone AS phone,
+            c.adresse,
+            c.code_postal,
+            c.ville,
             a.status
         FROM clients c
         INNER JOIN client_portal_accounts a ON a.client_id = c.id
@@ -284,6 +287,35 @@ function portalFetchSupportUsage(PDO $db, $clientId) {
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
 
+function portalFetchDocumentLines(PDO $db, $table, $foreignKey, $documentId) {
+    if (!portalTableExists($db, $table)) {
+        return [];
+    }
+    $stmt = $db->prepare("
+        SELECT type_ligne, libelle, description, quantite, prix_unitaire_ht, tva
+        FROM {$table}
+        WHERE {$foreignKey} = :id
+        ORDER BY ordre ASC, id ASC
+    ");
+    $stmt->execute([':id' => $documentId]);
+    return array_map(function ($row) {
+        $qte = (float)$row['quantite'];
+        $pu = (float)$row['prix_unitaire_ht'];
+        $tva = (float)$row['tva'];
+        $ht = $qte * $pu;
+        return [
+            'type_ligne' => $row['type_ligne'],
+            'libelle' => $row['libelle'],
+            'description' => $row['description'],
+            'quantite' => $qte,
+            'prix_unitaire_ht' => $pu,
+            'tva' => $tva,
+            'montant_ht' => $ht,
+            'montant_ttc' => $ht * (1 + $tva / 100),
+        ];
+    }, $stmt->fetchAll(PDO::FETCH_ASSOC));
+}
+
 function portalFetchInvoices(PDO $db, $clientId) {
     if (!portalTableExists($db, 'factures')) {
         return [];
@@ -297,7 +329,7 @@ function portalFetchInvoices(PDO $db, $clientId) {
         LIMIT 20
     ");
     $stmt->execute([':client_id' => $clientId]);
-    return array_map(function ($row) {
+    return array_map(function ($row) use ($db) {
         return [
             'id' => (int)$row['id'],
             'number' => $row['numero'],
@@ -315,6 +347,7 @@ function portalFetchInvoices(PDO $db, $clientId) {
             'tone' => portalStatusTone($row['statut']),
             'notes' => $row['notes'],
             'conditions' => $row['conditions'],
+            'lines' => portalFetchDocumentLines($db, 'facture_lignes', 'facture_id', (int)$row['id']),
             'pdf_url' => null,
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -392,7 +425,7 @@ function portalFetchQuotes(PDO $db, $clientId) {
         LIMIT 20
     ");
     $stmt->execute([':client_id' => $clientId]);
-    return array_map(function ($row) {
+    return array_map(function ($row) use ($db) {
         return [
             'id' => (int)$row['id'],
             'number' => $row['numero'],
@@ -407,6 +440,7 @@ function portalFetchQuotes(PDO $db, $clientId) {
             'tone' => portalStatusTone($row['statut']),
             'notes' => $row['notes'],
             'conditions' => $row['conditions'],
+            'lines' => portalFetchDocumentLines($db, 'devis_lignes', 'devis_id', (int)$row['id']),
             'signature_url' => $row['signature_token'] ? ('sign/devis/' . rawurlencode($row['signature_token'])) : null,
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -867,7 +901,10 @@ try {
                 c.prenom AS contact_firstname,
                 c.nom AS contact_lastname,
                 c.email,
-                c.telephone AS phone
+                c.telephone AS phone,
+                c.adresse,
+                c.code_postal,
+                c.ville
             FROM client_portal_accounts a
             INNER JOIN clients c ON c.id = a.client_id
             WHERE a.email = :email AND a.status = 'active' AND c.actif = 1
