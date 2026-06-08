@@ -375,16 +375,26 @@
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Créer</span><h2>Nouvelle demande</h2></div>
                                 </div>
-                                <form class="client-form">
+                                <form class="client-form" id="clientTicketForm">
                                     <div class="field">
                                         <label for="ticket-subject">Sujet</label>
                                         <input id="ticket-subject" type="text" placeholder="Ex : modifier un prix sur la carte">
                                     </div>
                                     <div class="field">
                                         <label for="ticket-priority">Priorité</label>
-                                        <input id="ticket-priority" type="text" value="Normale">
+                                        <select id="ticket-priority">
+                                            <option value="medium">Normale</option>
+                                            <option value="high">Haute</option>
+                                            <option value="urgent">Urgente</option>
+                                            <option value="low">Basse</option>
+                                        </select>
                                     </div>
-                                    <button class="btn btn-secondary" type="button">Préparer le ticket</button>
+                                    <div class="field">
+                                        <label for="ticket-description">Description</label>
+                                        <textarea id="ticket-description" rows="4" placeholder="Décrivez votre demande"></textarea>
+                                    </div>
+                                    <button class="btn btn-secondary" type="submit">Créer le ticket</button>
+                                    <p class="client-form__msg" id="clientTicketMsg" role="status" aria-live="polite"></p>
                                 </form>
                             </article>
                         </div>
@@ -514,13 +524,15 @@
 
             function renderActions(data) {
                 var actions = [];
+                var quoteActionStatuses = ['pending', 'quote_sent', 'brouillon', 'envoye'];
+                var invoiceActionStatuses = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'];
                 (data.quotes || []).filter(function (quote) {
-                    return ['pending', 'quote_sent'].indexOf(quote.status) !== -1;
+                    return quoteActionStatuses.indexOf(quote.status) !== -1;
                 }).slice(0, 1).forEach(function (quote) {
                     actions.push(['fa-file-signature', 'Signer le devis ' + quote.number, quote.title || 'Devis en attente', 'Signer']);
                 });
                 (data.invoices || []).filter(function (invoice) {
-                    return ['sent', 'due'].indexOf(invoice.status) !== -1;
+                    return invoiceActionStatuses.indexOf(invoice.status) !== -1;
                 }).slice(0, 1).forEach(function (invoice) {
                     actions.push(['fa-credit-card', 'Payer la facture ' + invoice.number, invoice.title || money(invoice.amount, invoice.currency), 'Payer']);
                 });
@@ -684,6 +696,32 @@
                     show(false);
                     activateTab('overview');
                     window.scrollTo(0, 0);
+                });
+            }
+
+            var ticketForm = document.getElementById('clientTicketForm');
+            if (ticketForm) {
+                ticketForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var ticketMsg = document.getElementById('clientTicketMsg');
+                    var subject = document.getElementById('ticket-subject');
+                    var priority = document.getElementById('ticket-priority');
+                    var description = document.getElementById('ticket-description');
+                    if (ticketMsg) ticketMsg.textContent = 'Création du ticket...';
+                    try {
+                        await api('create-ticket', {
+                            subject: subject ? subject.value : '',
+                            priority: priority ? priority.value : 'medium',
+                            description: description ? description.value : ''
+                        });
+                        if (subject) subject.value = '';
+                        if (description) description.value = '';
+                        if (ticketMsg) ticketMsg.textContent = 'Ticket créé. Il apparait dans votre suivi support.';
+                        var data = await api('me');
+                        render(data);
+                    } catch (error) {
+                        if (ticketMsg) ticketMsg.textContent = error.message || 'Impossible de créer le ticket.';
+                    }
                 });
             }
 

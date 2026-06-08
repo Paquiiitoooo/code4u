@@ -555,7 +555,7 @@ section { padding-block: var(--section-pad); }
 .client-form { display: grid; gap: 0.85rem; }
 .field { display: grid; gap: 0.35rem; }
 .field label { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
-.field input {
+.field input, .field select, .field textarea {
     width: 100%;
     padding: 0.68rem 0.8rem;
     font: inherit;
@@ -565,8 +565,9 @@ section { padding-block: var(--section-pad); }
     border-radius: var(--radius-md);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.field input::placeholder { color: var(--text-secondary); }
-.field input:focus { outline: none; border-color: var(--accent-color); box-shadow: var(--ring); }
+.field textarea { min-height: 110px; resize: vertical; }
+.field input::placeholder, .field textarea::placeholder { color: var(--text-secondary); }
+.field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: var(--ring); }
 .client-form .btn-block { margin-top: 0.2rem; }
 .client-form__msg { margin: 0; font-size: 0.85rem; color: var(--accent-color); }
 .client-form__link { font-size: 0.85rem; color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; justify-self: start; }

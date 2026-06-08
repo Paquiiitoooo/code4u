@@ -54,6 +54,23 @@ function portalTableExists(PDO $db, $table) {
     return (int)$stmt->fetchColumn() > 0;
 }
 
+function portalColumnExists(PDO $db, $table, $column) {
+    $stmt = $db->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column
+    ");
+    $stmt->execute([':table' => $table, ':column' => $column]);
+    return (int)$stmt->fetchColumn() > 0;
+}
+
+function portalEnsureTicketAccessCode(PDO $db) {
+    if (portalTableExists($db, 'tickets') && !portalColumnExists($db, 'tickets', 'access_code')) {
+        $db->exec("ALTER TABLE tickets ADD COLUMN access_code VARCHAR(32) DEFAULT NULL AFTER ticket_number");
+        $db->exec("ALTER TABLE tickets ADD UNIQUE KEY idx_access_code (access_code)");
+    }
+}
+
 function portalHasTables(PDO $db, array $tables) {
     foreach ($tables as $table) {
         if (!portalTableExists($db, $table)) {
@@ -401,6 +418,99 @@ function portalFetchDocuments(PDO $db, $clientId) {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function portalGenerateTicketNumber(PDO $db) {
+    $prefix = 'SUP-';
+    $stmt = $db->query("
+        SELECT ticket_number
+        FROM tickets
+        WHERE ticket_number LIKE 'SUP-%'
+        ORDER BY id DESC
+        LIMIT 1
+    ");
+    $last = $stmt ? $stmt->fetchColumn() : null;
+    $number = 1;
+    if ($last && preg_match('/SUP-(\d+)/', $last, $matches)) {
+        $number = ((int)$matches[1]) + 1;
+    }
+    return $prefix . str_pad((string)$number, 4, '0', STR_PAD_LEFT);
+}
+
+function portalGenerateAccessCode(PDO $db) {
+    do {
+        $code = strtoupper(bin2hex(random_bytes(4)));
+        $stmt = $db->prepare("SELECT COUNT(*) FROM tickets WHERE access_code = :code");
+        $stmt->execute([':code' => $code]);
+    } while ((int)$stmt->fetchColumn() > 0);
+    return $code;
+}
+
+function portalCreateTicket(PDO $db, array $client, array $input) {
+    if (!portalHasTables($db, ['tickets', 'ticket_messages'])) {
+        portalRespond(['success' => false, 'message' => 'Tables tickets manquantes.'], 503);
+    }
+    portalEnsureTicketAccessCode($db);
+
+    $subject = trim((string)($input['subject'] ?? ''));
+    $description = trim((string)($input['description'] ?? $input['message'] ?? ''));
+    if ($subject === '' || $description === '') {
+        portalRespond(['success' => false, 'message' => 'Sujet et description requis.'], 422);
+    }
+
+    $priority = (string)($input['priority'] ?? 'medium');
+    if (!in_array($priority, ['low', 'medium', 'high', 'urgent'], true)) {
+        $priority = 'medium';
+    }
+
+    $ticketNumber = portalGenerateTicketNumber($db);
+    $accessCode = portalGenerateAccessCode($db);
+    $customerName = $client['company_name'] ?: trim(($client['contact_firstname'] ?? '') . ' ' . ($client['contact_lastname'] ?? ''));
+
+    $stmt = $db->prepare("
+        INSERT INTO tickets (
+            ticket_number, access_code, subject, description, customer_name, customer_email,
+            customer_phone, status, priority, category, source
+        )
+        VALUES (
+            :ticket_number, :access_code, :subject, :description, :customer_name, :customer_email,
+            :customer_phone, 'open', :priority, 'support', 'form'
+        )
+    ");
+    $stmt->execute([
+        ':ticket_number' => $ticketNumber,
+        ':access_code' => $accessCode,
+        ':subject' => strip_tags($subject),
+        ':description' => strip_tags($description),
+        ':customer_name' => strip_tags($customerName ?: 'Client Code4U'),
+        ':customer_email' => $client['email'],
+        ':customer_phone' => $client['phone'] ?? null,
+        ':priority' => $priority,
+    ]);
+
+    $ticketId = (int)$db->lastInsertId();
+    $messageStmt = $db->prepare("
+        INSERT INTO ticket_messages (ticket_id, sender_type, message, is_internal)
+        VALUES (:ticket_id, 'customer', :message, 0)
+    ");
+    $messageStmt->execute([
+        ':ticket_id' => $ticketId,
+        ':message' => strip_tags($description),
+    ]);
+
+    return [
+        'success' => true,
+        'ticket' => [
+            'id' => $ticketId,
+            'number' => $ticketNumber,
+            'access_code' => $accessCode,
+            'subject' => $subject,
+            'status' => 'open',
+            'status_label' => portalStatusLabel('open'),
+            'tone' => portalStatusTone('open'),
+            'priority' => $priority,
+        ],
+    ];
+}
+
 function portalBuildDashboard(PDO $db, array $client) {
     $subscription = portalFetchSubscription($db, (int)$client['id']);
     $invoices = portalFetchInvoices($db, (int)$client['id']);
@@ -509,6 +619,11 @@ try {
     }
 
     $client = portalRequireClient($db);
+
+    if ($action === 'create-ticket') {
+        portalRespond(portalCreateTicket($db, $client, $input), 201);
+    }
+
     portalRespond(portalBuildDashboard($db, $client));
 } catch (Throwable $e) {
     error_log('[client-portal.php] ' . $e->getMessage());
