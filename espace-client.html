@@ -248,10 +248,8 @@
                             <div class="client-table-wrap">
                                 <table class="client-table">
                                     <thead><tr><th>Date</th><th>Demande</th><th>Temps</th><th>Statut</th></tr></thead>
-                                    <tbody>
-                                        <tr><td>06/06/2026</td><td>Correction formulaire commande mobile</td><td>1 h 20</td><td><span class="client-status client-status--ok">Terminé</span></td></tr>
-                                        <tr><td>03/06/2026</td><td>Ajout bannière promotionnelle</td><td>2 h 10</td><td><span class="client-status client-status--ok">Terminé</span></td></tr>
-                                        <tr><td>29/05/2026</td><td>Analyse lenteur panier</td><td>45 min</td><td><span class="client-status">Facturé au forfait</span></td></tr>
+                                    <tbody data-support-usage>
+                                        <tr><td colspan="4">Chargement…</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -564,90 +562,6 @@
                 });
             }
 
-            function renderActions(data) {
-                var actions = [];
-                var quoteActionStatuses = ['pending', 'quote_sent', 'brouillon', 'envoye'];
-                var invoiceActionStatuses = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'];
-                (data.quotes || []).filter(function (quote) {
-                    return quoteActionStatuses.indexOf(quote.status) !== -1;
-                }).slice(0, 1).forEach(function (quote) {
-                    actions.push(['fa-file-signature', 'Signer le devis ' + quote.number, quote.title || 'Devis en attente', 'Signer']);
-                });
-                (data.invoices || []).filter(function (invoice) {
-                    return invoiceActionStatuses.indexOf(invoice.status) !== -1;
-                }).slice(0, 1).forEach(function (invoice) {
-                    actions.push(['fa-credit-card', 'Payer la facture ' + invoice.number, invoice.title || money(invoice.amount, invoice.currency), 'Payer']);
-                });
-                (data.tickets || []).filter(function (ticket) {
-                    return ['waiting', 'open', 'in_progress'].indexOf(ticket.status) !== -1;
-                }).slice(0, 1).forEach(function (ticket) {
-                    actions.push(['fa-message', 'Suivre le ticket ' + ticket.number, ticket.subject, 'Ouvrir']);
-                });
-                var list = document.querySelector('.client-action-list');
-                if (!list) return;
-                list.innerHTML = actions.length ? actions.map(function (item) {
-                    return '<div class="client-action"><i class="fas ' + item[0] + '" aria-hidden="true"></i><div><strong>' + esc(item[1]) + '</strong><span>' + esc(item[2]) + '</span></div><button type="button">' + esc(item[3]) + '</button></div>';
-                }).join('') : '<div class="client-action"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Tout est à jour</strong><span>Aucune action urgente pour le moment.</span></div><button type="button">OK</button></div>';
-            }
-
-            function renderSubscription(data) {
-                var sub = data.subscription;
-                if (!sub) return;
-                document.querySelectorAll('.client-panel--accent h2').forEach(function (node) {
-                    if (node.textContent.indexOf('Support') !== -1) node.textContent = sub.plan_name;
-                });
-                document.querySelectorAll('.support-progress').forEach(function (box) {
-                    var strong = box.querySelector('strong');
-                    var meter = box.querySelector('meter');
-                    if (strong) strong.textContent = sub.used_hours + ' h / ' + sub.included_hours + ' h';
-                    if (meter) {
-                        meter.max = 100;
-                        meter.value = sub.usage_percent || 0;
-                    }
-                });
-                var planGrid = document.querySelector('.support-plan-grid');
-                if (planGrid) {
-                    planGrid.innerHTML = [
-                        ['Mensualité', money(sub.monthly_price, sub.currency) + ' / mois'],
-                        ['SLA', sub.response_sla || 'Standard'],
-                        ['Crédit inclus', sub.included_hours + ' h / mois'],
-                        ['Dépassement', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
-                    ].map(function (row) {
-                        return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
-                    }).join('');
-                }
-            }
-
-            function renderInvoices(data) {
-                var tbody = document.querySelector('[data-view="billing"] tbody');
-                if (!tbody) return;
-                tbody.innerHTML = (data.invoices || []).map(function (invoice) {
-                    return '<tr><td>' + esc(invoice.number) + '</td><td>' + dateFr(invoice.date) + '</td><td>' + money(invoice.amount, invoice.currency) + '</td><td><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td><button type="button">' + (invoice.tone === 'wait' ? 'Payer' : 'PDF') + '</button></td></tr>';
-                }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
-            }
-
-            function renderPayments(data) {
-                var method = (data.payment_methods || [])[0];
-                var card = document.querySelector('.payment-card');
-                if (card && method) {
-                    card.innerHTML = '<i class="fab fa-cc-visa" aria-hidden="true"></i><div><strong>' + esc(method.label) + '</strong><span>Expire ' + esc(method.expires_at || '—') + '</span></div><span class="' + statusClass(method.tone) + '">' + (method.is_default ? 'Par défaut' : esc(method.status_label)) + '</span>';
-                }
-
-                var sub = data.subscription || {};
-                var summary = document.querySelector('.payment-summary');
-                if (summary && sub.plan_name) {
-                    summary.innerHTML = '<div><span>Prochain prélèvement</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + dateFr(sub.renewal_date) + '</strong></div>';
-                }
-            }
-
-            function renderQuotes(data) {
-                var tbody = document.querySelector('[data-view="quotes"] tbody');
-                if (!tbody) return;
-                tbody.innerHTML = (data.quotes || []).map(function (quote) {
-                    return '<tr><td>' + esc(quote.number) + '</td><td>' + esc(quote.title) + '</td><td>' + dateFr(quote.date) + '</td><td>' + money(quote.amount, quote.currency) + '</td><td><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td><button type="button">' + (quote.tone === 'wait' ? 'Signer' : 'Voir') + '</button></td></tr>';
-                }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
-            }
-
             function renderProjects(data) {
                 var project = (data.projects || [])[0];
                 if (!project) return;
@@ -663,24 +577,6 @@
                         return '<div class="' + cls + '"><span></span><strong>' + esc(step.title) + '</strong><small>' + esc(step.description || step.due_date || '') + '</small></div>';
                     }).join('');
                 });
-            }
-
-            function renderTickets(data) {
-                var list = document.querySelector('.ticket-list');
-                if (!list) return;
-                list.innerHTML = (data.tickets || []).map(function (ticket) {
-                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button type="button">Ouvrir</button></div>';
-                }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est à jour.</small></div><button type="button">Créer</button></div>';
-            }
-
-            function renderDocuments(data) {
-                var docs = data.documents || [];
-                var latest = document.querySelector('.client-doc-list');
-                if (latest) {
-                    latest.innerHTML = docs.slice(0, 3).map(function (doc) {
-                        return '<a href="' + esc(doc.file_url || '#') + '"><i class="fas fa-file-lines" aria-hidden="true"></i><span>' + esc(doc.title) + '</span><small>' + esc(doc.amount_label || doc.category) + '</small></a>';
-                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><span>Aucun document disponible</span><small>BDD</small></a>';
-                }
             }
 
             function renderActions(data) {
@@ -808,12 +704,30 @@
                 }
             }
 
+            function formatDuration(hours) {
+                var mins = Math.round((Number(hours) || 0) * 60);
+                if (mins < 60) return mins + ' min';
+                var h = Math.floor(mins / 60);
+                var m = mins % 60;
+                return m ? (h + ' h ' + (m < 10 ? '0' + m : m)) : (h + ' h');
+            }
+
+            function renderSupportUsage(data) {
+                var tbody = document.querySelector('[data-view="support"] [data-support-usage]');
+                if (!tbody) return;
+                var rows = data.support_usage || [];
+                tbody.innerHTML = rows.length ? rows.map(function (item) {
+                    return '<tr><td>' + dateFr(item.date) + '</td><td>' + esc(item.title) + '</td><td>' + formatDuration(item.duration) + '</td><td><span class="' + statusClass(item.tone) + '">' + esc(item.status_label) + '</span></td></tr>';
+                }).join('') : '<tr><td colspan="4">Aucune intervention enregistrée pour le moment.</td></tr>';
+            }
+
             function render(data) {
                 state = data;
                 renderHeader(data);
                 renderMetrics(data);
                 renderActions(data);
                 renderSubscription(data);
+                renderSupportUsage(data);
                 renderInvoices(data);
                 renderPayments(data);
                 renderQuotes(data);
