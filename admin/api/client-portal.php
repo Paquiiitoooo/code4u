@@ -293,6 +293,7 @@ function portalFetchSubscription(PDO $db, $clientId) {
         'renewal_date' => $row['renewal_date'],
         'overage_rate' => $row['overage_rate'] !== null ? (float)$row['overage_rate'] : null,
         'options' => $options,
+        'stripe_subscription_id' => $row['stripe_subscription_id'] ?? null,
     ];
 }
 
@@ -753,6 +754,63 @@ function portalPayInvoice(PDO $db, array $client, array $input) {
     return ['success' => true, 'message' => 'Paiement enregistré.', 'reference' => $reference];
 }
 
+// Base publique de l'API ERP (qui détient les clés Stripe).
+function portalErpBase() {
+    return (defined('IS_LOCAL') && IS_LOCAL) ? 'http://localhost:3000' : 'https://api.erp.code4u.fr';
+}
+
+function portalEnsurePaymentTokenColumn(PDO $db, $table) {
+    if (portalTableExists($db, $table) && !portalColumnExists($db, $table, 'payment_token')) {
+        $db->exec("ALTER TABLE {$table} ADD COLUMN payment_token VARCHAR(64) DEFAULT NULL");
+    }
+}
+
+/** Paiement EN LIGNE (Stripe) : génère un token et renvoie l'URL de paiement ERP. */
+function portalPayInvoiceOnline(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'factures')) {
+        portalRespond(['success' => false, 'message' => 'Facturation indisponible.'], 503);
+    }
+    portalEnsurePaymentTokenColumn($db, 'factures');
+    $invoiceId = (int)($input['invoice_id'] ?? 0);
+    $invoice = portalFindInvoice($db, (int)$client['id'], $invoiceId);
+    if (!$invoice) {
+        portalRespond(['success' => false, 'message' => 'Facture introuvable.'], 404);
+    }
+    if (in_array($invoice['statut'], ['payee', 'annulee'], true)) {
+        portalRespond(['success' => false, 'message' => 'Cette facture est déjà réglée.'], 422);
+    }
+    $remaining = (float)$invoice['montant_ttc'] - (float)$invoice['montant_paye'];
+    if ($remaining <= 0.009) {
+        portalRespond(['success' => false, 'message' => 'Cette facture est déjà réglée.'], 422);
+    }
+    $token = bin2hex(random_bytes(16));
+    $stmt = $db->prepare("UPDATE factures SET payment_token = :t WHERE id = :id AND client_id = :cid");
+    $stmt->execute([':t' => $token, ':id' => $invoiceId, ':cid' => (int)$client['id']]);
+    return ['success' => true, 'pay_url' => portalErpBase() . '/public/pay/invoice/' . $token];
+}
+
+/** Souscription EN LIGNE (Stripe) à un abonnement support. */
+function portalSubscribeOnline(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'support_subscriptions')) {
+        portalRespond(['success' => false, 'message' => 'Aucun abonnement disponible.'], 404);
+    }
+    portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
+    $subId = (int)($input['subscription_id'] ?? 0);
+    $stmt = $db->prepare("SELECT id, monthly_price FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
+    $stmt->execute([':id' => $subId, ':cid' => (int)$client['id']]);
+    $sub = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$sub) {
+        portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
+    }
+    if ((float)$sub['monthly_price'] <= 0) {
+        portalRespond(['success' => false, 'message' => 'Montant d’abonnement invalide.'], 422);
+    }
+    $token = bin2hex(random_bytes(16));
+    $upd = $db->prepare("UPDATE support_subscriptions SET payment_token = :t WHERE id = :id AND client_id = :cid");
+    $upd->execute([':t' => $token, ':id' => $subId, ':cid' => (int)$client['id']]);
+    return ['success' => true, 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+}
+
 function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
     if (!portalTableExists($db, 'support_subscriptions')) {
         portalRespond(['success' => false, 'message' => 'Table abonnement manquante.'], 503);
@@ -1006,6 +1064,14 @@ try {
 
     if ($action === 'pay-invoice') {
         portalRespond(portalPayInvoice($db, $client, $input));
+    }
+
+    if ($action === 'pay-invoice-online') {
+        portalRespond(portalPayInvoiceOnline($db, $client, $input));
+    }
+
+    if ($action === 'subscribe-online') {
+        portalRespond(portalSubscribeOnline($db, $client, $input));
     }
 
     if ($action === 'pause-subscription') {

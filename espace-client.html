@@ -699,7 +699,7 @@
                 if (!tbody) return;
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
                     var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
-                    var mainAction = payable ? '<button type="button" data-action="pay-invoice" data-id="' + esc(invoice.id) + '">Payer</button>' : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">PDF</button>';
+                    var mainAction = payable ? '<button type="button" class="btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '">Payer en ligne</button>' : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">PDF</button>';
                     return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + mainAction + ' <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Voir</button></td></tr>';
                 }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
             }
@@ -783,12 +783,15 @@
                 }
                 var inline = document.querySelector('[data-view="support"] .client-inline-actions');
                 if (inline) {
+                    var subscribeBtn = sub.stripe_subscription_id
+                        ? '<span class="client-status client-status--ok">Paiement auto. actif</span>'
+                        : '<button class="btn btn-primary btn-pay-online" type="button" data-action="subscribe-online">Activer le paiement automatique</button>';
                     if (sub.status === 'cancelled') {
                         inline.innerHTML = '<span class="client-status">Résiliation demandée</span>';
                     } else if (sub.status === 'paused') {
-                        inline.innerHTML = '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                        inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                     } else {
-                        inline.innerHTML = '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                        inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                     }
                 }
             }
@@ -856,6 +859,32 @@
                     if (!window.confirm('Enregistrer le paiement de ' + money(amount, payableInvoice.currency) + ' pour ' + payableInvoice.number + ' ?')) return;
                     await api('pay-invoice', { invoice_id: payableInvoice.id, amount: amount });
                     await refresh('Paiement enregistré.');
+                    return;
+                }
+
+                if (action === 'pay-invoice-online') {
+                    var onlineInvoice = findById(state && state.invoices, id);
+                    if (!onlineInvoice) return;
+                    button.textContent = 'Redirection…';
+                    var resp = await api('pay-invoice-online', { invoice_id: onlineInvoice.id });
+                    if (resp && resp.pay_url) {
+                        window.location.href = resp.pay_url;
+                    } else {
+                        notify('Paiement en ligne indisponible pour le moment.');
+                    }
+                    return;
+                }
+
+                if (action === 'subscribe-online') {
+                    var sub = state && state.subscription;
+                    if (!sub) return;
+                    button.textContent = 'Redirection…';
+                    var subResp = await api('subscribe-online', { subscription_id: sub.id });
+                    if (subResp && subResp.pay_url) {
+                        window.location.href = subResp.pay_url;
+                    } else {
+                        notify('Souscription en ligne indisponible pour le moment.');
+                    }
                     return;
                 }
 
@@ -1026,7 +1055,27 @@
                 });
             }
 
-            api('me').then(render).catch(function () {
+            function handlePaymentReturn() {
+                var params = new URLSearchParams(window.location.search);
+                var pay = params.get('pay');
+                if (!pay) return;
+                var ref = params.get('ref') || '';
+                var messages = {
+                    success: 'Paiement réussi' + (ref ? ' — ' + ref : '') + '. Merci !',
+                    sub_success: 'Abonnement activé. Merci !',
+                    cancel: 'Paiement annulé.',
+                    already: 'Cette facture est déjà réglée.',
+                    error: 'Le paiement n’a pas pu être lancé. Réessayez ou contactez-nous.',
+                    disabled: 'Le paiement en ligne est momentanément indisponible.'
+                };
+                if (messages[pay]) notify(messages[pay]);
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+
+            api('me').then(function (data) {
+                render(data);
+                handlePaymentReturn();
+            }).catch(function () {
                 show(false);
             });
         })();
