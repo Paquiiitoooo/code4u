@@ -611,7 +611,7 @@
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
                     var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
                     var mainAction = payable ? '<button type="button" data-action="pay-invoice" data-id="' + esc(invoice.id) + '">Payer</button>' : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">PDF</button>';
-                    return '<tr><td>' + esc(invoice.number) + '</td><td>' + dateFr(invoice.date) + '</td><td>' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td>' + mainAction + ' <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Voir</button></td></tr>';
+                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + mainAction + ' <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Voir</button></td></tr>';
                 }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
             }
 
@@ -638,7 +638,7 @@
                 if (!tbody) return;
                 tbody.innerHTML = (data.quotes || []).map(function (quote) {
                     var label = quote.tone === 'wait' ? 'Signer' : 'Voir';
-                    return '<tr><td>' + esc(quote.number) + '</td><td>' + esc(quote.title) + '</td><td>' + dateFr(quote.date) + '</td><td>' + money(quote.amount, quote.currency) + '</td><td><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td><button type="button" data-action="open-quote" data-id="' + esc(quote.id) + '">' + label + '</button></td></tr>';
+                    return '<tr><td data-label="Numéro">' + esc(quote.number) + '</td><td data-label="Objet">' + esc(quote.title) + '</td><td data-label="Date">' + dateFr(quote.date) + '</td><td data-label="Montant">' + money(quote.amount, quote.currency) + '</td><td data-label="Statut"><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td class="client-table__actions"><button type="button" data-action="open-quote" data-id="' + esc(quote.id) + '">' + label + '</button></td></tr>';
                 }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
             }
 
@@ -717,7 +717,7 @@
                 if (!tbody) return;
                 var rows = data.support_usage || [];
                 tbody.innerHTML = rows.length ? rows.map(function (item) {
-                    return '<tr><td>' + dateFr(item.date) + '</td><td>' + esc(item.title) + '</td><td>' + formatDuration(item.duration) + '</td><td><span class="' + statusClass(item.tone) + '">' + esc(item.status_label) + '</span></td></tr>';
+                    return '<tr><td data-label="Date">' + dateFr(item.date) + '</td><td data-label="Demande">' + esc(item.title) + '</td><td data-label="Temps">' + formatDuration(item.duration) + '</td><td data-label="Statut"><span class="' + statusClass(item.tone) + '">' + esc(item.status_label) + '</span></td></tr>';
                 }).join('') : '<tr><td colspan="4">Aucune intervention enregistrée pour le moment.</td></tr>';
             }
 

@@ -921,7 +921,10 @@ section { padding-block: var(--section-pad); }
 [data-theme="dark"] .payment-method-row button { background: var(--bg-primary); }
 @media (min-width: 920px) { .client-login__grid { grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.55fr); } }
 @media (max-width: 1180px) {
-    .client-app__shell { grid-template-columns: 1fr; }
+    /* minmax(0,1fr) (et non 1fr) : sans ça la piste s'étire à la taille
+       min-content (tables min-width:680px, onglets nowrap) et déborde le
+       viewport mobile au lieu de laisser scroller les conteneurs internes. */
+    .client-app__shell { grid-template-columns: minmax(0, 1fr); }
     .client-sidebar { position: static; }
     .client-tabs { display: flex; overflow-x: auto; padding-bottom: 0.25rem; }
     .client-tab { width: auto; white-space: nowrap; }
@@ -935,4 +938,16 @@ section { padding-block: var(--section-pad); }
     .client-app { padding-inline: 0.75rem; }
     .client-action, .ticket-row, .payment-card, .payment-method-row { grid-template-columns: 1fr; }
     .support-plan-grid, .payment-summary { grid-template-columns: 1fr; }
+
+    /* Tables -> cartes empilées (mobile-first) plutôt qu'un scroll horizontal */
+    .client-table-wrap { overflow-x: visible; }
+    .client-table { min-width: 0; }
+    .client-table thead { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); border: 0; }
+    .client-table tr { display: block; border: 1px solid var(--border-color); border-radius: 10px; padding: 0.25rem 0.85rem; margin-bottom: 0.7rem; }
+    .client-table td { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border-color); text-align: right; }
+    .client-table tr td:last-child { border-bottom: 0; }
+    .client-table td::before { content: attr(data-label); color: var(--text-secondary); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; text-align: left; flex: 0 0 auto; }
+    .client-table td.client-table__actions { justify-content: flex-end; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.7rem; }
+    .client-table td.client-table__actions::before { content: none; }
+    .client-table td.client-table__actions button { flex: 1 1 auto; min-height: 44px; }
 }

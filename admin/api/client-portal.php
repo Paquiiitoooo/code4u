@@ -71,6 +71,57 @@ function portalEnsureTicketAccessCode(PDO $db) {
     }
 }
 
+/**
+ * Crée les tables tickets / ticket_messages si elles n'existent pas dans la
+ * base ERP (le portail support en a besoin). Volontairement SANS clé étrangère
+ * vers `admins` : cette table peut ne pas exister dans la base ERP. 100% additif.
+ */
+function portalEnsureTicketTables(PDO $db) {
+    if (!portalTableExists($db, 'tickets')) {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS tickets (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                ticket_number VARCHAR(20) NOT NULL UNIQUE,
+                access_code VARCHAR(32) DEFAULT NULL,
+                subject VARCHAR(255) NOT NULL,
+                description TEXT NOT NULL,
+                customer_name VARCHAR(255) NOT NULL,
+                customer_email VARCHAR(255) NOT NULL,
+                customer_phone VARCHAR(50) DEFAULT NULL,
+                status ENUM('open','in_progress','waiting','resolved','closed') NOT NULL DEFAULT 'open',
+                priority ENUM('low','medium','high','urgent') NOT NULL DEFAULT 'medium',
+                category VARCHAR(100) DEFAULT NULL,
+                assigned_to INT DEFAULT NULL,
+                source ENUM('chatbot','form','email','phone','admin') NOT NULL DEFAULT 'form',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                resolved_at DATETIME DEFAULT NULL,
+                UNIQUE KEY idx_access_code (access_code),
+                KEY idx_ticket_number (ticket_number),
+                KEY idx_customer_email (customer_email),
+                KEY idx_status (status)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+    }
+    if (!portalTableExists($db, 'ticket_messages')) {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS ticket_messages (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                ticket_id INT NOT NULL,
+                sender_type ENUM('customer','admin','system') NOT NULL DEFAULT 'customer',
+                sender_id INT DEFAULT NULL,
+                message TEXT NOT NULL,
+                is_internal TINYINT(1) NOT NULL DEFAULT 0,
+                attachments JSON DEFAULT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                KEY idx_ticket_id (ticket_id),
+                CONSTRAINT fk_ticket_messages_ticket FOREIGN KEY (ticket_id) REFERENCES tickets(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+    }
+    portalEnsureTicketAccessCode($db);
+}
+
 function portalHasTables(PDO $db, array $tables) {
     foreach ($tables as $table) {
         if (!portalTableExists($db, $table)) {
@@ -463,10 +514,15 @@ function portalGenerateAccessCode(PDO $db) {
 }
 
 function portalCreateTicket(PDO $db, array $client, array $input) {
-    if (!portalHasTables($db, ['tickets', 'ticket_messages'])) {
-        portalRespond(['success' => false, 'message' => 'Tables tickets manquantes.'], 503);
+    // Crée les tables tickets si besoin (base ERP sans module support) au lieu d'échouer.
+    try {
+        portalEnsureTicketTables($db);
+    } catch (Throwable $e) {
+        error_log('[client-portal.php] ensure ticket tables: ' . $e->getMessage());
     }
-    portalEnsureTicketAccessCode($db);
+    if (!portalHasTables($db, ['tickets', 'ticket_messages'])) {
+        portalRespond(['success' => false, 'message' => 'Le module support n’est pas disponible pour le moment.'], 503);
+    }
 
     $subject = trim((string)($input['subject'] ?? ''));
     $description = trim((string)($input['description'] ?? $input['message'] ?? ''));
