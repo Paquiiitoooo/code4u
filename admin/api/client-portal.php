@@ -171,6 +171,40 @@ function portalMoney($amount, $currency = 'EUR') {
     return number_format((float)$amount, 2, '.', '') . ' ' . $currency;
 }
 
+/**
+ * Envoie un email de notification au client (charte Code4U).
+ * Utilise mail() PHP (comme contact.php). En local, on logue seulement.
+ */
+function portalSendClientMail($client, $subject, $title, $bodyHtml) {
+    $to = is_array($client) ? ($client['email'] ?? '') : (string)$client;
+    if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        return false;
+    }
+    $from = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'contact@code4u.fr';
+    $html = '<!doctype html><html><head><meta charset="utf-8"></head>'
+        . '<body style="margin:0;background:#f4f1eb;font-family:Inter,Arial,sans-serif;color:#14131a">'
+        . '<div style="max-width:560px;margin:0 auto;padding:24px">'
+        . '<div style="background:#14131a;color:#fff;padding:16px 22px;border-radius:12px 12px 0 0;font-weight:800;font-size:18px">Code4U</div>'
+        . '<div style="background:#fff;padding:24px;border:1px solid #e7e2d8;border-top:0;border-radius:0 0 12px 12px">'
+        . '<h1 style="margin:0 0 14px;font-size:18px;color:#2e40e5">' . $title . '</h1>'
+        . $bodyHtml
+        . '<p style="margin-top:24px;font-size:12px;color:#5c5a66">Email envoyé depuis votre espace client Code4U.</p>'
+        . '</div></div></body></html>';
+
+    if (defined('IS_LOCAL') && IS_LOCAL) {
+        error_log('[portal-mail DEV] to=' . $to . ' | ' . $subject);
+        return true;
+    }
+    $headers = [
+        'MIME-Version: 1.0',
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Code4U <' . $from . '>',
+        'Reply-To: ' . $from,
+    ];
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    return @mail($to, $encodedSubject, $html, implode("\r\n", $headers));
+}
+
 function portalStatusLabel($status) {
     $labels = [
         'active' => 'Actif',
@@ -547,7 +581,7 @@ function portalGenerateAccessCode(PDO $db) {
     return $code;
 }
 
-function portalCreateTicket(PDO $db, array $client, array $input) {
+function portalCreateTicket(PDO $db, array $client, array $input, $notify = true) {
     // Crée les tables tickets si besoin (base ERP sans module support) au lieu d'échouer.
     try {
         portalEnsureTicketTables($db);
@@ -608,6 +642,18 @@ function portalCreateTicket(PDO $db, array $client, array $input) {
         ':ticket_id' => $ticketId,
         ':message' => strip_tags($description),
     ]);
+
+    if ($notify) {
+        portalSendClientMail(
+            $client,
+            'Demande reçue — ' . $ticketNumber,
+            'Votre demande a bien été reçue',
+            '<p style="margin:0 0 12px">Bonjour,</p>'
+            . '<p style="margin:0 0 12px">Nous avons bien reçu votre demande <strong>' . htmlspecialchars($ticketNumber) . '</strong> :</p>'
+            . '<div style="background:#f4f1eb;border-radius:10px;padding:14px;margin:12px 0"><strong>' . htmlspecialchars($subject) . '</strong><br>' . nl2br(htmlspecialchars($description)) . '</div>'
+            . '<p style="margin:0">Notre équipe vous répondra rapidement. Vous pouvez suivre son avancement depuis votre espace client.</p>'
+        );
+    }
 
     return [
         'success' => true,
@@ -689,6 +735,21 @@ function portalPayInvoice(PDO $db, array $client, array $input) {
         throw $e;
     }
 
+    $fullyPaid = $newStatus === 'payee';
+    portalSendClientMail(
+        $client,
+        'Paiement enregistré — Facture ' . $invoice['numero'],
+        'Merci, votre paiement a bien été enregistré',
+        '<p style="margin:0 0 12px">Bonjour,</p>'
+        . '<p style="margin:0 0 12px">Nous confirmons la réception de votre paiement pour la facture <strong>' . htmlspecialchars($invoice['numero']) . '</strong>.</p>'
+        . '<div style="background:#f4f1eb;border-radius:10px;padding:14px;margin:12px 0">'
+        . 'Montant réglé : <strong>' . portalMoney($amount) . '</strong><br>'
+        . 'Référence : ' . htmlspecialchars($reference) . '<br>'
+        . 'Statut : <strong>' . ($fullyPaid ? 'Payée' : 'Partiellement réglée') . '</strong>'
+        . '</div>'
+        . ($fullyPaid ? '<p style="margin:0">Votre facture acquittée (avec mention « PAYÉE ») est disponible dans votre espace client.</p>' : '<p style="margin:0">Le solde restant est consultable dans votre espace client.</p>')
+    );
+
     return ['success' => true, 'message' => 'Paiement enregistré.', 'reference' => $reference];
 }
 
@@ -716,13 +777,24 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
 
     $label = $status === 'cancelled' ? 'Résiliation demandée' : ($status === 'paused' ? 'Mise en pause demandée' : 'Réactivation demandée');
     if (portalHasTables($db, ['tickets', 'ticket_messages'])) {
+        // notify=false : on envoie un email dédié abonnement ci-dessous (pas le mail "demande reçue").
         portalCreateTicket($db, $client, [
             'subject' => $label,
             'description' => 'Action demandée depuis l’espace client pour l’abonnement support.',
             'priority' => 'medium',
             'category' => 'abonnement',
-        ]);
+        ], false);
     }
+
+    portalSendClientMail(
+        $client,
+        $label . ' — Abonnement support',
+        $label,
+        '<p style="margin:0 0 12px">Bonjour,</p>'
+        . '<p style="margin:0 0 12px">Votre demande concernant votre abonnement support a bien été prise en compte : <strong>' . htmlspecialchars($label) . '</strong>.</p>'
+        . '<p style="margin:0">Notre équipe revient vers vous si une action de votre part est nécessaire. Vous pouvez gérer votre abonnement à tout moment depuis votre espace client.</p>'
+    );
+
     return ['success' => true, 'message' => $label . '.'];
 }
 
