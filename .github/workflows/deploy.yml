@@ -74,35 +74,6 @@ jobs:
             -e "ssh -i ~/.ssh/code4u_deploy -p ${{ secrets.VPS_PORT || '22' }}" \
             ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/"
 
-      - name: Write database credentials on VPS (admin/config/local.php)
-        shell: bash
-        env:
-          DB_HOST: ${{ secrets.DB_HOST }}
-          DB_NAME: ${{ secrets.DB_NAME }}
-          DB_USER: ${{ secrets.DB_USER }}
-          DB_PASS: ${{ secrets.DB_PASS }}
-        run: |
-          if [ -z "$DB_PASS" ]; then
-            echo "Secret DB_PASS absent : local.php non genere (fichier gere manuellement sur le VPS)."
-            exit 0
-          fi
-          # Echappement pour une chaine PHP entre apostrophes ('...').
-          esc() { local s=$1; s=${s//\\/\\\\}; s=${s//\'/\\\'}; printf '%s' "$s"; }
-          target="${{ secrets.VPS_TARGET }}/admin/config/local.php"
-          tdir="${{ secrets.VPS_TARGET }}/admin/config"
-          {
-            echo "<?php"
-            echo "// Genere automatiquement par GitHub Actions depuis les secrets du depot. Ne pas editer a la main."
-            echo "return ["
-            echo "    'db_host' => '$(esc "${DB_HOST:-localhost}")',"
-            echo "    'db_name' => '$(esc "${DB_NAME:-erp_code4u}")',"
-            echo "    'db_user' => '$(esc "${DB_USER:-erp_code4u}")',"
-            echo "    'db_pass' => '$(esc "$DB_PASS")',"
-            echo "];"
-          } | ssh -i ~/.ssh/code4u_deploy -p "${{ secrets.VPS_PORT || '22' }}" \
-              "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-              "mkdir -p '$tdir' && cat > '$target' && chmod 640 '$target'"
-
       - name: Remote post-deploy (proprietaire + permissions)
         shell: bash
         run: |
