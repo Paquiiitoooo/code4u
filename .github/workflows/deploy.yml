@@ -59,7 +59,7 @@ jobs:
       - name: Deploy files
         shell: bash
         run: |
-          rsync -az --delete \
+          rsync -az --no-owner --no-group --delete \
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '.env' \
@@ -103,9 +103,9 @@ jobs:
               "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
               "mkdir -p '$tdir' && cat > '$target' && chmod 640 '$target'"
 
-      - name: Remote post-deploy
+      - name: Remote post-deploy (proprietaire + permissions)
         shell: bash
         run: |
           ssh -i ~/.ssh/code4u_deploy -p "${{ secrets.VPS_PORT || '22' }}" \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
-            "mkdir -p '${{ secrets.VPS_TARGET }}/logs' && chmod -R 755 '${{ secrets.VPS_TARGET }}'"
+            'T="${{ secrets.VPS_TARGET }}"; mkdir -p "$T/logs"; OWNER=$(stat -c "%U" "$(dirname "$T")"); chown -R "$OWNER" "$T"; find "$T" -type d -exec chmod 755 {} +; find "$T" -type f -exec chmod 644 {} +; [ -f "$T/admin/config/local.php" ] && chmod 640 "$T/admin/config/local.php"; echo post-deploy-done'
