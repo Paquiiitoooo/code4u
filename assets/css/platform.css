@@ -553,6 +553,10 @@ section { padding-block: var(--section-pad); }
 }
 .client-card__title { font-family: var(--font-display); font-size: 1.2rem; margin: 0 0 1rem; }
 .client-form { display: grid; gap: 0.85rem; }
+.client-form label { display: grid; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.client-form input:disabled { background: var(--bg-secondary); color: var(--text-secondary); cursor: not-allowed; }
+.client-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+@media (max-width: 560px) { .client-form__row { grid-template-columns: 1fr; } }
 .field { display: grid; gap: 0.35rem; }
 .field label { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
 .field input, .field select, .field textarea {

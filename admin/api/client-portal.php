@@ -946,6 +946,56 @@ function portalAddDocument(PDO $db, array $client, array $input) {
     return ['success' => true, 'message' => 'Document ajouté.'];
 }
 
+/** Met à jour les coordonnées éditables du client (téléphone / adresse). */
+function portalUpdateProfile(PDO $db, array $client, array $input) {
+    $fields = [];
+    $params = [':id' => (int)$client['id']];
+    $map = ['phone' => 'telephone', 'adresse' => 'adresse', 'code_postal' => 'code_postal', 'ville' => 'ville'];
+    foreach ($map as $in => $col) {
+        if (array_key_exists($in, $input)) {
+            $fields[] = "{$col} = :{$col}";
+            $params[":{$col}"] = strip_tags(trim((string)$input[$in]));
+        }
+    }
+    if (!$fields) {
+        portalRespond(['success' => false, 'message' => 'Aucune modification fournie.'], 422);
+    }
+    $stmt = $db->prepare("UPDATE clients SET " . implode(', ', $fields) . " WHERE id = :id");
+    $stmt->execute($params);
+    portalSendClientMail(
+        $client,
+        'Coordonnées mises à jour',
+        'Vos coordonnées ont été mises à jour',
+        '<p>Bonjour,</p><p>Vos coordonnées de contact ont bien été mises à jour dans votre espace client. Si vous n’êtes pas à l’origine de ce changement, contactez-nous.</p>'
+    );
+    return ['success' => true, 'message' => 'Coordonnées mises à jour.'];
+}
+
+/** Change le mot de passe de connexion (vérifie l'actuel). */
+function portalChangePassword(PDO $db, array $client, array $input) {
+    $current = (string)($input['current_password'] ?? '');
+    $new = (string)($input['new_password'] ?? '');
+    if (strlen($new) < 8) {
+        portalRespond(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 8 caractères.'], 422);
+    }
+    $stmt = $db->prepare("SELECT password_hash FROM client_portal_accounts WHERE client_id = :id AND status = 'active' LIMIT 1");
+    $stmt->execute([':id' => (int)$client['id']]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row || !password_verify($current, $row['password_hash'])) {
+        portalRespond(['success' => false, 'message' => 'Mot de passe actuel incorrect.'], 401);
+    }
+    $hash = password_hash($new, PASSWORD_BCRYPT);
+    $upd = $db->prepare("UPDATE client_portal_accounts SET password_hash = :h WHERE client_id = :id");
+    $upd->execute([':h' => $hash, ':id' => (int)$client['id']]);
+    portalSendClientMail(
+        $client,
+        'Mot de passe modifié',
+        'Votre mot de passe a été modifié',
+        '<p>Bonjour,</p><p>Le mot de passe d’accès à votre espace client a bien été modifié. Si vous n’êtes pas à l’origine de cette action, contactez-nous immédiatement.</p>'
+    );
+    return ['success' => true, 'message' => 'Mot de passe modifié.'];
+}
+
 function portalBuildDashboard(PDO $db, array $client) {
     $subscription = portalFetchSubscription($db, (int)$client['id']);
     $invoices = portalFetchInvoices($db, (int)$client['id']);
@@ -1100,6 +1150,14 @@ try {
 
     if ($action === 'add-document') {
         portalRespond(portalAddDocument($db, $client, $input), 201);
+    }
+
+    if ($action === 'update-profile') {
+        portalRespond(portalUpdateProfile($db, $client, $input));
+    }
+
+    if ($action === 'change-password') {
+        portalRespond(portalChangePassword($db, $client, $input));
     }
 
     if ($action === 'request-quote') {

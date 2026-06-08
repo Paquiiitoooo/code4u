@@ -83,6 +83,7 @@
                         <button class="client-tab" type="button" data-tab="projects"><i class="fas fa-diagram-project" aria-hidden="true"></i> Projets</button>
                         <button class="client-tab" type="button" data-tab="tickets"><i class="fas fa-headset" aria-hidden="true"></i> Tickets</button>
                         <button class="client-tab" type="button" data-tab="documents"><i class="fas fa-folder-open" aria-hidden="true"></i> Documents</button>
+                        <button class="client-tab" type="button" data-tab="account"><i class="fas fa-user-gear" aria-hidden="true"></i> Mon compte</button>
                     </nav>
                     <div class="client-sidebar__support">
                         <span>Besoin urgent ?</span>
@@ -415,6 +416,59 @@
                                 <a href="#"><i class="fas fa-clipboard-check" aria-hidden="true"></i><strong>Comptes rendus</strong><span>5 fichiers</span></a>
                             </div>
                         </article>
+                    </section>
+
+                    <section class="client-view" data-view="account">
+                        <div class="client-layout">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Profil</span><h2>Mes informations</h2></div>
+                                </div>
+                                <form class="client-form" id="clientProfileForm">
+                                    <label>Société / nom
+                                        <input type="text" id="account-company" disabled>
+                                    </label>
+                                    <label>Email de connexion
+                                        <input type="email" id="account-email" disabled>
+                                    </label>
+                                    <label>Téléphone
+                                        <input type="tel" id="account-phone" autocomplete="tel">
+                                    </label>
+                                    <label>Adresse
+                                        <input type="text" id="account-adresse" autocomplete="street-address">
+                                    </label>
+                                    <div class="client-form__row">
+                                        <label>Code postal
+                                            <input type="text" id="account-cp" autocomplete="postal-code">
+                                        </label>
+                                        <label>Ville
+                                            <input type="text" id="account-ville" autocomplete="address-level2">
+                                        </label>
+                                    </div>
+                                    <p class="client-form__msg" id="clientProfileMsg" role="status" aria-live="polite"></p>
+                                    <button class="btn btn-primary" type="submit">Enregistrer mes coordonnées</button>
+                                </form>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Sécurité</span><h2>Mot de passe</h2></div>
+                                </div>
+                                <form class="client-form" id="clientPasswordForm">
+                                    <label>Mot de passe actuel
+                                        <input type="password" id="pwd-current" autocomplete="current-password" required>
+                                    </label>
+                                    <label>Nouveau mot de passe (8 caractères min.)
+                                        <input type="password" id="pwd-new" autocomplete="new-password" minlength="8" required>
+                                    </label>
+                                    <label>Confirmer le nouveau mot de passe
+                                        <input type="password" id="pwd-confirm" autocomplete="new-password" minlength="8" required>
+                                    </label>
+                                    <p class="client-form__msg" id="clientPasswordMsg" role="status" aria-live="polite"></p>
+                                    <button class="btn btn-secondary" type="submit">Changer mon mot de passe</button>
+                                </form>
+                            </article>
+                        </div>
                     </section>
                 </div>
             </div>
@@ -813,6 +867,17 @@
                 }).join('') : '<tr><td colspan="4">Aucune intervention enregistrée pour le moment.</td></tr>';
             }
 
+            function renderAccount(data) {
+                var client = data.client || {};
+                function setVal(id, value) { var el = document.getElementById(id); if (el) el.value = value || ''; }
+                setVal('account-company', client.company_name);
+                setVal('account-email', client.email);
+                setVal('account-phone', client.phone);
+                setVal('account-adresse', client.adresse);
+                setVal('account-cp', client.code_postal);
+                setVal('account-ville', client.ville);
+            }
+
             function render(data) {
                 state = data;
                 renderHeader(data);
@@ -826,6 +891,7 @@
                 renderProjects(data);
                 renderTickets(data);
                 renderDocuments(data);
+                renderAccount(data);
                 show(true);
             }
 
@@ -1051,6 +1117,50 @@
                         render(data);
                     } catch (error) {
                         if (ticketMsg) ticketMsg.textContent = error.message || 'Impossible de créer le ticket.';
+                    }
+                });
+            }
+
+            var profileForm = document.getElementById('clientProfileForm');
+            if (profileForm) {
+                profileForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var pm = document.getElementById('clientProfileMsg');
+                    if (pm) pm.textContent = 'Enregistrement...';
+                    try {
+                        await api('update-profile', {
+                            phone: (document.getElementById('account-phone') || {}).value || '',
+                            adresse: (document.getElementById('account-adresse') || {}).value || '',
+                            code_postal: (document.getElementById('account-cp') || {}).value || '',
+                            ville: (document.getElementById('account-ville') || {}).value || ''
+                        });
+                        if (pm) pm.textContent = 'Coordonnées enregistrées.';
+                        render(await api('me'));
+                    } catch (error) {
+                        if (pm) pm.textContent = error.message || 'Impossible d’enregistrer.';
+                    }
+                });
+            }
+
+            var passwordForm = document.getElementById('clientPasswordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var wm = document.getElementById('clientPasswordMsg');
+                    var current = (document.getElementById('pwd-current') || {}).value || '';
+                    var nw = (document.getElementById('pwd-new') || {}).value || '';
+                    var confirm = (document.getElementById('pwd-confirm') || {}).value || '';
+                    if (nw !== confirm) {
+                        if (wm) wm.textContent = 'Les deux mots de passe ne correspondent pas.';
+                        return;
+                    }
+                    if (wm) wm.textContent = 'Modification...';
+                    try {
+                        await api('change-password', { current_password: current, new_password: nw });
+                        passwordForm.reset();
+                        if (wm) wm.textContent = 'Mot de passe modifié. Un email de confirmation vous a été envoyé.';
+                    } catch (error) {
+                        if (wm) wm.textContent = error.message || 'Impossible de changer le mot de passe.';
                     }
                 });
             }
