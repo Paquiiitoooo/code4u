@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary Meta Tags - SEO -->
+    <title>Développeur Informatique Metz | Web, Logiciel sur Mesure - Code4U</title>
+    <meta name="title" content="Développeur Informatique Metz | Web, Logiciel sur Mesure - Code4U">
+    <meta name="description" content="Développeur informatique à Metz : création de sites web (599€), logiciels sur mesure, automatisation. Informaticien freelance Metz, Lorraine & Grand Est. Devis gratuit 24h.">
+    <meta name="keywords" content="développeur informatique Metz, informaticien Metz, développeur web Metz, programmeur Metz, création site internet Metz, développeur freelance Lorraine, logiciel sur mesure Metz, informaticien freelance Metz, développeur logiciel Metz">
+    <meta name="author" content="Pacôme VANTINI - Code4U">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="language" content="fr">
+    <meta name="geo.region" content="FR-57">
+    <meta name="geo.placename" content="Metz, France">
+    <meta name="geo.position" content="49.1193;6.1757">
+    <meta name="ICBM" content="49.1193, 6.1757">
+    <meta name="rating" content="general">
+    
+    <!-- Open Graph / Facebook - Partage social -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://code4u.fr/">
+    <meta property="og:title" content="Code4U - Développeur Informatique à Metz | Web & Logiciel">
+    <meta property="og:description" content="Développeur informatique Metz : sites web 599€, logiciels sur mesure. Informaticien freelance Lorraine. Devis gratuit 24h.">
+    <meta property="og:image" content="https://code4u.fr/assets/images/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="Code4U">
+    <meta property="og:locale:alternate" content="fr_FR">
+    
+    <!-- Twitter Card -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://code4u.fr/">
+    <meta property="twitter:title" content="Développeur Informatique Metz | Code4U">
+    <meta property="twitter:description" content="Développeur informatique à Metz : sites web, logiciels. Devis gratuit 24h.">
+    <meta property="twitter:image" content="https://code4u.fr/assets/images/og-image.jpg">
+    <meta name="twitter:label1" content="Tarif site vitrine">
+    <meta name="twitter:data1" content="Dès 599€">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://code4u.fr/">
+    
+    <!-- Favicons : Google utilise de préférence une icône 48x48. Pour mettre à jour le logo dans les résultats de recherche : déposez un favicon.ico (48×48) à la racine du site puis demandez une réindexation dans Google Search Console. -->
+    <link rel="icon" type="image/png" href="assets/images/logo-carre.png" sizes="48x48">
+    <link rel="icon" type="image/png" href="assets/images/logo-carre.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="assets/images/logo-carre.png">
+    
+    <!-- Performance : préchargement LCP / polices -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="assets/css/style.css" as="style">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/platform.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#14131a">
+</head>
+<body>
+    <!-- Header Template -->
+    <div id="header-placeholder"></div>
+
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <img src="assets/images/logo.png" alt="Code4U" class="loading-logo-img">
+            </div>
+            <div class="loading-text">
+                <h2 class="loading-title">Bienvenue chez Code4U</h2>
+                <p class="loading-message">Nous préparons votre expérience...</p>
+            </div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function() {
+            function forceHideLoading() {
+                const ls = document.getElementById('loadingScreen');
+                if (ls) {
+                    ls.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; position: fixed !important;';
+                    ls.classList.add('hidden');
+                    document.body.style.overflow = '';
+                    document.documentElement.style.overflow = '';
+                }
+            }
+            if (document.readyState === 'complete') {
+                setTimeout(forceHideLoading, 100);
+            } else {
+                window.addEventListener('load', function() {
+                    setTimeout(forceHideLoading, 100);
+                });
+            }
+            setTimeout(forceHideLoading, 3000);
+        })();
+    </script>
+
+    <main id="main-content" role="main">
+    <section class="hero hero-x" id="hero" aria-label="Présentation Code4U">
+        <div class="hero-x__bg" aria-hidden="true">
+            <span class="hero-x__aurora hero-x__aurora--1"></span>
+            <span class="hero-x__aurora hero-x__aurora--2"></span>
+            <span class="hero-x__grid"></span>
+        </div>
+        <div class="container hero-x__inner">
+            <div class="hero-x__copy">
+                <span class="hero-x__eyebrow"><span class="hero-x__pulse"></span> Développeur indépendant · Metz &amp; Grand Est</span>
+                <h1 class="hero-x__title">Des sites &amp; logiciels <span class="hero-x__hl">qui font tourner</span> votre business.</h1>
+                <p class="hero-x__sub">Sites, applications et automatisations sur mesure — connectés à votre gestion.</p>
+                <div class="hero-x__cta">
+                    <a href="commander.html" class="btn btn-accent btn-hero" data-cta="hero_devis" aria-label="Estimer mon projet avec le simulateur">
+                        Estimer mon projet <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                    <a href="#realisations" class="btn btn-secondary btn-hero" data-cta="hero_works" aria-label="Voir mes réalisations">
+                        Voir les réalisations
+                    </a>
+                </div>
+                <div class="hero-x__trust">
+                    <span class="hero-x__trust-label">Ils m'ont fait confiance</span>
+                    <div class="hero-x__logos">
+                        <span class="logo-chip"><img src="assets/images/chrono-pizza.png" alt="Chrono Pizza" loading="lazy"></span>
+                        <span class="logo-chip"><img src="assets/images/oui-pneu.webp" alt="Oui Pneu" loading="lazy"></span>
+                        <span class="logo-chip"><img src="assets/images/mon-estimation-travaux.png" alt="Mon Estimation Travaux" loading="lazy"></span>
+                        <span class="logo-chip"><img src="assets/images/kangal-kebab.png" alt="Kangal Kebab" loading="lazy"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-x__visual" aria-hidden="true">
+                <div class="browser">
+                    <div class="browser__bar">
+                        <span class="browser__dot"></span><span class="browser__dot"></span><span class="browser__dot"></span>
+                        <span class="browser__url"><i class="fas fa-lock"></i> code4u.fr</span>
+                    </div>
+                    <div class="browser__screen">
+                        <div class="mock">
+                            <div class="mock__nav">
+                                <span class="mock__logo"></span>
+                                <span class="mock__links"><i></i><i></i><i></i></span>
+                                <span class="mock__btn"></span>
+                            </div>
+                            <div class="mock__body">
+                                <div class="mock__h"></div>
+                                <div class="mock__h mock__h--2"></div>
+                                <div class="mock__t"></div>
+                                <div class="mock__t mock__t--2"></div>
+                                <div class="mock__cta"></div>
+                                <div class="mock__cards"><span></span><span></span><span></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="hero-x__chip hero-x__chip--1">
+                    <i class="fas fa-file-signature"></i>
+                    <div><b>Devis signé en ligne</b><small>signature électronique eIDAS</small></div>
+                </div>
+                <div class="hero-x__chip hero-x__chip--2">
+                    <i class="fas fa-credit-card"></i>
+                    <div><b>Paiement Stripe</b><small>intégré &amp; sécurisé</small></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Transformation digitale — narratif visuel -->
+    <section class="story" aria-label="Ce que Code4U change pour votre activité">
+        <span class="sec-glow" data-parallax="0.14" aria-hidden="true"></span>
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">De l'idée à la croissance</span>
+                <h2 class="section-title">Votre activité, <span class="story__accent">propulsée par le digital</span></h2>
+            </div>
+            <div class="story__track">
+                <article class="story__step">
+                    <div class="story__icon"><i class="fas fa-magnifying-glass-chart" aria-hidden="true"></i></div>
+                    <h3 class="story__step-title">On vous rend visible</h3>
+                    <p class="story__step-text">Un site rapide et bien référencé qui transforme vos visiteurs en clients.</p>
+                </article>
+                <div class="story__link" aria-hidden="true"><i class="fas fa-arrow-right"></i></div>
+                <article class="story__step">
+                    <div class="story__icon"><i class="fas fa-bolt" aria-hidden="true"></i></div>
+                    <h3 class="story__step-title">On vous fait gagner du temps</h3>
+                    <p class="story__step-text">Vos tâches répétitives automatisées : fichiers, e-mails, rapports.</p>
+                </article>
+                <div class="story__link" aria-hidden="true"><i class="fas fa-arrow-right"></i></div>
+                <article class="story__step">
+                    <div class="story__icon"><i class="fas fa-link" aria-hidden="true"></i></div>
+                    <h3 class="story__step-title">On connecte tout</h3>
+                    <p class="story__step-text">Devis, factures et paiements synchronisés avec votre gestion.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about" aria-labelledby="about-heading">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-left">
+                    <div class="section-header">
+                        <span class="section-tag">À propos</span>
+                        <h2 class="section-title" id="about-heading">Code4U, votre partenaire digital</h2>
+                    </div>
+                    <p class="about-description">
+                        <strong>Développeur informatique à Metz</strong>, Code4U est une auto-entreprise spécialisée dans le <a href="/web">développement web</a> et le <a href="/logiciel">développement logiciel</a> sur mesure en <strong>Lorraine</strong> et <strong>Grand Est</strong>. 
+                        En tant qu’<strong>informaticien freelance à Metz</strong>, je conçois vos sites internet et logiciels métier, de la conception à la maintenance.
+                    </p>
+                    <div class="about-values">
+                        <div class="value-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Solutions sur mesure adaptées à vos besoins</span>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Technologies modernes et éprouvées</span>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Accompagnement personnalisé de A à Z</span>
+                        </div>
+                        <div class="value-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Maintenance et support technique inclus</span>
+                        </div>
+                    </div>
+
+                    <div class="about-tech">
+                        <h4>Technologies maîtrisées</h4>
+                        <div class="tech-badges">
+                            <span class="tech-badge">HTML5</span>
+                            <span class="tech-badge">CSS3</span>
+                            <span class="tech-badge">JavaScript</span>
+                            <span class="tech-badge">PHP</span>
+                            <span class="tech-badge">React</span>
+                            <span class="tech-badge">Angular</span>
+                            <span class="tech-badge">Laravel</span>
+                            <span class="tech-badge">Python</span>
+                            <span class="tech-badge">C</span>
+                    </div>
+                </div>
+            </div>
+
+                <div class="about-right">
+                    <div class="trust-grid">
+                        <div class="trust-card">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                            <h4>Interlocuteur unique</h4>
+                            <p>Vous parlez directement au développeur, pas à un commercial ni à un sous-traitant.</p>
+                        </div>
+                        <div class="trust-card">
+                            <i class="fas fa-pen-ruler" aria-hidden="true"></i>
+                            <h4>Code sur mesure</h4>
+                            <p>Pas de template revendu : chaque projet est développé pour votre besoin réel.</p>
+                        </div>
+                        <div class="trust-card">
+                            <i class="fas fa-location-dot" aria-hidden="true"></i>
+                            <h4>Basé à Metz</h4>
+                            <p>Développeur indépendant en Lorraine et Grand Est, joignable et réactif.</p>
+                        </div>
+                        <div class="trust-card">
+                            <i class="fas fa-life-ring" aria-hidden="true"></i>
+                            <h4>Du devis à la maintenance</h4>
+                            <p>Conception, mise en ligne, hébergement et suivi gérés au même endroit.</p>
+                        </div>
+                    </div>
+
+                    <div class="about-highlight">
+                        <div class="highlight-content">
+                                <i class="fas fa-receipt" aria-hidden="true"></i>
+                                <div>
+                                    <h4>Tarifs clairs, sans TVA</h4>
+                                    <p>Auto-entrepreneur : TVA non applicable (art. 293 B du CGI). Le prix annoncé est le prix payé.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solutions Section -->
+    <section class="solutions" id="solutions">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Nos services</span>
+                <h2 class="section-title">Solutions digitales sur mesure</h2>
+                <p class="section-subtitle">En tant que <strong>développeur informatique à Metz</strong> et en Lorraine, je propose des prestations adaptées aux entreprises et aux particuliers : création de sites web, logiciels sur mesure, automatisation.</p>
+            </div>
+            
+            <!-- Services Grid -->
+            <div class="services-grid">
+                <a href="/web" class="service-card service-card--web">
+                    <div class="service-card__icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h3 class="service-card__title">Sites web & e-commerce</h3>
+                    <p class="service-card__description">
+                        Sites vitrines, boutiques en ligne et pages de vente rapides, soignées et bien référencées.
+                    </p>
+                    <ul class="service-card__features">
+                        <li><i class="fas fa-check"></i>Design responsive sur mesure</li>
+                        <li><i class="fas fa-check"></i>Boutique & paiement en ligne</li>
+                        <li><i class="fas fa-check"></i>SEO et performance soignés</li>
+                        <li><i class="fas fa-check"></i>Hébergement & maintenance</li>
+                    </ul>
+                    <div class="service-card__price">
+                        <span class="price-from">À partir de</span>
+                        <span class="price-amount">599€</span>
+                    </div>
+                    <span class="service-card__cta">
+                        Découvrir
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                <a href="/web" class="service-card service-card--app">
+                    <div class="service-card__icon">
+                        <i class="fas fa-window-restore"></i>
+                    </div>
+                    <h3 class="service-card__title">Applications & espaces clients</h3>
+                    <p class="service-card__description">
+                        Portails et applications métier sécurisés : comptes, rôles, tableaux de bord et suivi de projet.
+                    </p>
+                    <ul class="service-card__features">
+                        <li><i class="fas fa-check"></i>Authentification & rôles</li>
+                        <li><i class="fas fa-check"></i>Tableau de bord temps réel</li>
+                        <li><i class="fas fa-check"></i>API & intégrations</li>
+                        <li><i class="fas fa-check"></i>Données hébergées en France</li>
+                    </ul>
+                    <div class="service-card__price">
+                        <span class="price-from">À partir de</span>
+                        <span class="price-amount">1 199€</span>
+                    </div>
+                    <span class="service-card__cta">
+                        Découvrir
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                <a href="/logiciel" class="service-card service-card--automation">
+                    <div class="service-card__icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="service-card__title">Automatisations & scripts</h3>
+                    <p class="service-card__description">
+                        Des scripts qui suppriment les tâches répétitives : fichiers, e-mails, rapports, traitements de données.
+                    </p>
+                    <ul class="service-card__features">
+                        <li><i class="fas fa-check"></i>Scripts Python sur mesure</li>
+                        <li><i class="fas fa-check"></i>Traitement Excel / CSV</li>
+                        <li><i class="fas fa-check"></i>Rapports PDF automatiques</li>
+                        <li><i class="fas fa-check"></i>Envois d'e-mails planifiés</li>
+                    </ul>
+                    <div class="service-card__price">
+                        <span class="price-from">À partir de</span>
+                        <span class="price-amount">499€</span>
+                    </div>
+                    <span class="service-card__cta">
+                        Découvrir
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                <a href="#contact" class="service-card service-card--erp">
+                    <div class="service-card__icon">
+                        <i class="fas fa-plug"></i>
+                    </div>
+                    <h3 class="service-card__title">Connexion gestion / ERP & facturation</h3>
+                    <p class="service-card__description">
+                        Je relie votre site à votre outil de gestion : devis, factures et paiements synchronisés automatiquement.
+                    </p>
+                    <ul class="service-card__features">
+                        <li><i class="fas fa-check"></i>Synchronisation devis & factures</li>
+                        <li><i class="fas fa-check"></i>Signature électronique</li>
+                        <li><i class="fas fa-check"></i>Paiements Stripe</li>
+                        <li><i class="fas fa-check"></i>Connexion à votre ERP</li>
+                    </ul>
+                    <div class="service-card__price">
+                        <span class="price-amount">Sur devis</span>
+                    </div>
+                    <span class="service-card__cta">
+                        En savoir plus
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA estimer (sous Nos services) -->
+    <section class="services-cta" aria-label="Estimer mon projet">
+        <div class="container">
+            <p class="estimate-note">Estimation indicative — le devis officiel est recalculé selon votre besoin exact.</p>
+            <a href="commander.html" class="btn btn-accent btn-hero" data-cta="services_simulateur" aria-label="Estimer mon projet avec le simulateur">Estimer mon projet en 2 min</a>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Comment ça marche</h2>
+            </div>
+            <div class="process-timeline">
+                <div class="process-step">
+                    <div class="step-header">
+                        <div class="step-number">01</div>
+                        <div class="step-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Analyse & Consultation</h3>
+                        <p class="step-description">
+                            Échange approfondi pour comprendre vos besoins, vos objectifs et définir ensemble la meilleure solution technique.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-header">
+                        <div class="step-number">02</div>
+                        <div class="step-icon">
+                            <i class="fas fa-pencil-ruler"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Design & Planification</h3>
+                        <p class="step-description">
+                            Conception de l'architecture, du design et établissement d'un planning détaillé avec validation à chaque étape.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-header">
+                        <div class="step-number">03</div>
+                        <div class="step-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Développement</h3>
+                        <p class="step-description">
+                            Réalisation de votre projet avec des technologies modernes, tests réguliers et suivi transparent de l'avancement.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="step-header">
+                        <div class="step-number">04</div>
+                        <div class="step-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                    </div>
+                    <div class="step-content">
+                        <h3 class="step-title">Livraison & Support</h3>
+                        <p class="step-description">
+                            Mise en production, formation et accompagnement continu pour assurer le succès de votre solution.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>    
+
+    <!-- Réalisations Section -->
+    <section class="work" id="realisations">
+        <span class="sec-glow sec-glow--right" data-parallax="-0.12" aria-hidden="true"></span>
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Réalisations</span>
+                <h2 class="section-title">Des projets en ligne, pas des maquettes</h2>
+                <p class="section-subtitle">Quelques sites et applications livrés pour des commerces et des entreprises. Cliquez pour les voir en production.</p>
+            </div>
+            <div class="work-carousel" data-carousel="work">
+                <button class="work-carousel__control work-carousel__control--prev" type="button" aria-label="Réalisation précédente">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                </button>
+                <div class="work-carousel__viewport">
+                    <div class="work-grid" id="workCarouselTrack">
+                <a href="https://www.chrono-pizza-pam.fr/" target="_blank" rel="noopener" class="work-card">
+                    <div class="work-card__media"><img src="assets/images/chrono-pizza.png" alt="Site Chrono Pizza" loading="lazy"></div>
+                    <div class="work-card__body">
+                        <span class="work-card__tag">Restauration</span>
+                        <h3 class="work-card__title">Chrono Pizza</h3>
+                        <p class="work-card__desc">Site de pizzeria avec commande en ligne : carte, panier et prise de commande directe depuis le mobile.</p>
+                        <div class="work-card__meta"><span><i class="fas fa-globe"></i> Site web</span><span><i class="fas fa-cart-shopping"></i> Commande en ligne</span></div>
+                    </div>
+                </a>
+                <a href="https://www.kangalkebab.com/" target="_blank" rel="noopener" class="work-card">
+                    <div class="work-card__media"><img src="assets/images/kangal-kebab.png" alt="Site Kangal Kebab" loading="lazy"></div>
+                    <div class="work-card__body">
+                        <span class="work-card__tag">Restauration</span>
+                        <h3 class="work-card__title">Kangal Kebab</h3>
+                        <p class="work-card__desc">Vitrine de restaurant avec carte en ligne et informations pratiques, pensée pour la recherche locale et le mobile.</p>
+                        <div class="work-card__meta"><span><i class="fas fa-globe"></i> Site vitrine</span><span><i class="fas fa-utensils"></i> Carte en ligne</span></div>
+                    </div>
+                </a>
+                <a href="https://ouipneu.fr/" target="_blank" rel="noopener" class="work-card">
+                    <div class="work-card__media"><img src="assets/images/oui-pneu.webp" alt="Site Oui Pneu" loading="lazy"></div>
+                    <div class="work-card__body">
+                        <span class="work-card__tag">Automobile</span>
+                        <h3 class="work-card__title">Oui Pneu</h3>
+                        <p class="work-card__desc">Outil de devis pour la vente et le montage de pneus : le client choisit, estime puis envoie sa demande en ligne.</p>
+                        <div class="work-card__meta"><span><i class="fas fa-file-invoice"></i> Devis en ligne</span><span><i class="fas fa-car"></i> Automobile</span></div>
+                    </div>
+                </a>
+                <a href="https://www.monestimationtravaux.fr/" target="_blank" rel="noopener" class="work-card">
+                    <div class="work-card__media"><img src="assets/images/mon-estimation-travaux.png" alt="Site Mon Estimation Travaux" loading="lazy"></div>
+                    <div class="work-card__body">
+                        <span class="work-card__tag">Génération de leads</span>
+                        <h3 class="work-card__title">Mon Estimation Travaux</h3>
+                        <p class="work-card__desc">Simulateur d'estimation de travaux qui qualifie les visiteurs et génère des demandes de devis pour des artisans.</p>
+                        <div class="work-card__meta"><span><i class="fas fa-calculator"></i> Simulateur</span><span><i class="fas fa-bullseye"></i> Leads qualifiés</span></div>
+                    </div>
+                </a>
+                <div class="work-card">
+                    <div class="work-card__media work-card__media--placeholder"><span><i class="fas fa-image"></i><br>Visuel à ajouter</span></div>
+                    <div class="work-card__body">
+                        <span class="work-card__tag">Application · Luxembourg</span>
+                        <h3 class="work-card__title">Visioframe</h3>
+                        <p class="work-card__desc">Application pour seniors au Luxembourg : carte interactive multi-pays (France, Belgique, Luxembourg), paiement Stripe et gestion des abonnements.</p>
+                        <div class="work-card__meta"><span><i class="fas fa-map-location-dot"></i> Carte interactive</span><span><i class="fas fa-credit-card"></i> Stripe & abonnements</span></div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+                <button class="work-carousel__control work-carousel__control--next" type="button" aria-label="Réalisation suivante">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+                <div class="work-carousel__dots" aria-label="Navigation des réalisations"></div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- FAQ — SEO (FAQPage) + objections -->
+    <section class="faq" id="faq" aria-labelledby="faq-heading">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag">Questions fréquentes</span>
+                <h2 class="section-title" id="faq-heading">Vos questions, mes réponses</h2>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item">
+                    <button class="faq-question" type="button" aria-expanded="false"><span>Combien coûte un site web&nbsp;?</span><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <div class="faq-answer"><p>À partir de 599&nbsp;€ pour une vitrine et 1&nbsp;199&nbsp;€ pour un site avec base de données. Obtenez une estimation immédiate avec le <a href="commander.html">simulateur de devis</a>.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" type="button" aria-expanded="false"><span>En combien de temps mon projet est-il livré&nbsp;?</span><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <div class="faq-answer"><p>Cela dépend de la complexité. Le simulateur propose un délai standard, accéléré ou urgent, et un planning est validé ensemble au démarrage.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" type="button" aria-expanded="false"><span>Puis-je connecter mon site à ma gestion ou mon ERP&nbsp;?</span><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <div class="faq-answer"><p>Oui. Devis, factures, paiements (Stripe) et signature électronique peuvent être synchronisés avec votre outil de gestion ou votre ERP.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" type="button" aria-expanded="false"><span>Intervenez-vous à Metz et dans le Grand Est&nbsp;?</span><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <div class="faq-answer"><p>Basé à Metz, j'accompagne les entreprises et indépendants de Lorraine, du Grand Est et à distance partout en France.</p></div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question" type="button" aria-expanded="false"><span>Le devis est-il gratuit&nbsp;?</span><i class="fas fa-plus" aria-hidden="true"></i></button>
+                    <div class="faq-answer"><p>Oui, l'estimation en ligne et le devis sont gratuits et sans engagement.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section - Conversion SEA -->
+    <section class="contact" id="contact" aria-labelledby="contact-heading">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title" id="contact-heading">Contact</h2>
+            </div>
+            
+            <div class="contact-grid">
+                <div class="contact-info-col">
+                    <h3>Parlons de votre projet</h3>
+                    <p>Que ce soit pour un site web ou un logiciel sur mesure, je suis là pour vous aider.</p>
+                    
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope" aria-hidden="true"></i>
+                            <a href="mailto:contact@code4u.fr">contact@code4u.fr</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            <a href="tel:+33652372636">+33 6 52 37 26 36</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
+                            <a href="https://www.google.com/maps/place/114+Avenue+de+Thionville,+57050+Metz" target="_blank" rel="noopener">114 avenue de Thionville, 57050 Metz</a>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-id-card" aria-hidden="true"></i>
+                            <span>Pacôme Vantini — auto-entrepreneur · TVA non applicable, art. 293 B du CGI</span>
+                        </div>
+                    </div>
+                </div>
+    
+                <form class="contact-form-col" id="contactForm" data-cta="contact_form" aria-label="Formulaire de demande de devis" action="" method="post">
+                    <div class="form-group">
+                        <label for="name" class="sr-only">Nom</label>
+                        <input type="text" id="name" name="name" placeholder="Nom" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
+                        <label for="email" class="sr-only">Email</label>
+                        <input type="email" id="email" name="email" placeholder="Email" required autocomplete="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="service" class="sr-only">Type de projet</label>
+                        <select id="service" name="service" required aria-label="Type de projet">
+                            <option value="">Type de projet</option>
+                            <option value="site-vitrine">Site Vitrine (599€)</option>
+                            <option value="site-bdd">Site avec BDD (1 199€)</option>
+                            <option value="logiciel">Logiciel sur mesure</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="message" class="sr-only">Votre message</label>
+                        <textarea id="message" name="message" rows="4" placeholder="Votre message" required aria-label="Votre message"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" data-cta="contact_submit" aria-label="Envoyer la demande de devis">
+                        Envoyer
+                    </button>
+                    <div class="form-message" id="formMessage" role="status" aria-live="polite"></div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bande CTA finale -->
+    <section class="cta-band">
+        <div class="container cta-band__inner">
+            <div>
+                <h2 class="cta-band__title">Prêt à passer au digital&nbsp;?</h2>
+                <p class="cta-band__sub">Estimez votre projet en 2 minutes, sans engagement. Le devis officiel est recalculé selon votre besoin réel.</p>
+            </div>
+            <div class="cta-band__actions">
+                <a href="commander.html" class="btn btn-accent btn-hero" data-cta="ctaband_devis">Estimer mon projet</a>
+                <a href="#contact" class="btn btn-ghost-light btn-hero" data-cta="ctaband_contact">Me contacter</a>
+            </div>
+        </div>
+    </section>
+
+    </main>
+    <!-- Footer Template -->
+    <div id="footer-placeholder"></div>
+
+    <!-- Schema.org JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "@id": "https://code4u.fr/#localbusiness",
+      "name": "Code4U",
+      "image": "https://code4u.fr/assets/images/logo.png",
+      "description": "Développeur informatique à Metz : développement web et logiciel sur mesure. Informaticien freelance Lorraine et Grand Est.",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "114 avenue de Thionville",
+        "addressLocality": "Metz",
+        "postalCode": "57050",
+        "addressCountry": "FR"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 49.1193,
+        "longitude": 6.1757
+      },
+      "url": "https://code4u.fr",
+      "telephone": "+33-6-52-37-26-36",
+      "email": "contact@code4u.fr",
+      "priceRange": "€€",
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:00",
+          "closes": "19:00"
+        },
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": "Saturday",
+          "opens": "10:00",
+          "closes": "18:00"
+        }
+      ],
+      "sameAs": [
+        "https://www.linkedin.com/company/code4u",
+        "https://github.com/code4u",
+        "https://twitter.com/code4u"
+      ],
+      "founder": {
+        "@type": "Person",
+        "name": "Pacôme VANTINI",
+        "jobTitle": "Développeur informatique"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ProfessionalService",
+      "name": "Code4U - Développement Web et Logiciel",
+      "serviceType": [
+        "Développement Web",
+        "Développement Logiciel"
+      ],
+      "provider": {
+        "@type": "LocalBusiness",
+        "name": "Code4U"
+      },
+      "areaServed": {
+        "@type": "GeoCircle",
+        "geoMidpoint": {
+          "@type": "GeoCoordinates",
+          "latitude": 49.1193,
+          "longitude": 6.1757
+        },
+        "geoRadius": "50000"
+      },
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Site Vitrine",
+          "description": "Site web responsive avec hébergement 1 an inclus",
+          "price": "599",
+          "priceCurrency": "EUR"
+        },
+        {
+          "@type": "Offer",
+          "name": "Site avec Base de Données",
+          "description": "Site web dynamique avec backend et administration",
+          "price": "1199",
+          "priceCurrency": "EUR"
+        }
+      ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Code4U",
+      "alternateName": "Code4U Développeur Informatique Metz",
+      "url": "https://code4u.fr",
+      "description": "Développeur informatique à Metz : création de sites web (599€), logiciels sur mesure, automatisation. Informaticien freelance Lorraine.",
+      "inLanguage": "fr-FR",
+      "publisher": { "@id": "https://code4u.fr/#organization" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": { "@type": "EntryPoint", "urlTemplate": "https://code4u.fr/?s={search_term_string}" },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://code4u.fr/#organization",
+      "name": "Code4U",
+      "url": "https://code4u.fr",
+      "logo": "https://code4u.fr/assets/images/logo.png",
+      "description": "Développeur informatique à Metz et en Grand Est : développement web et logiciel sur mesure.",
+      "address": { "@type": "PostalAddress", "streetAddress": "114 avenue de Thionville", "addressLocality": "Metz", "postalCode": "57050", "addressCountry": "FR" },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "telephone": "+33-6-52-37-26-36",
+        "email": "contact@code4u.fr",
+        "areaServed": "FR",
+        "availableLanguage": "French",
+        "contactType": "customer service",
+        "responseTime": "P1D"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ContactPage",
+      "name": "Contact Code4U",
+      "description": "Demander un devis pour un site web ou un logiciel sur mesure à Metz",
+      "url": "https://code4u.fr/#contact",
+      "mainEntity": {
+        "@type": "LocalBusiness",
+        "@id": "https://code4u.fr/#localbusiness",
+        "telephone": "+33-6-52-37-26-36",
+        "email": "contact@code4u.fr"
+      }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://code4u.fr/" }
+      ]
+    }
+    </script>
+
+    <!-- SEA / Conversion : remplacer G-XXXXXXXXXX par votre ID Google Analytics 4 -->
+    <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-XXXXXXXXXX'); </script> -->
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        { "@type": "Question", "name": "Combien coûte un site web ?", "acceptedAnswer": { "@type": "Answer", "text": "À partir de 599 € pour une vitrine et 1 199 € pour un site avec base de données. Estimation immédiate via le simulateur de devis Code4U." } },
+        { "@type": "Question", "name": "En combien de temps mon projet est-il livré ?", "acceptedAnswer": { "@type": "Answer", "text": "Selon la complexité : délai standard, accéléré ou urgent. Un planning est validé au démarrage du projet." } },
+        { "@type": "Question", "name": "Puis-je connecter mon site à ma gestion ou mon ERP ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui : devis, factures, paiements Stripe et signature électronique peuvent être synchronisés avec votre outil de gestion ou votre ERP." } },
+        { "@type": "Question", "name": "Intervenez-vous à Metz et dans le Grand Est ?", "acceptedAnswer": { "@type": "Answer", "text": "Basé à Metz, Code4U accompagne les entreprises et indépendants de Lorraine, du Grand Est et à distance partout en France." } },
+        { "@type": "Question", "name": "Le devis est-il gratuit ?", "acceptedAnswer": { "@type": "Answer", "text": "Oui, l'estimation en ligne et le devis sont gratuits et sans engagement." } }
+      ]
+    }
+    </script>
+
+    <script src="assets/js/template-loader.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/chatbot-ai.js"></script>
+</body>
+</html>
+

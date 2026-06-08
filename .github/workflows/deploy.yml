@@ -1,0 +1,111 @@
+name: CI and deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate PHP
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          coverage: none
+
+      - name: Lint PHP files
+        shell: bash
+        run: |
+          mapfile -t files < <(find . -type f -name '*.php' \
+            -not -path './.git/*' \
+            -not -path './vendor/*')
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No PHP files to lint."
+            exit 0
+          fi
+          for file in "${files[@]}"; do
+            php -l "$file"
+          done
+
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_PRIVATE_KEY }}" > ~/.ssh/code4u_deploy
+          chmod 600 ~/.ssh/code4u_deploy
+          ssh-keyscan -p "${{ secrets.VPS_PORT || '22' }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy files
+        shell: bash
+        run: |
+          rsync -az --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.env' \
+            --exclude '.env.local' \
+            --exclude 'admin/config/local.php' \
+            --exclude 'admin/uploads/' \
+            --exclude 'logs/' \
+            --exclude 'contact_logs.txt' \
+            --exclude 'node_modules/' \
+            --exclude 'vendor/' \
+            --exclude '.publish-temp-*/' \
+            -e "ssh -i ~/.ssh/code4u_deploy -p ${{ secrets.VPS_PORT || '22' }}" \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/"
+
+      - name: Write database credentials on VPS (admin/config/local.php)
+        shell: bash
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+        run: |
+          if [ -z "$DB_PASS" ]; then
+            echo "Secret DB_PASS absent : local.php non genere (fichier gere manuellement sur le VPS)."
+            exit 0
+          fi
+          # Echappement pour une chaine PHP entre apostrophes ('...').
+          esc() { local s=$1; s=${s//\\/\\\\}; s=${s//\'/\\\'}; printf '%s' "$s"; }
+          target="${{ secrets.VPS_TARGET }}/admin/config/local.php"
+          tdir="${{ secrets.VPS_TARGET }}/admin/config"
+          {
+            echo "<?php"
+            echo "// Genere automatiquement par GitHub Actions depuis les secrets du depot. Ne pas editer a la main."
+            echo "return ["
+            echo "    'db_host' => '$(esc "${DB_HOST:-localhost}")',"
+            echo "    'db_name' => '$(esc "${DB_NAME:-erp_code4u}")',"
+            echo "    'db_user' => '$(esc "${DB_USER:-erp_code4u}")',"
+            echo "    'db_pass' => '$(esc "$DB_PASS")',"
+            echo "];"
+          } | ssh -i ~/.ssh/code4u_deploy -p "${{ secrets.VPS_PORT || '22' }}" \
+              "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+              "mkdir -p '$tdir' && cat > '$target' && chmod 640 '$target'"
+
+      - name: Remote post-deploy
+        shell: bash
+        run: |
+          ssh -i ~/.ssh/code4u_deploy -p "${{ secrets.VPS_PORT || '22' }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "mkdir -p '${{ secrets.VPS_TARGET }}/logs' && chmod -R 755 '${{ secrets.VPS_TARGET }}'"

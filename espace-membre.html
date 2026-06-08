@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de Ticket - Code4U</title>
+    <meta name="description" content="Consultez votre ticket de support avec votre code d'accès">
+    <link rel="icon" type="image" href="assets/images/logo-carre-blanc.png" sizes="48x48">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/platform.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="assets/js/main.js" defer></script>
+    <style>
+        .member-section {
+            padding: 2rem 1rem;
+            padding-top: calc(2rem + 180px); /* Add space for fixed navbar (top-bar + navbar) */
+            min-height: 80vh;
+        }
+        .member-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .member-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .member-header h1 {
+            font-size: clamp(1.75rem, 5vw, 2.5rem);
+            margin-bottom: 0.5rem;
+        }
+        .member-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .member-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .ticket-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        @media (min-width: 1024px) {
+            .ticket-layout {
+                grid-template-columns: 350px 1fr;
+            }
+        }
+        .ticket-sidebar {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+        .ticket-chat {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 0;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px);
+            min-height: 600px;
+        }
+        .chat-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--bg-primary);
+        }
+        .chat-message {
+            display: flex;
+            max-width: 75%;
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .chat-message.customer {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .chat-message.admin,
+        .chat-message.system {
+            align-self: flex-start;
+        }
+        .message-bubble {
+            padding: 0.875rem 1.25rem;
+            border-radius: 1.25rem;
+            word-wrap: break-word;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .chat-message.customer .message-bubble {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color, #00e5ff) 100%);
+            color: white;
+            border-bottom-right-radius: 0.25rem;
+        }
+        .chat-message.admin .message-bubble {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 0.25rem;
+        }
+        .chat-message.system .message-bubble {
+            background: rgba(255, 193, 7, 0.15);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 1rem;
+            text-align: center;
+            font-style: italic;
+            max-width: 100%;
+        }
+        .message-meta {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            padding: 0 0.5rem;
+        }
+        .chat-message.customer .message-meta {
+            text-align: right;
+        }
+        .chat-message.admin .message-meta,
+        .chat-message.system .message-meta {
+            text-align: left;
+        }
+        .chat-input-area {
+            padding: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+        }
+        .chat-input-wrapper {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-end;
+        }
+        .chat-input-wrapper textarea {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 0.95rem;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            resize: none;
+            min-height: 60px;
+            max-height: 150px;
+            transition: var(--transition);
+        }
+        .chat-input-wrapper textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(45, 45, 45, 0.1);
+        }
+        .chat-send-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color, #00e5ff) 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(45, 45, 45, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-height: 60px;
+        }
+        .chat-send-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(45, 45, 45, 0.3);
+            background: linear-gradient(135deg, var(--primary-hover, #1a1a1a) 0%, var(--secondary-color, #00e5ff) 100%);
+        }
+        .chat-send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .ticket-info-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .ticket-info-item:last-child {
+            border-bottom: none;
+        }
+        .ticket-info-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+        .ticket-info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.375rem 0.875rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .member-card h2 {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .member-card h2 i {
+            color: var(--primary-color);
+        }
+        .ticket-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+        .ticket-form .form-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .ticket-form .form-group label {
+            text-align: center;
+        }
+        .ticket-form .form-group input {
+            text-align: center;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .form-group input,
+        .form-group textarea {
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-size: 1rem;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(var(--primary-rgb, 0, 229, 255), 0.1);
+        }
+        .form-group input[type="text"] {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color, #6366f1) 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 4px 12px rgba(0, 229, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, var(--primary-hover, #00b8cc) 0%, #4f46e5 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 229, 255, 0.4);
+        }
+        .btn-submit i {
+            font-size: 1rem;
+        }
+        .tickets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .ticket-item {
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .ticket-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary-color);
+            transition: var(--transition);
+        }
+        .ticket-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+        .ticket-item:hover::before {
+            width: 100%;
+            opacity: 0.05;
+        }
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .ticket-number {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+        .ticket-status {
+            padding: 0.375rem 0.875rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .status-open {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .status-in_progress {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+        .status-resolved {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+        .status-closed {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .ticket-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+        .ticket-meta {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-secondary);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        .message {
+            padding: 1rem;
+            border-radius: var(--radius-md);
+            margin-bottom: 1rem;
+        }
+        .message-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 2px solid #4caf50;
+        }
+        .message-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 2px solid #f44336;
+        }
+        @media (min-width: 768px) {
+            .member-section {
+                padding: 3rem 2rem;
+                padding-top: calc(3rem + 180px); /* Add space for fixed navbar (top-bar + navbar) */
+            }
+            .member-card {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header Template -->
+    <div id="header-placeholder"></div>
+    
+
+    <section class="member-section" id="main-content">
+        <div class="member-container">
+            <div class="member-header">
+                <h1><i class="fas fa-ticket-alt"></i> Suivi de Ticket</h1>
+                <p>Consultez votre ticket avec votre code d'accès secret</p>
+            </div>
+
+            <div id="messageContainer"></div>
+
+            <div class="member-card">
+                <div style="background: rgba(0, 229, 255, 0.1); border-left: 4px solid var(--primary-color); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+                    <p style="margin: 0; color: var(--text-primary); font-size: 0.95rem; display: flex; align-items: flex-start; gap: 0.75rem;">
+                        <i class="fas fa-info-circle" style="color: var(--primary-color); margin-top: 0.2rem;"></i>
+                        <span>Utilisez le <strong>code d'accès secret</strong> que vous avez reçu par email lors de la création de votre ticket. Ce code vous permet d'accéder de manière sécurisée à votre ticket.</span>
+                    </p>
+                </div>
+                <form class="ticket-form" id="searchForm" style="text-align: center;">
+                    <div class="form-group">
+                        <label for="searchCode" style="text-align: center;">
+                            <i class="fas fa-lock"></i> Code d'accès secret
+                        </label>
+                        <input type="text" id="searchCode" name="access_code" required 
+                               placeholder="Ex: ABC1234567" 
+                               pattern="[A-Z0-9]{10}" 
+                               maxlength="10"
+                               style="text-transform: uppercase; letter-spacing: 0.1em; font-family: 'Courier New', monospace; font-weight: 600; text-align: center; font-size: 1.2rem; padding: 1rem;">
+                        <small style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem; display: block; text-align: center;">
+                            Format : 10 caractères (lettres majuscules et chiffres)
+                        </small>
+                    </div>
+                    <button type="submit" class="btn-submit" style="margin: 0 auto;">
+                        <i class="fas fa-unlock"></i> Accéder au ticket
+                    </button>
+                </form>
+            </div>
+
+            <div id="ticketsContainer" style="display: none;">
+                <div class="ticket-layout">
+                    <!-- Sidebar avec détails du ticket -->
+                    <div class="ticket-sidebar">
+                        <h2 style="margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-ticket-alt" style="color: var(--primary-color);"></i>
+                            Détails du Ticket
+                        </h2>
+                        <div id="ticketDetails"></div>
+                    </div>
+                    
+                    <!-- Zone de chat -->
+                    <div class="ticket-chat" id="messagesContainer" style="display: none;">
+                        <div class="chat-header">
+                            <h2 style="margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fas fa-comments" style="color: var(--primary-color);"></i>
+                                Conversation
+                            </h2>
+                        </div>
+                        <div class="chat-messages" id="messagesList"></div>
+                        <div class="chat-input-area">
+                            <form id="messageForm">
+                                <div class="chat-input-wrapper">
+                                    <textarea id="messageInput" name="message" required 
+                                              placeholder="Tapez votre message..." 
+                                              rows="1"></textarea>
+                                    <button type="submit" class="chat-send-btn" id="sendBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span class="send-text">Envoyer</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="assets/js/main.js"></script>
+    <script>
+        let messageRefreshInterval = null;
+        
+        // Recherche de tickets par code secret
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const accessCode = document.getElementById('searchCode').value.trim().toUpperCase();
+            const messageContainer = document.getElementById('messageContainer');
+            const ticketsContainer = document.getElementById('ticketsContainer');
+            const messagesContainer = document.getElementById('messagesContainer');
+
+            // Validation du format
+            if (!/^[A-Z0-9]{10}$/.test(accessCode)) {
+                messageContainer.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i> Le code d\'accès doit contenir exactement 10 caractères (lettres majuscules et chiffres).</div>';
+                return;
+            }
+
+            messageContainer.innerHTML = '';
+            document.getElementById('ticketDetails').innerHTML = '<div class="empty-state"><i class="fas fa-spinner fa-spin"></i><p>Vérification du code...</p></div>';
+            ticketsContainer.style.display = 'block';
+            messagesContainer.style.display = 'none';
+
+            try {
+                const response = await fetch(`/admin/api/ticket-public.php?access_code=${encodeURIComponent(accessCode)}`);
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const ticket = data.data;
+                    messagesContainer.style.display = 'flex';
+                    
+                    // Display ticket details in sidebar
+                    document.getElementById('ticketDetails').innerHTML = `
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Numéro de ticket</div>
+                            <div class="ticket-info-value" style="color: var(--primary-color); font-family: 'Courier New', monospace;">${ticket.ticket_number}</div>
+                        </div>
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Statut</div>
+                            <div class="ticket-info-value">
+                                <span class="status-badge status-${ticket.status}">${getStatusLabel(ticket.status)}</span>
+                            </div>
+                        </div>
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Sujet</div>
+                            <div class="ticket-info-value">${escapeHtml(ticket.subject)}</div>
+                        </div>
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Priorité</div>
+                            <div class="ticket-info-value">${getPriorityLabel(ticket.priority)}</div>
+                        </div>
+                        ${ticket.category ? `
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Catégorie</div>
+                            <div class="ticket-info-value">${escapeHtml(ticket.category)}</div>
+                        </div>
+                        ` : ''}
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Date de création</div>
+                            <div class="ticket-info-value">${formatDate(ticket.created_at)}</div>
+                        </div>
+                        ${ticket.description ? `
+                        <div class="ticket-info-item">
+                            <div class="ticket-info-label">Description</div>
+                            <div class="ticket-info-value" style="font-size: 0.9rem; font-weight: 400; color: var(--text-secondary);">${escapeHtml(ticket.description)}</div>
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    // Reset last message ID
+                    lastMessageId = 0;
+                    
+                    // Display messages
+                    displayMessages(ticket.messages || []);
+                    
+                    // Store access code for message sending
+                    document.getElementById('messageForm').dataset.accessCode = accessCode;
+                    
+                    // Start auto-refresh if ticket is not closed (polling every 2 seconds for instant messaging)
+                    if (ticket.status !== 'closed') {
+                        startMessageRefresh(accessCode);
+                    }
+                } else {
+                    document.getElementById('ticketDetails').innerHTML = '<div class="empty-state" style="text-align: center; padding: 2rem; color: var(--text-secondary);"><i class="fas fa-lock" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i><p>Code d\'accès invalide ou ticket introuvable.</p><p style="font-size: 0.85rem; margin-top: 0.5rem;">Vérifiez que vous avez bien copié le code reçu par email.</p></div>';
+                }
+            } catch (error) {
+                messageContainer.innerHTML = '<div class="message message-error"><i class="fas fa-exclamation-circle"></i> Erreur lors de la vérification. Veuillez réessayer.</div>';
+                console.error('Erreur:', error);
+            }
+        });
+
+        // Vérifier s'il y a un code d'accès récent dans localStorage
+        window.addEventListener('DOMContentLoaded', function() {
+            const lastAccessCode = localStorage.getItem('lastAccessCode');
+            const lastTicket = localStorage.getItem('lastTicketNumber');
+            
+            if (lastAccessCode && lastTicket) {
+                const messageContainer = document.getElementById('messageContainer');
+                messageContainer.innerHTML = `
+                    <div class="message message-success">
+                        <i class="fas fa-check-circle"></i> 
+                        <strong>Votre ticket ${lastTicket} a été créé avec succès !</strong><br>
+                        <small>Votre code d'accès a été pré-rempli. Vous pouvez également le retrouver dans l'email que nous vous avons envoyé.</small>
+                    </div>
+                `;
+                document.getElementById('searchCode').value = lastAccessCode;
+            }
+        });
+
+        function getStatusLabel(status) {
+            const labels = {
+                'open': 'Ouvert',
+                'in_progress': 'En cours',
+                'waiting': 'En attente',
+                'resolved': 'Résolu',
+                'closed': 'Fermé'
+            };
+            return labels[status] || status;
+        }
+
+        function getPriorityLabel(priority) {
+            const labels = {
+                'low': 'Basse',
+                'medium': 'Moyenne',
+                'high': 'Haute',
+                'urgent': 'Urgente'
+            };
+            return labels[priority] || priority;
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        let lastMessageId = 0;
+        
+        function displayMessages(messages) {
+            const messagesList = document.getElementById('messagesList');
+            if (!messages || messages.length === 0) {
+                messagesList.innerHTML = '<div class="empty-state" style="text-align: center; padding: 2rem; color: var(--text-secondary);"><i class="fas fa-comment-slash" style="font-size: 2rem; opacity: 0.5; margin-bottom: 0.5rem;"></i><p>Aucun message pour le moment.</p></div>';
+                return;
+            }
+            
+            // Check if we have new messages
+            const newMessages = messages.filter(msg => msg.id > lastMessageId);
+            if (newMessages.length === 0 && messages.length > 0) {
+                // No new messages, just update if needed
+                return;
+            }
+            
+            // Update last message ID
+            if (messages.length > 0) {
+                lastMessageId = Math.max(...messages.map(msg => msg.id));
+            }
+            
+            const wasAtBottom = messagesList.scrollHeight - messagesList.scrollTop <= messagesList.clientHeight + 100;
+            
+            messagesList.innerHTML = messages.map((msg, index) => {
+                const isCustomer = msg.sender_type === 'customer';
+                const isSystem = msg.sender_type === 'system';
+                const messageClass = isCustomer ? 'customer' : (isSystem ? 'system' : 'admin');
+                
+                // Afficher l'heure seulement sur le dernier message
+                const isLastMessage = index === messages.length - 1;
+                
+                if (isSystem) {
+                    return `
+                        <div class="chat-message ${messageClass}" data-message-id="${msg.id}">
+                            <div class="message-bubble">
+                                <i class="fas fa-info-circle"></i> ${escapeHtml(msg.message)}
+                            </div>
+                            ${isLastMessage ? `<div class="message-meta" style="text-align: center; margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-secondary);">${formatTime(msg.created_at)}</div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="chat-message ${messageClass}" data-message-id="${msg.id}">
+                        <div class="message-bubble">
+                            ${escapeHtml(msg.message)}
+                        </div>
+                        ${isLastMessage ? `<div class="message-meta" style="margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-secondary); ${isCustomer ? 'text-align: right;' : 'text-align: left;'}">${formatTime(msg.created_at)}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            // Auto-scroll to bottom if user was at bottom
+            if (wasAtBottom || newMessages.length > 0) {
+                setTimeout(() => {
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }, 100);
+            }
+        }
+        
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            
+            if (diffMins < 1) return 'À l\'instant';
+            if (diffMins < 60) return `Il y a ${diffMins} min`;
+            if (diffHours < 24 && date.toDateString() === now.toDateString()) {
+                return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Auto-resize textarea
+        const messageInput = document.getElementById('messageInput');
+        if (messageInput) {
+            messageInput.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+            });
+            
+            // Handle Enter key (Shift+Enter for new line, Enter alone sends)
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const form = document.getElementById('messageForm');
+                    if (form && form.dataset.accessCode) {
+                        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                    }
+                }
+            });
+        }
+        
+        // Handle message form submission
+        const messageForm = document.getElementById('messageForm');
+        if (messageForm) {
+            messageForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                const accessCode = this.dataset.accessCode;
+                const messageInput = document.getElementById('messageInput');
+                if (!messageInput) return;
+                
+                const message = messageInput.value.trim();
+                
+                if (!message || !accessCode) {
+                    return;
+                }
+                
+                const submitBtn = document.getElementById('sendBtn');
+                if (!submitBtn) return;
+                
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                
+                try {
+                    const response = await fetch('/admin/api/ticket-public.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            access_code: accessCode,
+                            message: message
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        messageInput.value = '';
+                        messageInput.style.height = 'auto';
+                        // The polling will automatically pick up the new message
+                        // But we can also manually refresh once
+                        setTimeout(async () => {
+                            try {
+                                const reloadResponse = await fetch(`/admin/api/ticket-public.php?access_code=${encodeURIComponent(accessCode)}`);
+                                const reloadData = await reloadResponse.json();
+                                if (reloadData.success) {
+                                    displayMessages(reloadData.data.messages || []);
+                                }
+                            } catch (err) {
+                                console.error('Erreur refresh après envoi:', err);
+                            }
+                        }, 500);
+                    } else {
+                        const messageContainer = document.getElementById('messageContainer');
+                        if (messageContainer) {
+                            messageContainer.innerHTML = `<div class="message message-error" style="margin-bottom: 1rem;"><i class="fas fa-exclamation-circle"></i> ${data.message || 'Erreur lors de l\'envoi'}</div>`;
+                            setTimeout(() => {
+                                messageContainer.innerHTML = '';
+                            }, 5000);
+                        }
+                    }
+                } catch (error) {
+                    const messageContainer = document.getElementById('messageContainer');
+                    if (messageContainer) {
+                        messageContainer.innerHTML = '<div class="message message-error" style="margin-bottom: 1rem;"><i class="fas fa-exclamation-circle"></i> Erreur lors de l\'envoi. Veuillez réessayer.</div>';
+                        setTimeout(() => {
+                            messageContainer.innerHTML = '';
+                        }, 5000);
+                    }
+                    console.error('Erreur:', error);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+        }
+        
+        // Auto-refresh messages every 2 seconds for instant messaging
+        function startMessageRefresh(accessCode) {
+            if (messageRefreshInterval) clearInterval(messageRefreshInterval);
+            messageRefreshInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/admin/api/ticket-public.php?access_code=${encodeURIComponent(accessCode)}`);
+                    const data = await response.json();
+                    if (data.success && data.data) {
+                        displayMessages(data.data.messages || []);
+                        // Stop refreshing if ticket is closed
+                        if (data.data.status === 'closed') {
+                            clearInterval(messageRefreshInterval);
+                            messageRefreshInterval = null;
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erreur refresh messages:', error);
+                }
+            }, 2000); // Poll every 2 seconds for instant messaging
+        }
+    </script>
+    
+    <!-- Footer Template -->
+    <div id="footer-placeholder"></div>
+    
+    <script src="assets/js/template-loader.js"></script>
+    <script src="assets/js/main.js" defer></script>
+    <script src="assets/js/chatbot-ai.js"></script>
+</body>
+</html>
+

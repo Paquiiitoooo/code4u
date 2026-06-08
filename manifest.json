@@ -1,0 +1,22 @@
+{
+  "name": "Code4U - Solutions Développement Web & Logiciel",
+  "short_name": "Code4U",
+  "description": "Solutions applications métier, développement web et logiciel sur mesure",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "developer"],
+  "lang": "fr-FR",
+  "dir": "ltr"
+}
+

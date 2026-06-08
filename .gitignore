@@ -1,0 +1,47 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Dependencies (if added later)
+node_modules/
+package-lock.json
+
+# Build
+dist/
+build/
+
+# Environment
+.env
+.env.local
+
+# Config locale (secrets hors Git — voir admin/config/local.example.php)
+admin/config/local.php
+
+# Outillage dev (Claude Code, serveur de preview)
+.claude/
+
+# Temporary
+*.tmp
+*.temp
+.publish-temp-*/
+
+# Uploads (en développement, peut être versionné selon les besoins)
+admin/uploads/*
+!admin/uploads/.gitkeep
+
+# Contact logs
+contact_logs.txt
+

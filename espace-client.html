@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace client — Code4U</title>
+    <meta name="description" content="Espace client Code4U : suivez vos abonnements support, devis, factures, paiements, tickets et projets.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" type="image/png" href="assets/images/logo-carre.png">
+    <meta name="theme-color" content="#14131a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/platform.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="client-space-page">
+    <div id="header-placeholder"></div>
+
+    <main id="main-content" role="main">
+        <section class="client-login" id="clientLoginView">
+            <div class="container client-login__grid">
+                <div class="client-login__copy">
+                    <span class="section-tag">Espace client</span>
+                    <h1>Un cockpit clair pour piloter votre site, vos factures et votre support.</h1>
+                    <p>
+                        Retrouvez les devis à signer, les factures, les paiements, les abonnements de support,
+                        les tickets, les livrables et l'avancement projet dans un seul portail.
+                    </p>
+                    <div class="client-login__features" aria-label="Fonctionnalités de l'espace client">
+                        <span><i class="fas fa-shield-halved" aria-hidden="true"></i> Support sous abonnement</span>
+                        <span><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Factures et paiements</span>
+                        <span><i class="fas fa-list-check" aria-hidden="true"></i> Suivi projet</span>
+                        <span><i class="fas fa-headset" aria-hidden="true"></i> Tickets et demandes</span>
+                    </div>
+                </div>
+
+                <div class="client-login__panel">
+                    <div class="client-panel__head">
+                        <div>
+                            <span class="client-kicker">Connexion</span>
+                            <h2>Accès client</h2>
+                        </div>
+                        <i class="fas fa-lock" aria-hidden="true"></i>
+                    </div>
+                    <form id="clientLoginForm" class="client-form" novalidate>
+                        <div class="field">
+                            <label for="client-login-email">Adresse e-mail</label>
+                            <input type="email" id="client-login-email" name="email" autocomplete="email" value="demo@code4u.fr" required>
+                        </div>
+                        <div class="field">
+                            <label for="client-login-pass">Mot de passe</label>
+                            <input type="password" id="client-login-pass" name="password" autocomplete="current-password" value="code4u2026" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                        <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
+                    </form>
+                    <div class="client-login__demo">
+                        <strong>Démo</strong>
+                        <span>demo@code4u.fr</span>
+                        <span>code4u2026</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="client-app" id="clientDashboard" hidden>
+            <div class="client-app__shell">
+                <aside class="client-sidebar" aria-label="Navigation espace client">
+                    <div class="client-sidebar__brand">
+                        <span class="client-avatar">CP</span>
+                        <div>
+                            <strong>Chrono Pizza</strong>
+                            <small>Compte client</small>
+                        </div>
+                    </div>
+                    <nav class="client-tabs" aria-label="Sections">
+                        <button class="client-tab is-active" type="button" data-tab="overview"><i class="fas fa-table-cells-large" aria-hidden="true"></i> Vue d'ensemble</button>
+                        <button class="client-tab" type="button" data-tab="support"><i class="fas fa-shield-halved" aria-hidden="true"></i> Abonnement support</button>
+                        <button class="client-tab" type="button" data-tab="billing"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Factures & paiements</button>
+                        <button class="client-tab" type="button" data-tab="quotes"><i class="fas fa-file-signature" aria-hidden="true"></i> Devis</button>
+                        <button class="client-tab" type="button" data-tab="projects"><i class="fas fa-diagram-project" aria-hidden="true"></i> Projets</button>
+                        <button class="client-tab" type="button" data-tab="tickets"><i class="fas fa-headset" aria-hidden="true"></i> Tickets</button>
+                        <button class="client-tab" type="button" data-tab="documents"><i class="fas fa-folder-open" aria-hidden="true"></i> Documents</button>
+                    </nav>
+                    <div class="client-sidebar__support">
+                        <span>Besoin urgent ?</span>
+                        <strong>Support prioritaire actif</strong>
+                        <button class="client-mini-btn" type="button" data-tab-jump="tickets">Créer un ticket</button>
+                    </div>
+                </aside>
+
+                <div class="client-main">
+                    <header class="client-topbar">
+                        <div>
+                            <span class="section-tag">Espace client</span>
+                            <h1>Bonjour Paquito</h1>
+                            <p>Vos services Code4U, vos paiements et votre support en temps réel.</p>
+                        </div>
+                        <div class="client-topbar__actions">
+                            <button class="client-ghost-btn" type="button"><i class="fas fa-bell" aria-hidden="true"></i> 3 alertes</button>
+                            <button class="btn btn-secondary" id="logoutBtn" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Déconnexion</button>
+                        </div>
+                    </header>
+
+                    <section class="client-view is-active" data-view="overview">
+                        <div class="client-metrics">
+                            <article class="client-metric">
+                                <span>Solde à régler</span>
+                                <strong>480 €</strong>
+                                <small>Échéance le 12/06/2026</small>
+                            </article>
+                            <article class="client-metric">
+                                <span>Support</span>
+                                <strong>Premium</strong>
+                                <small>7 h 30 restantes ce mois-ci</small>
+                            </article>
+                            <article class="client-metric">
+                                <span>Projet actif</span>
+                                <strong>76 %</strong>
+                                <small>Refonte tunnel commande</small>
+                            </article>
+                            <article class="client-metric">
+                                <span>Tickets ouverts</span>
+                                <strong>2</strong>
+                                <small>1 réponse attendue</small>
+                            </article>
+                        </div>
+
+                        <div class="client-layout client-layout--wide">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div>
+                                        <span class="client-kicker">Aujourd'hui</span>
+                                        <h2>À traiter</h2>
+                                    </div>
+                                    <button class="client-icon-btn" type="button" aria-label="Actualiser"><i class="fas fa-rotate" aria-hidden="true"></i></button>
+                                </div>
+                                <div class="client-action-list">
+                                    <div class="client-action">
+                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
+                                        <div><strong>Signer le devis DEV-000006</strong><span>Ajout module fidélité + QR code menu.</span></div>
+                                        <button type="button">Signer</button>
+                                    </div>
+                                    <div class="client-action">
+                                        <i class="fas fa-credit-card" aria-hidden="true"></i>
+                                        <div><strong>Payer la facture FAC-000010</strong><span>Maintenance mensuelle et correctifs.</span></div>
+                                        <button type="button">Payer</button>
+                                    </div>
+                                    <div class="client-action">
+                                        <i class="fas fa-message" aria-hidden="true"></i>
+                                        <div><strong>Répondre au ticket #SUP-103</strong><span>Validation demandée sur le nouveau formulaire.</span></div>
+                                        <button type="button">Ouvrir</button>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="client-panel client-panel--accent">
+                                <div class="client-panel__head">
+                                    <div>
+                                        <span class="client-kicker">Abonnement</span>
+                                        <h2>Support Premium</h2>
+                                    </div>
+                                    <span class="client-status client-status--ok">Actif</span>
+                                </div>
+                                <div class="support-progress">
+                                    <div><span>Temps inclus utilisé</span><strong>12 h 30 / 20 h</strong></div>
+                                    <meter min="0" max="20" value="12.5">12.5 h</meter>
+                                </div>
+                                <ul class="client-checklist">
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> Correctifs prioritaires</li>
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> Monitoring mensuel</li>
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> 1 évolution légère incluse</li>
+                                </ul>
+                                <button class="btn btn-primary" type="button" data-tab-jump="support">Gérer l'abonnement</button>
+                            </article>
+                        </div>
+
+                        <div class="client-layout">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Projet</span><h2>Avancement</h2></div>
+                                    <span class="client-status">Semaine 3/4</span>
+                                </div>
+                                <div class="client-timeline">
+                                    <div class="is-done"><span></span><strong>Audit tunnel commande</strong><small>Terminé le 30/05</small></div>
+                                    <div class="is-done"><span></span><strong>Maquettes responsive</strong><small>Validées le 03/06</small></div>
+                                    <div class="is-current"><span></span><strong>Intégration + paiement</strong><small>En cours</small></div>
+                                    <div><span></span><strong>Recette client</strong><small>Prévue le 13/06</small></div>
+                                </div>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Documents</span><h2>Derniers fichiers</h2></div>
+                                    <button class="client-link-btn" type="button" data-tab-jump="documents">Tout voir</button>
+                                </div>
+                                <div class="client-doc-list">
+                                    <a href="#"><i class="fas fa-file-pdf" aria-hidden="true"></i><span>Facture FAC-000010.pdf</span><small>480 €</small></a>
+                                    <a href="#"><i class="fas fa-file-lines" aria-hidden="true"></i><span>Compte rendu sprint 03</span><small>Projet</small></a>
+                                    <a href="#"><i class="fas fa-file-contract" aria-hidden="true"></i><span>Contrat support Premium</span><small>Actif</small></a>
+                                </div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="client-view" data-view="support">
+                        <div class="client-layout client-layout--wide">
+                            <article class="client-panel client-panel--accent">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Plan actuel</span><h2>Support Premium</h2></div>
+                                    <span class="client-status client-status--ok">Renouvellement le 01/07</span>
+                                </div>
+                                <div class="support-plan-grid">
+                                    <div><span>Mensualité</span><strong>149 € HT / mois</strong></div>
+                                    <div><span>SLA</span><strong>Réponse sous 8 h ouvrées</strong></div>
+                                    <div><span>Crédit inclus</span><strong>20 h / mois</strong></div>
+                                    <div><span>Dépassement</span><strong>65 € HT / h</strong></div>
+                                </div>
+                                <div class="support-progress">
+                                    <div><span>Utilisation mensuelle</span><strong>62 %</strong></div>
+                                    <meter min="0" max="100" value="62">62 %</meter>
+                                </div>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Options</span><h2>Modules support</h2></div>
+                                </div>
+                                <div class="client-option-list">
+                                    <label><input type="checkbox" checked disabled> Sauvegarde hebdomadaire supervisée</label>
+                                    <label><input type="checkbox" checked disabled> Correctifs rapides et mises à jour mineures</label>
+                                    <label><input type="checkbox" disabled> Monitoring uptime 24/7</label>
+                                    <label><input type="checkbox" disabled> Rapport SEO mensuel</label>
+                                </div>
+                            </article>
+                        </div>
+
+                        <article class="client-panel">
+                            <div class="client-panel__head">
+                                <div><span class="client-kicker">Historique</span><h2>Consommation support</h2></div>
+                            </div>
+                            <div class="client-table-wrap">
+                                <table class="client-table">
+                                    <thead><tr><th>Date</th><th>Demande</th><th>Temps</th><th>Statut</th></tr></thead>
+                                    <tbody>
+                                        <tr><td>06/06/2026</td><td>Correction formulaire commande mobile</td><td>1 h 20</td><td><span class="client-status client-status--ok">Terminé</span></td></tr>
+                                        <tr><td>03/06/2026</td><td>Ajout bannière promotionnelle</td><td>2 h 10</td><td><span class="client-status client-status--ok">Terminé</span></td></tr>
+                                        <tr><td>29/05/2026</td><td>Analyse lenteur panier</td><td>45 min</td><td><span class="client-status">Facturé au forfait</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="client-view" data-view="billing">
+                        <div class="client-layout">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Facturation</span><h2>Factures</h2></div>
+                                    <button class="client-ghost-btn" type="button"><i class="fas fa-download" aria-hidden="true"></i> Export</button>
+                                </div>
+                                <div class="client-table-wrap">
+                                    <table class="client-table">
+                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+                                        <tbody>
+                                            <tr><td>FAC-000010</td><td>16/04/2026</td><td>480 €</td><td><span class="client-status client-status--wait">À payer</span></td><td><button type="button">Payer</button></td></tr>
+                                            <tr><td>FAC-000009</td><td>16/04/2026</td><td>690 €</td><td><span class="client-status client-status--ok">Payée</span></td><td><button type="button">PDF</button></td></tr>
+                                            <tr><td>FAC-000008</td><td>01/04/2026</td><td>149 €</td><td><span class="client-status client-status--ok">Payée</span></td><td><button type="button">PDF</button></td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Paiement</span><h2>Moyens enregistrés</h2></div>
+                                </div>
+                                <div class="payment-card">
+                                    <i class="fab fa-cc-visa" aria-hidden="true"></i>
+                                    <div><strong>Visa •••• 4242</strong><span>Expire 08/2028</span></div>
+                                    <span class="client-status client-status--ok">Par défaut</span>
+                                </div>
+                                <div class="payment-summary">
+                                    <div><span>Prochain prélèvement</span><strong>149 € HT</strong></div>
+                                    <div><span>Date</span><strong>01/07/2026</strong></div>
+                                </div>
+                                <button class="btn btn-secondary" type="button">Ajouter un moyen de paiement</button>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="client-view" data-view="quotes">
+                        <article class="client-panel">
+                            <div class="client-panel__head">
+                                <div><span class="client-kicker">Devis</span><h2>À signer ou consulter</h2></div>
+                                <button class="btn btn-primary" type="button">Demander un nouveau devis</button>
+                            </div>
+                            <div class="client-table-wrap">
+                                <table class="client-table">
+                                    <thead><tr><th>Numéro</th><th>Objet</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+                                    <tbody>
+                                        <tr><td>DEV-000006</td><td>Module fidélité + QR code menu</td><td>04/06/2026</td><td>1 490 €</td><td><span class="client-status client-status--wait">Signature attendue</span></td><td><button type="button">Signer</button></td></tr>
+                                        <tr><td>DEV-000004</td><td>Correctifs tunnel commande</td><td>26/05/2026</td><td>270 €</td><td><span class="client-status client-status--ok">Accepté</span></td><td><button type="button">Voir</button></td></tr>
+                                        <tr><td>DEV-000003</td><td>Maintenance Premium</td><td>01/04/2026</td><td>149 €/mois</td><td><span class="client-status client-status--ok">Actif</span></td><td><button type="button">Contrat</button></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </article>
+                    </section>
+
+                    <section class="client-view" data-view="projects">
+                        <div class="client-layout client-layout--wide">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Projet principal</span><h2>Refonte tunnel commande</h2></div>
+                                    <span class="client-status client-status--wait">En cours</span>
+                                </div>
+                                <div class="project-progress">
+                                    <strong>76 %</strong>
+                                    <meter min="0" max="100" value="76">76 %</meter>
+                                </div>
+                                <div class="client-timeline">
+                                    <div class="is-done"><span></span><strong>Cadrage</strong><small>Objectifs, budget, contraintes</small></div>
+                                    <div class="is-done"><span></span><strong>Design</strong><small>Écrans desktop et mobile</small></div>
+                                    <div class="is-current"><span></span><strong>Développement</strong><small>Paiement, panier, emails</small></div>
+                                    <div><span></span><strong>Recette</strong><small>Tests client et corrections</small></div>
+                                    <div><span></span><strong>Mise en production</strong><small>Déploiement et monitoring</small></div>
+                                </div>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Livrables</span><h2>Checklist</h2></div>
+                                </div>
+                                <ul class="client-checklist client-checklist--stacked">
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> Nouveau panier mobile</li>
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> Emails transactionnels</li>
+                                    <li><i class="fas fa-spinner" aria-hidden="true"></i> Paiement Stripe</li>
+                                    <li><i class="fas fa-clock" aria-hidden="true"></i> Tests finaux</li>
+                                    <li><i class="fas fa-clock" aria-hidden="true"></i> Déploiement production</li>
+                                </ul>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="client-view" data-view="tickets">
+                        <div class="client-layout">
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Support</span><h2>Tickets ouverts</h2></div>
+                                    <button class="btn btn-primary" type="button">Nouveau ticket</button>
+                                </div>
+                                <div class="ticket-list">
+                                    <div class="ticket-row">
+                                        <span class="client-status client-status--wait">En attente</span>
+                                        <div><strong>#SUP-103 — Validation formulaire</strong><small>Réponse demandée par Code4U</small></div>
+                                        <button type="button">Ouvrir</button>
+                                    </div>
+                                    <div class="ticket-row">
+                                        <span class="client-status">Ouvert</span>
+                                        <div><strong>#SUP-102 — Image produit à remplacer</strong><small>Priorité normale</small></div>
+                                        <button type="button">Ouvrir</button>
+                                    </div>
+                                    <div class="ticket-row">
+                                        <span class="client-status client-status--ok">Résolu</span>
+                                        <div><strong>#SUP-101 — Correction bouton panier</strong><small>Clôturé le 06/06</small></div>
+                                        <button type="button">Voir</button>
+                                    </div>
+                                </div>
+                            </article>
+
+                            <article class="client-panel">
+                                <div class="client-panel__head">
+                                    <div><span class="client-kicker">Créer</span><h2>Nouvelle demande</h2></div>
+                                </div>
+                                <form class="client-form">
+                                    <div class="field">
+                                        <label for="ticket-subject">Sujet</label>
+                                        <input id="ticket-subject" type="text" placeholder="Ex : modifier un prix sur la carte">
+                                    </div>
+                                    <div class="field">
+                                        <label for="ticket-priority">Priorité</label>
+                                        <input id="ticket-priority" type="text" value="Normale">
+                                    </div>
+                                    <button class="btn btn-secondary" type="button">Préparer le ticket</button>
+                                </form>
+                            </article>
+                        </div>
+                    </section>
+
+                    <section class="client-view" data-view="documents">
+                        <article class="client-panel">
+                            <div class="client-panel__head">
+                                <div><span class="client-kicker">Documents</span><h2>Bibliothèque client</h2></div>
+                                <button class="client-ghost-btn" type="button"><i class="fas fa-upload" aria-hidden="true"></i> Déposer un fichier</button>
+                            </div>
+                            <div class="document-grid">
+                                <a href="#"><i class="fas fa-file-invoice" aria-hidden="true"></i><strong>Factures</strong><span>12 fichiers</span></a>
+                                <a href="#"><i class="fas fa-file-contract" aria-hidden="true"></i><strong>Contrats</strong><span>3 fichiers</span></a>
+                                <a href="#"><i class="fas fa-image" aria-hidden="true"></i><strong>Assets</strong><span>Logo, visuels, menus</span></a>
+                                <a href="#"><i class="fas fa-clipboard-check" aria-hidden="true"></i><strong>Comptes rendus</strong><span>5 fichiers</span></a>
+                            </div>
+                        </article>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="footer-placeholder"></div>
+
+    <script src="assets/js/template-loader.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        (function () {
+            var API = 'admin/api/client-portal.php';
+            var form = document.getElementById('clientLoginForm');
+            var loginView = document.getElementById('clientLoginView');
+            var dashboard = document.getElementById('clientDashboard');
+            var msg = document.getElementById('clientLoginMsg');
+
+            function esc(value) {
+                return String(value === null || value === undefined ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function money(amount, currency) {
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: currency || 'EUR',
+                    maximumFractionDigits: amount % 1 ? 2 : 0
+                }).format(Number(amount || 0));
+            }
+
+            function dateFr(value) {
+                if (!value) return '—';
+                var date = new Date(value);
+                if (Number.isNaN(date.getTime())) return value;
+                return date.toLocaleDateString('fr-FR');
+            }
+
+            function statusClass(tone) {
+                if (tone === 'ok') return 'client-status client-status--ok';
+                if (tone === 'wait') return 'client-status client-status--wait';
+                return 'client-status';
+            }
+
+            async function api(action, payload) {
+                var options = payload ? {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(Object.assign({ action: action }, payload))
+                } : { method: 'GET' };
+                var url = payload ? API : API + '?action=' + encodeURIComponent(action);
+                var response = await fetch(url, options);
+                var data = await response.json();
+                if (!response.ok || data.success === false) {
+                    throw new Error(data.message || 'Erreur espace client');
+                }
+                return data;
+            }
+
+            function show(authed) {
+                if (loginView) loginView.hidden = !!authed;
+                if (dashboard) dashboard.hidden = !authed;
+            }
+
+            function activateTab(name) {
+                document.querySelectorAll('.client-tab').forEach(function (tab) {
+                    tab.classList.toggle('is-active', tab.dataset.tab === name);
+                });
+                document.querySelectorAll('.client-view').forEach(function (view) {
+                    view.classList.toggle('is-active', view.dataset.view === name);
+                });
+            }
+
+            function setText(selector, value) {
+                var node = document.querySelector(selector);
+                if (node) node.textContent = value;
+            }
+
+            function renderHeader(data) {
+                var client = data.client || {};
+                var firstname = client.contact_firstname || client.company_name || 'client';
+                var initials = (client.company_name || 'C').split(/\s+/).map(function (part) { return part.charAt(0); }).join('').slice(0, 2).toUpperCase();
+                setText('.client-topbar h1', 'Bonjour ' + firstname);
+                setText('.client-sidebar__brand strong', client.company_name || 'Compte client');
+                setText('.client-sidebar__brand small', client.email || 'Client Code4U');
+                setText('.client-avatar', initials || 'CL');
+            }
+
+            function renderMetrics(data) {
+                var summary = data.summary || {};
+                var metrics = document.querySelectorAll('.client-metric');
+                var values = [
+                    [summary.due_amount_label || money(0), summary.due_date ? 'Échéance le ' + dateFr(summary.due_date) : 'Aucune échéance'],
+                    [summary.support_plan || 'Aucun', (summary.support_remaining_hours || 0) + ' h restantes ce mois-ci'],
+                    [(summary.active_project_progress || 0) + ' %', summary.active_project_name || 'Aucun projet actif'],
+                    [summary.open_tickets || 0, (summary.quotes_to_sign || 0) + ' devis à traiter']
+                ];
+                metrics.forEach(function (metric, index) {
+                    var strong = metric.querySelector('strong');
+                    var small = metric.querySelector('small');
+                    if (strong) strong.textContent = values[index][0];
+                    if (small) small.textContent = values[index][1];
+                });
+            }
+
+            function renderActions(data) {
+                var actions = [];
+                (data.quotes || []).filter(function (quote) {
+                    return ['pending', 'quote_sent'].indexOf(quote.status) !== -1;
+                }).slice(0, 1).forEach(function (quote) {
+                    actions.push(['fa-file-signature', 'Signer le devis ' + quote.number, quote.title || 'Devis en attente', 'Signer']);
+                });
+                (data.invoices || []).filter(function (invoice) {
+                    return ['sent', 'due'].indexOf(invoice.status) !== -1;
+                }).slice(0, 1).forEach(function (invoice) {
+                    actions.push(['fa-credit-card', 'Payer la facture ' + invoice.number, invoice.title || money(invoice.amount, invoice.currency), 'Payer']);
+                });
+                (data.tickets || []).filter(function (ticket) {
+                    return ['waiting', 'open', 'in_progress'].indexOf(ticket.status) !== -1;
+                }).slice(0, 1).forEach(function (ticket) {
+                    actions.push(['fa-message', 'Suivre le ticket ' + ticket.number, ticket.subject, 'Ouvrir']);
+                });
+                var list = document.querySelector('.client-action-list');
+                if (!list) return;
+                list.innerHTML = actions.length ? actions.map(function (item) {
+                    return '<div class="client-action"><i class="fas ' + item[0] + '" aria-hidden="true"></i><div><strong>' + esc(item[1]) + '</strong><span>' + esc(item[2]) + '</span></div><button type="button">' + esc(item[3]) + '</button></div>';
+                }).join('') : '<div class="client-action"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Tout est à jour</strong><span>Aucune action urgente pour le moment.</span></div><button type="button">OK</button></div>';
+            }
+
+            function renderSubscription(data) {
+                var sub = data.subscription;
+                if (!sub) return;
+                document.querySelectorAll('.client-panel--accent h2').forEach(function (node) {
+                    if (node.textContent.indexOf('Support') !== -1) node.textContent = sub.plan_name;
+                });
+                document.querySelectorAll('.support-progress').forEach(function (box) {
+                    var strong = box.querySelector('strong');
+                    var meter = box.querySelector('meter');
+                    if (strong) strong.textContent = sub.used_hours + ' h / ' + sub.included_hours + ' h';
+                    if (meter) {
+                        meter.max = 100;
+                        meter.value = sub.usage_percent || 0;
+                    }
+                });
+                var planGrid = document.querySelector('.support-plan-grid');
+                if (planGrid) {
+                    planGrid.innerHTML = [
+                        ['Mensualité', money(sub.monthly_price, sub.currency) + ' / mois'],
+                        ['SLA', sub.response_sla || 'Standard'],
+                        ['Crédit inclus', sub.included_hours + ' h / mois'],
+                        ['Dépassement', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
+                    ].map(function (row) {
+                        return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
+                    }).join('');
+                }
+            }
+
+            function renderInvoices(data) {
+                var tbody = document.querySelector('[data-view="billing"] tbody');
+                if (!tbody) return;
+                tbody.innerHTML = (data.invoices || []).map(function (invoice) {
+                    return '<tr><td>' + esc(invoice.number) + '</td><td>' + dateFr(invoice.date) + '</td><td>' + money(invoice.amount, invoice.currency) + '</td><td><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td><button type="button">' + (invoice.tone === 'wait' ? 'Payer' : 'PDF') + '</button></td></tr>';
+                }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
+            }
+
+            function renderPayments(data) {
+                var method = (data.payment_methods || [])[0];
+                var card = document.querySelector('.payment-card');
+                if (card && method) {
+                    card.innerHTML = '<i class="fab fa-cc-visa" aria-hidden="true"></i><div><strong>' + esc(method.label) + '</strong><span>Expire ' + esc(method.expires_at || '—') + '</span></div><span class="' + statusClass(method.tone) + '">' + (method.is_default ? 'Par défaut' : esc(method.status_label)) + '</span>';
+                }
+
+                var sub = data.subscription || {};
+                var summary = document.querySelector('.payment-summary');
+                if (summary && sub.plan_name) {
+                    summary.innerHTML = '<div><span>Prochain prélèvement</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + dateFr(sub.renewal_date) + '</strong></div>';
+                }
+            }
+
+            function renderQuotes(data) {
+                var tbody = document.querySelector('[data-view="quotes"] tbody');
+                if (!tbody) return;
+                tbody.innerHTML = (data.quotes || []).map(function (quote) {
+                    return '<tr><td>' + esc(quote.number) + '</td><td>' + esc(quote.title) + '</td><td>' + dateFr(quote.date) + '</td><td>' + money(quote.amount, quote.currency) + '</td><td><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td><button type="button">' + (quote.tone === 'wait' ? 'Signer' : 'Voir') + '</button></td></tr>';
+                }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
+            }
+
+            function renderProjects(data) {
+                var project = (data.projects || [])[0];
+                if (!project) return;
+                setText('[data-view="projects"] h2', project.name);
+                var progress = document.querySelector('.project-progress strong');
+                var meter = document.querySelector('.project-progress meter');
+                if (progress) progress.textContent = project.progress + ' %';
+                if (meter) meter.value = project.progress;
+                var timelines = document.querySelectorAll('.client-timeline');
+                timelines.forEach(function (timeline) {
+                    timeline.innerHTML = (project.milestones || []).map(function (step) {
+                        var cls = step.status === 'done' ? 'is-done' : (step.status === 'current' ? 'is-current' : '');
+                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title) + '</strong><small>' + esc(step.description || step.due_date || '') + '</small></div>';
+                    }).join('');
+                });
+            }
+
+            function renderTickets(data) {
+                var list = document.querySelector('.ticket-list');
+                if (!list) return;
+                list.innerHTML = (data.tickets || []).map(function (ticket) {
+                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button type="button">Ouvrir</button></div>';
+                }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est à jour.</small></div><button type="button">Créer</button></div>';
+            }
+
+            function renderDocuments(data) {
+                var docs = data.documents || [];
+                var latest = document.querySelector('.client-doc-list');
+                if (latest) {
+                    latest.innerHTML = docs.slice(0, 3).map(function (doc) {
+                        return '<a href="' + esc(doc.file_url || '#') + '"><i class="fas fa-file-lines" aria-hidden="true"></i><span>' + esc(doc.title) + '</span><small>' + esc(doc.amount_label || doc.category) + '</small></a>';
+                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><span>Aucun document disponible</span><small>BDD</small></a>';
+                }
+            }
+
+            function render(data) {
+                renderHeader(data);
+                renderMetrics(data);
+                renderActions(data);
+                renderSubscription(data);
+                renderInvoices(data);
+                renderPayments(data);
+                renderQuotes(data);
+                renderProjects(data);
+                renderTickets(data);
+                renderDocuments(data);
+                show(true);
+            }
+
+            if (form) {
+                form.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    if (msg) msg.textContent = 'Connexion en cours...';
+                    try {
+                        var data = await api('login', {
+                            email: document.getElementById('client-login-email').value,
+                            password: document.getElementById('client-login-pass').value
+                        });
+                        if (msg) msg.textContent = '';
+                        render(data);
+                        window.scrollTo(0, 0);
+                    } catch (error) {
+                        if (msg) {
+                            msg.textContent = error.message;
+                            msg.className = 'client-form__msg visible';
+                        }
+                    }
+                });
+            }
+
+            document.querySelectorAll('.client-tab').forEach(function (tab) {
+                tab.addEventListener('click', function () {
+                    activateTab(tab.dataset.tab);
+                });
+            });
+
+            document.querySelectorAll('[data-tab-jump]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    activateTab(button.dataset.tabJump);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            });
+
+            var logout = document.getElementById('logoutBtn');
+            if (logout) {
+                logout.addEventListener('click', async function () {
+                    try { await api('logout'); } catch (error) {}
+                    show(false);
+                    activateTab('overview');
+                    window.scrollTo(0, 0);
+                });
+            }
+
+            api('me').then(render).catch(function () {
+                show(false);
+            });
+        })();
+    </script>
+</body>
+</html>

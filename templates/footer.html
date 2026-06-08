@@ -1,0 +1,136 @@
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Code4U</h3>
+                    <p>Sites web, applications et automatisations sur mesure — par un développeur indépendant à Metz.</p>
+                    <div class="footer-social" style="display: flex; gap: 1rem; margin-top: 1.5rem; justify-content: center;">
+                        <a href="https://www.linkedin.com/company/code4u" target="_blank" rel="noopener" aria-label="LinkedIn" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); text-decoration: none; transition: var(--transition);">
+                            <i class="fab fa-linkedin" style="font-size: 1.2rem;"></i>
+                        </a>
+                        <a href="https://github.com/code4u" target="_blank" rel="noopener" aria-label="GitHub" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); text-decoration: none; transition: var(--transition);">
+                            <i class="fab fa-github" style="font-size: 1.2rem;"></i>
+                        </a>
+                        <a href="mailto:contact@code4u.fr" aria-label="Email" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-primary); text-decoration: none; transition: var(--transition);">
+                            <i class="fas fa-envelope" style="font-size: 1.2rem;"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="/web">Sites web & e-commerce</a></li>
+                        <li><a href="/web">Applications & espaces clients</a></li>
+                        <li><a href="/logiciel">Automatisations & scripts</a></li>
+                        <li><a href="/#contact">Connexion ERP & facturation</a></li>
+                        <li><a href="commander.html">Estimer mon projet</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Entreprise</h4>
+                    <ul>
+                        <li><a href="/#about">À propos</a></li>
+                        <li><a href="/#process">Notre processus</a></li>
+                        <li><a href="/#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Légal</h4>
+                    <ul>
+                        <li><a href="mentions-legales.html">Mentions légales</a></li>
+                        <li><a href="politique-confidentialite.html">Politique de confidentialité</a></li>
+                        <li><a href="cgv.html">CGV</a></li>
+                        <li><a href="#" id="cookieSettingsFooter">Gérer les cookies</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Code4U — Pacôme Vantini, auto-entrepreneur · TVA non applicable, art. 293 B du CGI</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Cookie Banner -->
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-content">
+            <div class="cookie-icon">
+                <i class="fas fa-cookie-bite"></i>
+            </div>
+            <div class="cookie-text">
+                <h3>🍪 Cookies & Confidentialité</h3>
+                <p>Nous utilisons des cookies pour améliorer votre expérience. En continuant, vous acceptez notre utilisation des cookies.</p>
+            </div>
+            <div class="cookie-actions">
+                <button class="cookie-btn cookie-btn-accept" id="cookieAccept">Tout accepter</button>
+                <button class="cookie-btn cookie-btn-preferences" id="cookiePreferences">Préférences</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cookie Preferences Modal -->
+    <div class="cookie-modal" id="cookieModal">
+        <div class="cookie-modal-content">
+            <div class="cookie-modal-header">
+                <h3>Préférences de cookies</h3>
+                <button class="cookie-modal-close" id="cookieModalClose">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="cookie-modal-body">
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <div>
+                            <h4>Cookies essentiels</h4>
+                            <p>Nécessaires au fonctionnement du site</p>
+                        </div>
+                        <label class="switch disabled">
+                            <input type="checkbox" checked disabled>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="cookie-category">
+                    <div class="cookie-category-header">
+                        <div>
+                            <h4>Cookies analytiques</h4>
+                            <p>Nous aident à améliorer le site</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="cookieAnalytics">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="cookie-modal-footer">
+                <button class="cookie-btn cookie-btn-reject" id="cookieRejectAll">Rejeter tout</button>
+                <button class="cookie-btn cookie-btn-accept" id="cookieSavePreferences">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chatbot Toggle -->
+    <button class="chatbot-toggle" id="chatbotToggle" aria-label="Ouvrir le chat">
+        <i class="fas fa-comment-dots"></i>
+    </button>
+    
+    <!-- Chatbot Window -->
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chatbot-header">
+            <h3><i class="fas fa-robot"></i> Assistant Code4U</h3>
+            <button class="chatbot-close" id="chatbotClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages">
+            <div class="chatbot-message bot-message">
+                <p>👋 Bonjour ! Comment puis-je vous aider aujourd'hui ?</p>
+            </div>
+        </div>
+        <div class="chatbot-input">
+            <input type="text" id="chatbotInput" placeholder="Tapez votre message...">
+            <button id="chatbotSend">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>

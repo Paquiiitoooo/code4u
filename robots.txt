@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /logs/
+Disallow: /*.php$
+
+Sitemap: https://code4u.fr/sitemap.xml
+

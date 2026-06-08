@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commander mon projet — Code4U | Metz</title>
+    <meta name="description" content="Commandez votre site web ou logiciel en ligne. Devis instantané, réponse sous 24h. Code4U, développeur web à Metz.">
+    <meta name="robots" content="noindex, follow">
+    <link rel="icon" type="image/png" href="assets/images/logo-carre.png">
+    <meta name="theme-color" content="#14131a">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/commander.css">
+</head>
+<body>
+
+<!-- ── Mobile progress bar ─────────────────────────────────── -->
+<div class="mobile-progress" id="mobileProgress">
+    <a href="index.html" style="color:#4a5568;font-size:0.9rem"><i class="fa-solid fa-arrow-left"></i></a>
+    <div class="mobile-progress-bar">
+        <div class="mobile-progress-fill" id="mobileProgressFill" style="width:20%"></div>
+    </div>
+    <span class="mobile-progress-text" id="mobileProgressText">Étape 1/5</span>
+</div>
+
+<!-- ── Wizard wrapper ──────────────────────────────────────── -->
+<div class="wizard-wrapper">
+
+    <!-- ── Sidebar ──────────────────────────────────────────── -->
+    <aside class="wizard-sidebar">
+        <a href="index.html" class="sidebar-logo">
+            <img src="assets/images/logo.png" alt="Code4U">
+        </a>
+
+        <p class="sidebar-title">Votre commande</p>
+
+        <ul class="steps-list" id="stepsList">
+
+            <!-- Step 1 -->
+            <li class="step-indicator active" data-step="1">
+                <div class="step-num">1</div>
+                <div class="step-info">
+                    <div class="step-name">Type de projet</div>
+                    <div class="step-sub">Choisissez votre service</div>
+                </div>
+            </li>
+            <li class="step-connector" id="conn-1"></li>
+
+            <!-- Step 2 -->
+            <li class="step-indicator" data-step="2">
+                <div class="step-num">2</div>
+                <div class="step-info">
+                    <div class="step-name">Configuration</div>
+                    <div class="step-sub">Options et délai</div>
+                </div>
+            </li>
+            <li class="step-connector" id="conn-2"></li>
+
+            <!-- Step 3 -->
+            <li class="step-indicator" data-step="3">
+                <div class="step-num">3</div>
+                <div class="step-info">
+                    <div class="step-name">Devis estimatif</div>
+                    <div class="step-sub">Récapitulatif &amp; prix</div>
+                </div>
+            </li>
+            <li class="step-connector" id="conn-3"></li>
+
+            <!-- Step 4 -->
+            <li class="step-indicator" data-step="4">
+                <div class="step-num">4</div>
+                <div class="step-info">
+                    <div class="step-name">Vos coordonnées</div>
+                    <div class="step-sub">Informations client</div>
+                </div>
+            </li>
+            <li class="step-connector" id="conn-4"></li>
+
+            <!-- Step 5 -->
+            <li class="step-indicator" data-step="5">
+                <div class="step-num" id="step5Num">5</div>
+                <div class="step-info">
+                    <div class="step-name">Confirmation</div>
+                    <div class="step-sub">Commande validée</div>
+                </div>
+            </li>
+
+        </ul>
+
+        <div class="sidebar-help">
+            <p>Une question sur votre projet ?</p>
+            <a href="mailto:contact@code4u.fr"><i class="fa-solid fa-envelope" style="margin-right:0.4rem"></i>contact@code4u.fr</a><br><br>
+            <a href="tel:+33600000000"><i class="fa-solid fa-phone" style="margin-right:0.4rem"></i>+33 6 00 00 00 00</a>
+        </div>
+    </aside>
+
+    <!-- ── Wizard content ────────────────────────────────────── -->
+    <main class="wizard-content">
+
+        <!-- ══════════════════════════════════════════════════════
+             STEP 1 — Type de projet
+        ══════════════════════════════════════════════════════ -->
+        <div class="wizard-step active" id="step-1">
+            <div class="step-header">
+                <h2>Quel type de projet ?</h2>
+                <p>Sélectionnez la catégorie qui correspond à votre besoin</p>
+            </div>
+
+            <div class="service-cards-grid">
+
+                <!-- Site Vitrine -->
+                <button class="service-card-select" data-service="vitrine">
+                    <div class="scs-icon"><i class="fa-solid fa-globe"></i></div>
+                    <h3>Site Vitrine</h3>
+                    <p class="scs-desc">Présence en ligne professionnelle</p>
+                    <p class="scs-price">À partir de <strong>599 €</strong></p>
+                    <div class="scs-check"><i class="fa-solid fa-check"></i></div>
+                </button>
+
+                <!-- E-commerce -->
+                <button class="service-card-select" data-service="ecommerce">
+                    <div class="scs-icon"><i class="fa-solid fa-shopping-bag"></i></div>
+                    <h3>E-commerce</h3>
+                    <p class="scs-desc">Boutique en ligne complète</p>
+                    <p class="scs-price">À partir de <strong>1 490 €</strong></p>
+                    <div class="scs-check"><i class="fa-solid fa-check"></i></div>
+                </button>
+
+                <!-- Application Web -->
+                <button class="service-card-select" data-service="webapp">
+                    <div class="scs-icon"><i class="fa-solid fa-code"></i></div>
+                    <h3>Application Web</h3>
+                    <p class="scs-desc">App avec base de données</p>
+                    <p class="scs-price">À partir de <strong>1 199 €</strong></p>
+                    <div class="scs-check"><i class="fa-solid fa-check"></i></div>
+                </button>
+
+                <!-- Logiciel / Automatisation -->
+                <button class="service-card-select" data-service="logiciel">
+                    <div class="scs-icon"><i class="fa-solid fa-robot"></i></div>
+                    <h3>Logiciel / Automatisation</h3>
+                    <p class="scs-desc">Script Python, app desktop</p>
+                    <p class="scs-price">À partir de <strong>499 €</strong></p>
+                    <div class="scs-check"><i class="fa-solid fa-check"></i></div>
+                </button>
+
+            </div>
+
+            <!-- Navigation -->
+            <div class="wizard-nav">
+                <span></span><!-- spacer for flex justify-between -->
+                <button class="btn btn-primary btn-next" id="next-1" disabled>
+                    Continuer <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             STEP 2 — Configuration
+        ══════════════════════════════════════════════════════ -->
+        <div class="wizard-step" id="step-2">
+            <div class="step-header">
+                <h2>Configurez votre projet</h2>
+                <p>Sélectionnez les options dont vous avez besoin</p>
+            </div>
+
+            <!-- Options dynamiques injectées par JS -->
+            <div id="options-container">
+                <div class="options-grid" id="options-grid"></div>
+            </div>
+
+            <!-- Description -->
+            <div style="margin-top:2rem;">
+                <label class="form-label" for="project-description">
+                    Décrivez votre projet <span style="color:#4a5568;font-size:0.8rem;">(facultatif mais recommandé)</span>
+                </label>
+                <textarea
+                    class="wizard-textarea"
+                    id="project-description"
+                    placeholder="Décrivez votre projet en détail : objectifs, fonctionnalités souhaitées, références de sites que vous aimez, délais, budget..."
+                    rows="5"
+                ></textarea>
+            </div>
+
+            <!-- Délai de livraison -->
+            <div style="margin-top:2rem;">
+                <p class="form-section-title">Délai de livraison souhaité ?</p>
+                <p class="form-label" style="margin-top:0.25rem;">Choisissez la priorité de votre projet</p>
+                <div class="deadline-options">
+
+                    <button class="deadline-card selected" data-deadline="standard">
+                        <div class="dc-icon">🗓️</div>
+                        <div class="dc-name">Standard</div>
+                        <div class="dc-sub">Délai recommandé</div>
+                        <div class="dc-extra">inclus</div>
+                    </button>
+
+                    <button class="deadline-card" data-deadline="accelerated">
+                        <div class="dc-icon">⚡</div>
+                        <div class="dc-name">Accéléré</div>
+                        <div class="dc-sub">2× plus rapide</div>
+                        <div class="dc-extra">+30%</div>
+                    </button>
+
+                    <button class="deadline-card" data-deadline="urgent">
+                        <div class="dc-icon">🚨</div>
+                        <div class="dc-name">Urgent</div>
+                        <div class="dc-sub">Délai minimal</div>
+                        <div class="dc-extra">+50%</div>
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div class="wizard-nav">
+                <button class="btn btn-outline btn-prev">
+                    <i class="fa-solid fa-arrow-left"></i> Retour
+                </button>
+                <button class="btn btn-primary btn-next" id="next-2">
+                    Voir mon devis <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             STEP 3 — Devis estimatif
+        ══════════════════════════════════════════════════════ -->
+        <div class="wizard-step" id="step-3">
+            <div class="step-header">
+                <h2>Votre devis estimatif</h2>
+                <p>Récapitulatif de votre projet</p>
+            </div>
+
+            <div class="recap-inner">
+
+                <!-- Left: ligne de détail -->
+                <div class="recap-list">
+                    <div class="recap-service">
+                        <div class="recap-service-icon" id="recapServiceIcon">
+                            <i class="fa-solid fa-globe"></i>
+                        </div>
+                        <div>
+                            <div class="recap-service-name" id="recapServiceName">—</div>
+                            <div class="recap-service-base" id="recapServiceBase">—</div>
+                        </div>
+                    </div>
+
+                    <ul class="line-items" id="lineItems"></ul>
+
+                    <div class="recap-deadline" id="recapDeadline">
+                        <span style="color:#5c5a66;">Délai de livraison</span>
+                        <span id="recapDeadlineLabel" style="font-weight:600;">Standard</span>
+                    </div>
+                </div>
+
+                <!-- Right: quote card -->
+                <div class="quote-card">
+                    <div class="quote-card-title">Votre estimation</div>
+
+                    <div class="quote-lines" id="quoteLines">
+                        <div class="quote-line">
+                            <span>Forfait de base</span>
+                            <span id="qBasePrice">—</span>
+                        </div>
+                        <div class="quote-line" id="qOptionsLine">
+                            <span>Options</span>
+                            <span id="qOptionsPrice">0 €</span>
+                        </div>
+                        <div class="quote-line" id="qDeadlineLine">
+                            <span>Majoration délai</span>
+                            <span id="qDeadlineExtra">inclus</span>
+                        </div>
+                        <div class="quote-line subtotal">
+                            <span>Total estimé HT</span>
+                            <span id="qSubtotal">—</span>
+                        </div>
+                    </div>
+
+                    <div class="quote-total-wrap">
+                        <div class="quote-total-label">Total estimé</div>
+                        <div class="quote-total-price" id="qTotalPrice">0 €</div>
+                    </div>
+
+                    <p class="quote-note">
+                        Estimation indicative — le devis officiel est recalculé selon votre besoin exact, puis envoyé après validation de votre commande.
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Navigation -->
+            <div class="wizard-nav">
+                <button class="btn btn-outline btn-prev">
+                    <i class="fa-solid fa-arrow-left"></i> Retour
+                </button>
+                <button class="btn btn-primary btn-next" id="next-3">
+                    Continuer <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             STEP 4 — Vos informations
+        ══════════════════════════════════════════════════════ -->
+        <div class="wizard-step" id="step-4">
+            <div class="step-header">
+                <h2>Vos informations</h2>
+                <p>Pour vous envoyer votre devis officiel</p>
+            </div>
+
+            <div class="client-form" id="clientForm">
+
+                <!-- Prénom -->
+                <div class="form-group">
+                    <label class="form-label" for="client-firstname">Prénom *</label>
+                    <input
+                        type="text"
+                        class="wizard-input"
+                        id="client-firstname"
+                        placeholder="Jean"
+                        autocomplete="given-name"
+                    >
+                    <span class="error-msg" id="err-firstname">Veuillez saisir votre prénom.</span>
+                </div>
+
+                <!-- Nom -->
+                <div class="form-group">
+                    <label class="form-label" for="client-lastname">Nom *</label>
+                    <input
+                        type="text"
+                        class="wizard-input"
+                        id="client-lastname"
+                        placeholder="Dupont"
+                        autocomplete="family-name"
+                    >
+                    <span class="error-msg" id="err-lastname">Veuillez saisir votre nom.</span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label class="form-label" for="client-email">Email professionnel *</label>
+                    <input
+                        type="email"
+                        class="wizard-input"
+                        id="client-email"
+                        placeholder="jean.dupont@entreprise.fr"
+                        autocomplete="email"
+                    >
+                    <span class="error-msg" id="err-email">Veuillez saisir un email valide.</span>
+                </div>
+
+                <!-- Téléphone -->
+                <div class="form-group">
+                    <label class="form-label" for="client-phone">Téléphone *</label>
+                    <input
+                        type="tel"
+                        class="wizard-input"
+                        id="client-phone"
+                        placeholder="+33 6 00 00 00 00"
+                        autocomplete="tel"
+                    >
+                    <span class="error-msg" id="err-phone">Veuillez saisir votre numéro de téléphone.</span>
+                </div>
+
+                <!-- Entreprise -->
+                <div class="form-group full-width">
+                    <label class="form-label" for="client-company">Entreprise <span style="color:#4a5568;font-size:0.8rem;">(facultatif)</span></label>
+                    <input
+                        type="text"
+                        class="wizard-input"
+                        id="client-company"
+                        placeholder="Mon Entreprise SARL"
+                        autocomplete="organization"
+                    >
+                </div>
+
+                <!-- Site web actuel -->
+                <div class="form-group">
+                    <label class="form-label" for="client-website">Site web actuel <span style="color:#4a5568;font-size:0.8rem;">(facultatif)</span></label>
+                    <input
+                        type="url"
+                        class="wizard-input"
+                        id="client-website"
+                        placeholder="https://monsite.fr"
+                        autocomplete="url"
+                    >
+                </div>
+
+                <!-- Source -->
+                <div class="form-group">
+                    <label class="form-label" for="client-source">Comment nous avez-vous connu ?</label>
+                    <select class="wizard-input" id="client-source">
+                        <option value="">Sélectionnez une option</option>
+                        <option value="google">Google</option>
+                        <option value="bouche-a-oreille">Bouche à oreille</option>
+                        <option value="reseaux-sociaux">Réseaux sociaux</option>
+                        <option value="linkedin">LinkedIn</option>
+                        <option value="recommandation">Recommandation</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+
+                <!-- GDPR -->
+                <button type="button" class="gdpr-wrap full-width" id="gdprWrap">
+                    <div class="gdpr-checkbox" id="gdprCheckbox"></div>
+                    <span class="gdpr-text">
+                        J'accepte de recevoir mon devis et les communications de Code4U relatives à ma demande.
+                        Voir notre <a href="politique-confidentialite.html" target="_blank" onclick="event.stopPropagation()">politique de confidentialité</a>.
+                    </span>
+                </button>
+                <span class="error-msg full-width" id="err-gdpr">Vous devez accepter les conditions pour continuer.</span>
+
+            </div>
+
+            <!-- Navigation -->
+            <div class="wizard-nav">
+                <button class="btn btn-outline btn-prev">
+                    <i class="fa-solid fa-arrow-left"></i> Retour
+                </button>
+                <button class="btn btn-primary btn-lg" id="submitBtn">
+                    Envoyer ma commande 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════
+             STEP 5 — Confirmation
+        ══════════════════════════════════════════════════════ -->
+        <div class="wizard-step" id="step-5">
+            <div class="confirmation-wrap">
+
+                <div class="success-check">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+
+                <h2>Commande envoyée ! 🎉</h2>
+                <p class="conf-subtitle">Merci pour votre confiance, <span id="confFirstname">cher client</span> !</p>
+
+                <div class="order-ref" id="orderRef">CODE4U-2026-0000</div>
+
+                <div class="conf-summary">
+                    <div class="conf-summary-row">
+                        <span>Service</span>
+                        <span id="confService">—</span>
+                    </div>
+                    <div class="conf-summary-row">
+                        <span>Options sélectionnées</span>
+                        <span id="confOptions">Aucune</span>
+                    </div>
+                    <div class="conf-summary-row">
+                        <span>Délai</span>
+                        <span id="confDeadline">Standard</span>
+                    </div>
+                    <div class="conf-summary-row">
+                        <span>Total estimé</span>
+                        <span id="confTotal">—</span>
+                    </div>
+                    <div class="conf-summary-row">
+                        <span>Email de confirmation</span>
+                        <span id="confEmail">—</span>
+                    </div>
+                </div>
+
+                <div class="next-steps">
+                    <h4><i class="fa-solid fa-list-check" style="margin-right:0.5rem"></i>Prochaines étapes</h4>
+
+                    <div class="next-step-item">
+                        <div class="nsi-icon"><i class="fa-solid fa-check"></i></div>
+                        <div class="nsi-text">Votre commande est enregistrée dans notre système</div>
+                    </div>
+
+                    <div class="next-step-item">
+                        <div class="nsi-icon"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="nsi-text">Vous recevrez un email de confirmation dans quelques minutes</div>
+                    </div>
+
+                    <div class="next-step-item">
+                        <div class="nsi-icon"><i class="fa-solid fa-phone"></i></div>
+                        <div class="nsi-text">Nous vous contactons sous 24h pour valider votre projet</div>
+                    </div>
+
+                    <div class="next-step-item">
+                        <div class="nsi-icon"><i class="fa-solid fa-file-lines"></i></div>
+                        <div class="nsi-text">Vous recevez votre devis officiel personnalisé</div>
+                    </div>
+
+                    <div class="next-step-item">
+                        <div class="nsi-icon"><i class="fa-solid fa-rocket"></i></div>
+                        <div class="nsi-text">Nous démarrons le développement après validation</div>
+                    </div>
+                </div>
+
+                <div class="conf-actions">
+                    <a href="index.html" class="btn btn-outline">
+                        <i class="fa-solid fa-house"></i> Retour à l'accueil
+                    </a>
+                    <a href="index.html#contact" class="btn btn-primary">
+                        <i class="fa-solid fa-envelope"></i> Nous contacter
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </main><!-- /.wizard-content -->
+</div><!-- /.wizard-wrapper -->
+
+<!-- ── Floating quote widget ──────────────────────────────── -->
+<div class="floating-quote" id="floatingQuote">
+    <div class="fq-label">Total estimé</div>
+    <div class="fq-price" id="floatingPrice">0 €</div>
+</div>
+
+<script src="assets/js/order-wizard.js"></script>
+</body>
+</html>
