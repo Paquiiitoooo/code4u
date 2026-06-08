@@ -236,7 +236,7 @@ function portalFetchInvoices(PDO $db, $clientId) {
     }
 
     $stmt = $db->prepare("
-        SELECT id, numero, date_facture, date_echeance, statut, montant_ttc
+        SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_ttc, montant_paye, notes, conditions
         FROM factures
         WHERE client_id = :client_id
         ORDER BY date_facture DESC, id DESC
@@ -250,11 +250,17 @@ function portalFetchInvoices(PDO $db, $clientId) {
             'title' => 'Facture ' . $row['numero'],
             'date' => $row['date_facture'],
             'due_date' => $row['date_echeance'],
+            'amount_ht' => (float)$row['montant_ht'],
+            'amount_tva' => (float)$row['montant_tva'],
             'amount' => (float)$row['montant_ttc'],
+            'paid_amount' => (float)$row['montant_paye'],
+            'remaining_amount' => max(0, (float)$row['montant_ttc'] - (float)$row['montant_paye']),
             'currency' => 'EUR',
             'status' => $row['statut'],
             'status_label' => portalStatusLabel($row['statut']),
             'tone' => portalStatusTone($row['statut']),
+            'notes' => $row['notes'],
+            'conditions' => $row['conditions'],
             'pdf_url' => null,
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
@@ -297,7 +303,7 @@ function portalFetchPaymentMethods(PDO $db, $clientId) {
     }
 
     $stmt = $db->prepare("
-        SELECT provider, brand, label, expires_at, is_default, status
+        SELECT id, provider, brand, label, expires_at, is_default, status
         FROM payment_methods
         WHERE client_id = :client_id
         ORDER BY is_default DESC, created_at DESC
@@ -306,6 +312,7 @@ function portalFetchPaymentMethods(PDO $db, $clientId) {
     $stmt->execute([':client_id' => $clientId]);
     return array_map(function ($row) {
         return [
+            'id' => (int)$row['id'],
             'provider' => $row['provider'],
             'brand' => $row['brand'],
             'label' => $row['label'],
@@ -324,7 +331,7 @@ function portalFetchQuotes(PDO $db, $clientId) {
     }
 
     $stmt = $db->prepare("
-        SELECT id, numero, date_devis, statut, montant_ttc, notes
+        SELECT id, numero, date_devis, statut, montant_ht, montant_tva, montant_ttc, notes, conditions, signature_token
         FROM devis
         WHERE client_id = :client_id
         ORDER BY date_devis DESC, id DESC
@@ -337,11 +344,16 @@ function portalFetchQuotes(PDO $db, $clientId) {
             'number' => $row['numero'],
             'title' => $row['notes'] ?: ('Devis ' . $row['numero']),
             'date' => $row['date_devis'],
+            'amount_ht' => (float)$row['montant_ht'],
+            'amount_tva' => (float)$row['montant_tva'],
             'amount' => (float)$row['montant_ttc'],
             'currency' => 'EUR',
             'status' => $row['statut'],
             'status_label' => portalStatusLabel($row['statut']),
             'tone' => portalStatusTone($row['statut']),
+            'notes' => $row['notes'],
+            'conditions' => $row['conditions'],
+            'signature_url' => $row['signature_token'] ? ('sign/devis/' . rawurlencode($row['signature_token'])) : null,
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
@@ -380,9 +392,10 @@ function portalFetchTickets(PDO $db, $clientEmail) {
     if (!portalTableExists($db, 'tickets')) {
         return [];
     }
+    portalEnsureTicketAccessCode($db);
 
     $stmt = $db->prepare("
-        SELECT ticket_number, subject, status, priority, updated_at, created_at
+        SELECT id, ticket_number, access_code, subject, status, priority, updated_at, created_at
         FROM tickets
         WHERE customer_email = :email
         ORDER BY updated_at DESC, created_at DESC
@@ -391,7 +404,9 @@ function portalFetchTickets(PDO $db, $clientEmail) {
     $stmt->execute([':email' => $clientEmail]);
     return array_map(function ($row) {
         return [
+            'id' => (int)$row['id'],
             'number' => $row['ticket_number'],
+            'access_code' => $row['access_code'] ?? null,
             'subject' => $row['subject'],
             'status' => $row['status'],
             'status_label' => portalStatusLabel($row['status']),
@@ -408,7 +423,7 @@ function portalFetchDocuments(PDO $db, $clientId) {
     }
 
     $stmt = $db->prepare("
-        SELECT category, title, file_url, amount_label, created_at
+        SELECT id, category, title, file_url, amount_label, created_at
         FROM client_documents
         WHERE client_id = :client_id
         ORDER BY created_at DESC, id DESC
@@ -460,6 +475,10 @@ function portalCreateTicket(PDO $db, array $client, array $input) {
     if (!in_array($priority, ['low', 'medium', 'high', 'urgent'], true)) {
         $priority = 'medium';
     }
+    $category = strip_tags(trim((string)($input['category'] ?? 'support')));
+    if ($category === '') {
+        $category = 'support';
+    }
 
     $ticketNumber = portalGenerateTicketNumber($db);
     $accessCode = portalGenerateAccessCode($db);
@@ -472,7 +491,7 @@ function portalCreateTicket(PDO $db, array $client, array $input) {
         )
         VALUES (
             :ticket_number, :access_code, :subject, :description, :customer_name, :customer_email,
-            :customer_phone, 'open', :priority, 'support', 'form'
+            :customer_phone, 'open', :priority, :category, 'form'
         )
     ");
     $stmt->execute([
@@ -484,6 +503,7 @@ function portalCreateTicket(PDO $db, array $client, array $input) {
         ':customer_email' => $client['email'],
         ':customer_phone' => $client['phone'] ?? null,
         ':priority' => $priority,
+        ':category' => $category,
     ]);
 
     $ticketId = (int)$db->lastInsertId();
@@ -511,6 +531,198 @@ function portalCreateTicket(PDO $db, array $client, array $input) {
     ];
 }
 
+function portalFindInvoice(PDO $db, $clientId, $invoiceId) {
+    $stmt = $db->prepare("
+        SELECT *
+        FROM factures
+        WHERE id = :id AND client_id = :client_id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $invoiceId, ':client_id' => $clientId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+function portalPayInvoice(PDO $db, array $client, array $input) {
+    if (!portalHasTables($db, ['factures', 'paiements'])) {
+        portalRespond(['success' => false, 'message' => 'Tables de paiement manquantes.'], 503);
+    }
+
+    $invoiceId = (int)($input['invoice_id'] ?? 0);
+    $invoice = portalFindInvoice($db, (int)$client['id'], $invoiceId);
+    if (!$invoice) {
+        portalRespond(['success' => false, 'message' => 'Facture introuvable.'], 404);
+    }
+    if (in_array($invoice['statut'], ['payee', 'annulee'], true)) {
+        portalRespond(['success' => false, 'message' => 'Cette facture ne peut pas être payée.'], 422);
+    }
+
+    $amount = isset($input['amount']) ? (float)$input['amount'] : ((float)$invoice['montant_ttc'] - (float)$invoice['montant_paye']);
+    $amount = max(0, min($amount, (float)$invoice['montant_ttc'] - (float)$invoice['montant_paye']));
+    if ($amount <= 0) {
+        portalRespond(['success' => false, 'message' => 'Montant de paiement invalide.'], 422);
+    }
+
+    $db->beginTransaction();
+    try {
+        $reference = 'PORTAIL-' . date('YmdHis') . '-' . $invoiceId;
+        $payment = $db->prepare("
+            INSERT INTO paiements (facture_id, montant, date_paiement, mode_paiement, reference, notes)
+            VALUES (:facture_id, :montant, CURDATE(), :mode_paiement, :reference, :notes)
+        ");
+        $payment->execute([
+            ':facture_id' => $invoiceId,
+            ':montant' => $amount,
+            ':mode_paiement' => strip_tags((string)($input['method'] ?? 'Portail client')),
+            ':reference' => $reference,
+            ':notes' => 'Paiement saisi depuis l’espace client.',
+        ]);
+
+        $newPaid = (float)$invoice['montant_paye'] + $amount;
+        $newStatus = $newPaid + 0.01 >= (float)$invoice['montant_ttc'] ? 'payee' : 'partielle';
+        $update = $db->prepare("
+            UPDATE factures
+            SET montant_paye = :montant_paye, statut = :statut
+            WHERE id = :id AND client_id = :client_id
+        ");
+        $update->execute([
+            ':montant_paye' => $newPaid,
+            ':statut' => $newStatus,
+            ':id' => $invoiceId,
+            ':client_id' => (int)$client['id'],
+        ]);
+        $db->commit();
+    } catch (Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
+
+    return ['success' => true, 'message' => 'Paiement enregistré.', 'reference' => $reference];
+}
+
+function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
+    if (!portalTableExists($db, 'support_subscriptions')) {
+        portalRespond(['success' => false, 'message' => 'Table abonnement manquante.'], 503);
+    }
+    if (!in_array($status, ['active', 'paused', 'cancelled'], true)) {
+        portalRespond(['success' => false, 'message' => 'Statut abonnement invalide.'], 422);
+    }
+    $subscriptionId = (int)($input['subscription_id'] ?? 0);
+    $stmt = $db->prepare("
+        UPDATE support_subscriptions
+        SET status = :status
+        WHERE id = :id AND client_id = :client_id
+    ");
+    $stmt->execute([
+        ':status' => $status,
+        ':id' => $subscriptionId,
+        ':client_id' => (int)$client['id'],
+    ]);
+    if ($stmt->rowCount() === 0) {
+        portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
+    }
+
+    $label = $status === 'cancelled' ? 'Résiliation demandée' : ($status === 'paused' ? 'Mise en pause demandée' : 'Réactivation demandée');
+    if (portalHasTables($db, ['tickets', 'ticket_messages'])) {
+        portalCreateTicket($db, $client, [
+            'subject' => $label,
+            'description' => 'Action demandée depuis l’espace client pour l’abonnement support.',
+            'priority' => 'medium',
+            'category' => 'abonnement',
+        ]);
+    }
+    return ['success' => true, 'message' => $label . '.'];
+}
+
+function portalAddPaymentMethod(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'payment_methods')) {
+        portalRespond(['success' => false, 'message' => 'Table moyens de paiement manquante.'], 503);
+    }
+    $label = trim((string)($input['label'] ?? ''));
+    if ($label === '') {
+        portalRespond(['success' => false, 'message' => 'Nom du moyen de paiement requis.'], 422);
+    }
+
+    $makeDefault = !empty($input['is_default']);
+    $db->beginTransaction();
+    try {
+        if ($makeDefault) {
+            $reset = $db->prepare("UPDATE payment_methods SET is_default = 0 WHERE client_id = :client_id");
+            $reset->execute([':client_id' => (int)$client['id']]);
+        }
+        $stmt = $db->prepare("
+            INSERT INTO payment_methods (client_id, provider, brand, label, expires_at, is_default, status)
+            VALUES (:client_id, :provider, :brand, :label, :expires_at, :is_default, 'active')
+        ");
+        $stmt->execute([
+            ':client_id' => (int)$client['id'],
+            ':provider' => strip_tags((string)($input['provider'] ?? 'manuel')),
+            ':brand' => strip_tags((string)($input['brand'] ?? 'Carte')),
+            ':label' => strip_tags($label),
+            ':expires_at' => strip_tags((string)($input['expires_at'] ?? '')),
+            ':is_default' => $makeDefault ? 1 : 0,
+        ]);
+        $db->commit();
+    } catch (Throwable $e) {
+        $db->rollBack();
+        throw $e;
+    }
+    return ['success' => true, 'message' => 'Moyen de paiement ajouté.'];
+}
+
+function portalSetPaymentMethodStatus(PDO $db, array $client, array $input, $mode) {
+    if (!portalTableExists($db, 'payment_methods')) {
+        portalRespond(['success' => false, 'message' => 'Table moyens de paiement manquante.'], 503);
+    }
+    $methodId = (int)($input['payment_method_id'] ?? 0);
+    if ($mode === 'default') {
+        $db->beginTransaction();
+        try {
+            $reset = $db->prepare("UPDATE payment_methods SET is_default = 0 WHERE client_id = :client_id");
+            $reset->execute([':client_id' => (int)$client['id']]);
+            $stmt = $db->prepare("UPDATE payment_methods SET is_default = 1, status = 'active' WHERE id = :id AND client_id = :client_id");
+            $stmt->execute([':id' => $methodId, ':client_id' => (int)$client['id']]);
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollBack();
+            throw $e;
+        }
+        return ['success' => true, 'message' => 'Moyen de paiement défini par défaut.'];
+    }
+
+    $stmt = $db->prepare("UPDATE payment_methods SET status = 'disabled', is_default = 0 WHERE id = :id AND client_id = :client_id");
+    $stmt->execute([':id' => $methodId, ':client_id' => (int)$client['id']]);
+    if ($stmt->rowCount() === 0) {
+        portalRespond(['success' => false, 'message' => 'Moyen de paiement introuvable.'], 404);
+    }
+    return ['success' => true, 'message' => 'Moyen de paiement désactivé.'];
+}
+
+function portalAddDocument(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'client_documents')) {
+        portalRespond(['success' => false, 'message' => 'Table documents manquante.'], 503);
+    }
+    $title = trim((string)($input['title'] ?? ''));
+    if ($title === '') {
+        portalRespond(['success' => false, 'message' => 'Titre du document requis.'], 422);
+    }
+    $category = (string)($input['category'] ?? 'other');
+    if (!in_array($category, ['invoice', 'quote', 'contract', 'asset', 'report', 'other'], true)) {
+        $category = 'other';
+    }
+    $stmt = $db->prepare("
+        INSERT INTO client_documents (client_id, category, title, file_url, amount_label)
+        VALUES (:client_id, :category, :title, :file_url, :amount_label)
+    ");
+    $stmt->execute([
+        ':client_id' => (int)$client['id'],
+        ':category' => $category,
+        ':title' => strip_tags($title),
+        ':file_url' => strip_tags((string)($input['file_url'] ?? '')),
+        ':amount_label' => strip_tags((string)($input['amount_label'] ?? '')),
+    ]);
+    return ['success' => true, 'message' => 'Document ajouté.'];
+}
+
 function portalBuildDashboard(PDO $db, array $client) {
     $subscription = portalFetchSubscription($db, (int)$client['id']);
     $invoices = portalFetchInvoices($db, (int)$client['id']);
@@ -526,7 +738,7 @@ function portalBuildDashboard(PDO $db, array $client) {
         return in_array($invoice['status'], ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'], true);
     }));
     $dueAmount = array_reduce($dueInvoices, function ($sum, $invoice) {
-        return $sum + (float)$invoice['amount'];
+        return $sum + (float)($invoice['remaining_amount'] ?? $invoice['amount']);
     }, 0.0);
     $activeProject = $projects[0] ?? null;
     $openTickets = array_values(array_filter($tickets, function ($ticket) {
@@ -622,6 +834,47 @@ try {
 
     if ($action === 'create-ticket') {
         portalRespond(portalCreateTicket($db, $client, $input), 201);
+    }
+
+    if ($action === 'pay-invoice') {
+        portalRespond(portalPayInvoice($db, $client, $input));
+    }
+
+    if ($action === 'pause-subscription') {
+        portalRespond(portalUpdateSubscription($db, $client, $input, 'paused'));
+    }
+
+    if ($action === 'resume-subscription') {
+        portalRespond(portalUpdateSubscription($db, $client, $input, 'active'));
+    }
+
+    if ($action === 'cancel-subscription') {
+        portalRespond(portalUpdateSubscription($db, $client, $input, 'cancelled'));
+    }
+
+    if ($action === 'add-payment-method') {
+        portalRespond(portalAddPaymentMethod($db, $client, $input), 201);
+    }
+
+    if ($action === 'set-default-payment-method') {
+        portalRespond(portalSetPaymentMethodStatus($db, $client, $input, 'default'));
+    }
+
+    if ($action === 'disable-payment-method') {
+        portalRespond(portalSetPaymentMethodStatus($db, $client, $input, 'disabled'));
+    }
+
+    if ($action === 'add-document') {
+        portalRespond(portalAddDocument($db, $client, $input), 201);
+    }
+
+    if ($action === 'request-quote') {
+        portalRespond(portalCreateTicket($db, $client, [
+            'subject' => trim((string)($input['subject'] ?? 'Demande de devis')),
+            'description' => trim((string)($input['description'] ?? 'Nouvelle demande de devis depuis l’espace client.')),
+            'priority' => 'medium',
+            'category' => 'devis',
+        ]), 201);
     }
 
     portalRespond(portalBuildDashboard($db, $client));

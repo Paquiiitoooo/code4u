@@ -135,7 +135,7 @@
                                         <span class="client-kicker">Aujourd'hui</span>
                                         <h2>À traiter</h2>
                                     </div>
-                                    <button class="client-icon-btn" type="button" aria-label="Actualiser"><i class="fas fa-rotate" aria-hidden="true"></i></button>
+                                    <button class="client-icon-btn" type="button" aria-label="Actualiser" data-action="refresh"><i class="fas fa-rotate" aria-hidden="true"></i></button>
                                 </div>
                                 <div class="client-action-list">
                                     <div class="client-action">
@@ -222,6 +222,10 @@
                                     <div><span>Utilisation mensuelle</span><strong>62 %</strong></div>
                                     <meter min="0" max="100" value="62">62 %</meter>
                                 </div>
+                                <div class="client-inline-actions">
+                                    <button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button>
+                                    <button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>
+                                </div>
                             </article>
 
                             <article class="client-panel">
@@ -259,7 +263,7 @@
                             <article class="client-panel">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Facturation</span><h2>Factures</h2></div>
-                                    <button class="client-ghost-btn" type="button"><i class="fas fa-download" aria-hidden="true"></i> Export</button>
+                                    <button class="client-ghost-btn" type="button" data-action="export-billing"><i class="fas fa-download" aria-hidden="true"></i> Export</button>
                                 </div>
                                 <div class="client-table-wrap">
                                     <table class="client-table">
@@ -286,7 +290,7 @@
                                     <div><span>Prochain prélèvement</span><strong>149 € HT</strong></div>
                                     <div><span>Date</span><strong>01/07/2026</strong></div>
                                 </div>
-                                <button class="btn btn-secondary" type="button">Ajouter un moyen de paiement</button>
+                                <button class="btn btn-secondary" type="button" data-action="add-payment-method">Ajouter un moyen de paiement</button>
                             </article>
                         </div>
                     </section>
@@ -295,7 +299,7 @@
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Devis</span><h2>À signer ou consulter</h2></div>
-                                <button class="btn btn-primary" type="button">Demander un nouveau devis</button>
+                                <button class="btn btn-primary" type="button" data-action="request-quote">Demander un nouveau devis</button>
                             </div>
                             <div class="client-table-wrap">
                                 <table class="client-table">
@@ -350,7 +354,7 @@
                             <article class="client-panel">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Support</span><h2>Tickets ouverts</h2></div>
-                                    <button class="btn btn-primary" type="button">Nouveau ticket</button>
+                                    <button class="btn btn-primary" type="button" data-action="focus-ticket-form">Nouveau ticket</button>
                                 </div>
                                 <div class="ticket-list">
                                     <div class="ticket-row">
@@ -404,7 +408,7 @@
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Documents</span><h2>Bibliothèque client</h2></div>
-                                <button class="client-ghost-btn" type="button"><i class="fas fa-upload" aria-hidden="true"></i> Déposer un fichier</button>
+                                <button class="client-ghost-btn" type="button" data-action="add-document"><i class="fas fa-upload" aria-hidden="true"></i> Déposer un fichier</button>
                             </div>
                             <div class="document-grid">
                                 <a href="#"><i class="fas fa-file-invoice" aria-hidden="true"></i><strong>Factures</strong><span>12 fichiers</span></a>
@@ -430,6 +434,7 @@
             var loginView = document.getElementById('clientLoginView');
             var dashboard = document.getElementById('clientDashboard');
             var msg = document.getElementById('clientLoginMsg');
+            var state = null;
 
             function esc(value) {
                 return String(value === null || value === undefined ? '' : value)
@@ -459,6 +464,43 @@
                 if (tone === 'ok') return 'client-status client-status--ok';
                 if (tone === 'wait') return 'client-status client-status--wait';
                 return 'client-status';
+            }
+
+            function notify(message) {
+                var ticketMsg = document.getElementById('clientTicketMsg');
+                if (ticketMsg) ticketMsg.textContent = message;
+            }
+
+            async function refresh(message) {
+                var data = await api('me');
+                render(data);
+                if (message) notify(message);
+                return data;
+            }
+
+            function findById(list, id) {
+                return (list || []).find(function (item) {
+                    return String(item.id) === String(id);
+                });
+            }
+
+            function downloadText(filename, content, type) {
+                var blob = new Blob([content], { type: type || 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                URL.revokeObjectURL(url);
+            }
+
+            function printableDocument(kind, item) {
+                var title = (kind === 'invoice' ? 'Facture ' : 'Devis ') + esc(item.number || '');
+                var html = '<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>' + title + '</title><style>body{font-family:Inter,Arial,sans-serif;margin:40px;color:#111827}h1{margin:0 0 8px}.meta{color:#64748b;margin-bottom:32px}.box{border:1px solid #dbe3ef;border-radius:12px;padding:20px;margin:16px 0}.total{font-size:28px;font-weight:800}.row{display:flex;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:10px 0}@media print{button{display:none}}</style></head><body><button onclick="window.print()">Imprimer / PDF</button><h1>' + title + '</h1><p class="meta">Code4U - document généré depuis l’espace client</p><div class="box"><div class="row"><span>Date</span><strong>' + dateFr(item.date) + '</strong></div><div class="row"><span>Montant HT</span><strong>' + money(item.amount_ht || 0, item.currency) + '</strong></div><div class="row"><span>TVA</span><strong>' + money(item.amount_tva || 0, item.currency) + '</strong></div><div class="row"><span>Total TTC</span><strong>' + money(item.amount || 0, item.currency) + '</strong></div><div class="row"><span>Statut</span><strong>' + esc(item.status_label || '') + '</strong></div></div><p>' + esc(item.notes || item.title || '') + '</p><p>' + esc(item.conditions || '') + '</p><p class="total">' + money(item.amount || 0, item.currency) + '</p></body></html>';
+                var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+                window.open(URL.createObjectURL(blob), '_blank', 'noopener');
             }
 
             async function api(action, payload) {
@@ -641,7 +683,133 @@
                 }
             }
 
+            function renderActions(data) {
+                var actions = [];
+                var quoteStatuses = ['pending', 'quote_sent', 'brouillon', 'envoye'];
+                var invoiceStatuses = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'];
+                (data.quotes || []).filter(function (quote) {
+                    return quoteStatuses.indexOf(quote.status) !== -1;
+                }).slice(0, 1).forEach(function (quote) {
+                    actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: 'open-quote', id: quote.id });
+                });
+                (data.invoices || []).filter(function (invoice) {
+                    return invoiceStatuses.indexOf(invoice.status) !== -1;
+                }).slice(0, 1).forEach(function (invoice) {
+                    actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: invoice.title || money(invoice.remaining_amount || invoice.amount, invoice.currency), label: 'Payer', action: 'pay-invoice', id: invoice.id });
+                });
+                (data.tickets || []).filter(function (ticket) {
+                    return ['waiting', 'open', 'in_progress'].indexOf(ticket.status) !== -1;
+                }).slice(0, 1).forEach(function (ticket) {
+                    actions.push({ icon: 'fa-message', title: 'Suivre le ticket ' + ticket.number, text: ticket.subject, label: 'Ouvrir', action: 'open-ticket', id: ticket.id });
+                });
+                var list = document.querySelector('.client-action-list');
+                if (!list) return;
+                list.innerHTML = actions.length ? actions.map(function (item) {
+                    return '<div class="client-action"><i class="fas ' + item.icon + '" aria-hidden="true"></i><div><strong>' + esc(item.title) + '</strong><span>' + esc(item.text) + '</span></div><button type="button" data-action="' + esc(item.action) + '" data-id="' + esc(item.id) + '">' + esc(item.label) + '</button></div>';
+                }).join('') : '<div class="client-action"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Tout est à jour</strong><span>Aucune action urgente pour le moment.</span></div><button type="button" data-action="refresh">OK</button></div>';
+            }
+
+            function renderInvoices(data) {
+                var tbody = document.querySelector('[data-view="billing"] tbody');
+                if (!tbody) return;
+                tbody.innerHTML = (data.invoices || []).map(function (invoice) {
+                    var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
+                    var mainAction = payable ? '<button type="button" data-action="pay-invoice" data-id="' + esc(invoice.id) + '">Payer</button>' : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">PDF</button>';
+                    return '<tr><td>' + esc(invoice.number) + '</td><td>' + dateFr(invoice.date) + '</td><td>' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td>' + mainAction + ' <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Voir</button></td></tr>';
+                }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
+            }
+
+            function renderPayments(data) {
+                var methods = data.payment_methods || [];
+                var card = document.querySelector('.payment-card');
+                if (card) {
+                    card.innerHTML = methods.length ? methods.map(function (method) {
+                        var icon = method.brand && method.brand.toLowerCase().indexOf('visa') !== -1 ? 'fa-cc-visa' : 'fa-credit-card';
+                        var actions = method.is_default ? '<span class="client-status client-status--ok">Par défaut</span>' : '<button type="button" data-action="set-default-payment-method" data-id="' + esc(method.id) + '">Défaut</button>';
+                        return '<div class="payment-method-row"><i class="fab ' + icon + '" aria-hidden="true"></i><div><strong>' + esc(method.label) + '</strong><span>Expire ' + esc(method.expires_at || '-') + '</span></div>' + actions + '<button type="button" data-action="disable-payment-method" data-id="' + esc(method.id) + '">Retirer</button></div>';
+                    }).join('') : '<div><strong>Aucun moyen enregistré</strong><span>Ajoutez une carte ou un mandat.</span></div>';
+                }
+
+                var sub = data.subscription || {};
+                var summary = document.querySelector('.payment-summary');
+                if (summary && sub.plan_name) {
+                    summary.innerHTML = '<div><span>Prochain prélèvement</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + dateFr(sub.renewal_date) + '</strong></div>';
+                }
+            }
+
+            function renderQuotes(data) {
+                var tbody = document.querySelector('[data-view="quotes"] tbody');
+                if (!tbody) return;
+                tbody.innerHTML = (data.quotes || []).map(function (quote) {
+                    var label = quote.tone === 'wait' ? 'Signer' : 'Voir';
+                    return '<tr><td>' + esc(quote.number) + '</td><td>' + esc(quote.title) + '</td><td>' + dateFr(quote.date) + '</td><td>' + money(quote.amount, quote.currency) + '</td><td><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td><button type="button" data-action="open-quote" data-id="' + esc(quote.id) + '">' + label + '</button></td></tr>';
+                }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
+            }
+
+            function renderTickets(data) {
+                var list = document.querySelector('.ticket-list');
+                if (!list) return;
+                list.innerHTML = (data.tickets || []).map(function (ticket) {
+                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button type="button" data-action="open-ticket" data-id="' + esc(ticket.id) + '">' + (ticket.status === 'closed' ? 'Voir' : 'Ouvrir') + '</button></div>';
+                }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est à jour.</small></div><button type="button" data-action="focus-ticket-form">Créer</button></div>';
+            }
+
+            function renderDocuments(data) {
+                var docs = data.documents || [];
+                var latest = document.querySelector('.client-doc-list');
+                if (latest) {
+                    latest.innerHTML = docs.slice(0, 3).map(function (doc) {
+                        return '<a href="' + esc(doc.file_url || '#') + '" target="_blank" rel="noopener"><i class="fas fa-file-lines" aria-hidden="true"></i><span>' + esc(doc.title) + '</span><small>' + esc(doc.amount_label || doc.category) + '</small></a>';
+                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><span>Aucun document disponible</span><small>BDD</small></a>';
+                }
+                var grid = document.querySelector('.document-grid');
+                if (grid) {
+                    grid.innerHTML = docs.map(function (doc) {
+                        return '<a href="' + esc(doc.file_url || '#') + '" target="_blank" rel="noopener"><i class="fas fa-file-lines" aria-hidden="true"></i><strong>' + esc(doc.title) + '</strong><span>' + esc(doc.amount_label || doc.category) + '</span></a>';
+                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><strong>Aucun document</strong><span>Déposez un premier fichier.</span></a>';
+                }
+            }
+
+            function renderSubscription(data) {
+                var sub = data.subscription;
+                if (!sub) return;
+                document.querySelectorAll('.client-panel--accent h2').forEach(function (node) {
+                    if (node.textContent.indexOf('Support') !== -1) node.textContent = sub.plan_name;
+                });
+                document.querySelectorAll('.support-progress').forEach(function (box) {
+                    var strong = box.querySelector('strong');
+                    var meter = box.querySelector('meter');
+                    if (strong) strong.textContent = sub.used_hours + ' h / ' + sub.included_hours + ' h';
+                    if (meter) {
+                        meter.max = 100;
+                        meter.value = sub.usage_percent || 0;
+                    }
+                });
+                var planGrid = document.querySelector('.support-plan-grid');
+                if (planGrid) {
+                    planGrid.innerHTML = [
+                        ['Mensualité', money(sub.monthly_price, sub.currency) + ' / mois'],
+                        ['SLA', sub.response_sla || 'Standard'],
+                        ['Crédit inclus', sub.included_hours + ' h / mois'],
+                        ['Dépassement', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
+                    ].map(function (row) {
+                        return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
+                    }).join('');
+                }
+                var inline = document.querySelector('[data-view="support"] .client-inline-actions');
+                if (inline) {
+                    if (sub.status === 'cancelled') {
+                        inline.innerHTML = '<span class="client-status">Résiliation demandée</span>';
+                    } else if (sub.status === 'paused') {
+                        inline.innerHTML = '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                    } else {
+                        inline.innerHTML = '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                    }
+                }
+            }
+
             function render(data) {
+                state = data;
                 renderHeader(data);
                 renderMetrics(data);
                 renderActions(data);
@@ -653,6 +821,121 @@
                 renderTickets(data);
                 renderDocuments(data);
                 show(true);
+            }
+
+            async function handleAction(button) {
+                var action = button.dataset.action;
+                var id = button.dataset.id;
+                if (!action) return;
+
+                if (action === 'refresh') {
+                    await refresh('Données actualisées.');
+                    return;
+                }
+
+                if (action === 'focus-ticket-form') {
+                    activateTab('tickets');
+                    var subject = document.getElementById('ticket-subject');
+                    if (subject) subject.focus();
+                    return;
+                }
+
+                if (action === 'open-invoice') {
+                    var invoice = findById(state && state.invoices, id);
+                    if (invoice) printableDocument('invoice', invoice);
+                    return;
+                }
+
+                if (action === 'pay-invoice') {
+                    var payableInvoice = findById(state && state.invoices, id);
+                    if (!payableInvoice) return;
+                    var amount = payableInvoice.remaining_amount || payableInvoice.amount;
+                    if (!window.confirm('Enregistrer le paiement de ' + money(amount, payableInvoice.currency) + ' pour ' + payableInvoice.number + ' ?')) return;
+                    await api('pay-invoice', { invoice_id: payableInvoice.id, amount: amount });
+                    await refresh('Paiement enregistré.');
+                    return;
+                }
+
+                if (action === 'open-quote') {
+                    var quote = findById(state && state.quotes, id);
+                    if (!quote) return;
+                    if (quote.signature_url && quote.tone === 'wait') {
+                        window.open(quote.signature_url, '_blank', 'noopener');
+                    } else {
+                        printableDocument('quote', quote);
+                    }
+                    return;
+                }
+
+                if (action === 'request-quote') {
+                    var subject = window.prompt('Objet du devis souhaité', 'Nouvelle demande de devis');
+                    if (!subject) return;
+                    var description = window.prompt('Décrivez rapidement le besoin', 'Merci de me recontacter pour cadrer ce besoin.');
+                    await api('request-quote', { subject: subject, description: description || subject });
+                    await refresh('Demande de devis envoyée.');
+                    activateTab('tickets');
+                    return;
+                }
+
+                if (action === 'open-ticket') {
+                    var ticket = findById(state && state.tickets, id);
+                    if (!ticket) return;
+                    if (ticket.access_code) {
+                        window.open('admin/api/ticket-public.php?access_code=' + encodeURIComponent(ticket.access_code), '_blank', 'noopener');
+                    } else {
+                        window.alert('Ticket ' + ticket.number + ' : ' + ticket.subject);
+                    }
+                    return;
+                }
+
+                if (action === 'pause-subscription' || action === 'resume-subscription' || action === 'cancel-subscription') {
+                    var sub = state && state.subscription;
+                    if (!sub) return;
+                    var label = action === 'cancel-subscription' ? 'résilier' : (action === 'pause-subscription' ? 'mettre en pause' : 'réactiver');
+                    if (!window.confirm('Confirmer la demande pour ' + label + ' cet abonnement ?')) return;
+                    await api(action, { subscription_id: sub.id });
+                    await refresh('Demande abonnement enregistrée.');
+                    return;
+                }
+
+                if (action === 'add-payment-method') {
+                    var paymentLabel = window.prompt('Libellé du moyen de paiement', 'Carte •••• 4242');
+                    if (!paymentLabel) return;
+                    var expiresAt = window.prompt('Expiration', '08/2028') || '';
+                    await api('add-payment-method', { label: paymentLabel, brand: 'Carte', expires_at: expiresAt, is_default: true });
+                    await refresh('Moyen de paiement ajouté.');
+                    return;
+                }
+
+                if (action === 'set-default-payment-method' || action === 'disable-payment-method') {
+                    if (action === 'disable-payment-method' && !window.confirm('Retirer ce moyen de paiement ?')) return;
+                    await api(action, { payment_method_id: id });
+                    await refresh(action === 'disable-payment-method' ? 'Moyen de paiement retiré.' : 'Moyen de paiement mis par défaut.');
+                    return;
+                }
+
+                if (action === 'add-document') {
+                    var title = window.prompt('Nom du document', 'Nouveau document client');
+                    if (!title) return;
+                    var fileUrl = window.prompt('Lien du fichier', '#') || '#';
+                    await api('add-document', { title: title, file_url: fileUrl, category: 'other' });
+                    await refresh('Document ajouté.');
+                    return;
+                }
+
+                if (action === 'export-billing') {
+                    var lines = [['Type', 'Numéro', 'Date', 'Montant', 'Statut']];
+                    (state && state.invoices || []).forEach(function (invoice) {
+                        lines.push(['Facture', invoice.number, dateFr(invoice.date), money(invoice.amount, invoice.currency), invoice.status_label]);
+                    });
+                    (state && state.payments || []).forEach(function (payment) {
+                        lines.push(['Paiement', payment.reference || payment.invoice_number, dateFr(payment.date), money(payment.amount, payment.currency), payment.status_label]);
+                    });
+                    var csv = lines.map(function (line) {
+                        return line.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(';');
+                    }).join('\n');
+                    downloadText('facturation-code4u.csv', csv, 'text/csv;charset=utf-8');
+                }
             }
 
             if (form) {
@@ -688,6 +971,21 @@
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
             });
+
+            if (dashboard) {
+                dashboard.addEventListener('click', async function (event) {
+                    var button = event.target.closest('[data-action]');
+                    if (!button || !dashboard.contains(button)) return;
+                    try {
+                        button.disabled = true;
+                        await handleAction(button);
+                    } catch (error) {
+                        notify(error.message || 'Action impossible pour le moment.');
+                    } finally {
+                        button.disabled = false;
+                    }
+                });
+            }
 
             var logout = document.getElementById('logoutBtn');
             if (logout) {

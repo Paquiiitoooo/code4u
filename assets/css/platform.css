@@ -885,6 +885,7 @@ section { padding-block: var(--section-pad); }
 .support-progress, .project-progress { display: grid; gap: 0.6rem; }
 .support-progress > div, .project-progress { display: flex; justify-content: space-between; gap: 1rem; }
 .support-progress meter, .project-progress meter { width: 100%; height: 12px; }
+.client-inline-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; margin-top: 1rem; }
 .client-checklist, .client-checklist--stacked { display: grid; gap: 0.65rem; padding: 0; margin: 1rem 0; list-style: none; }
 .client-checklist li { display: flex; align-items: center; gap: 0.6rem; color: var(--text-primary); font-weight: 650; }
 .client-checklist i { color: var(--accent-color); }
@@ -908,11 +909,16 @@ section { padding-block: var(--section-pad); }
 .client-option-list label { display: flex; gap: 0.65rem; align-items: center; padding: 0.85rem; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; font-weight: 650; }
 .payment-card { grid-template-columns: auto minmax(0, 1fr) auto; margin-bottom: 1rem; }
 .payment-card > i { font-size: 2rem; color: #1d4ed8; }
+.payment-method-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: center; }
+.payment-method-row + .payment-method-row { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-color); }
+.payment-method-row > i { font-size: 1.8rem; color: #1d4ed8; }
+.payment-method-row button { border: 1px solid var(--border-color); border-radius: 8px; background: #fff; color: var(--text-primary); padding: 0.5rem 0.68rem; font: inherit; font-weight: 700; cursor: pointer; }
 .document-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
 .document-grid a { display: grid; gap: 0.45rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px; background: #fff; color: var(--text-primary); text-decoration: none; }
 .document-grid i { font-size: 1.35rem; }
 [data-theme="dark"] .client-space-page, [data-theme="dark"] .client-app { background: #0f1117; }
 [data-theme="dark"] .client-login__panel, [data-theme="dark"] .client-panel, [data-theme="dark"] .client-sidebar, [data-theme="dark"] .client-topbar, [data-theme="dark"] .client-metric, [data-theme="dark"] .client-action, [data-theme="dark"] .ticket-row, [data-theme="dark"] .payment-card, [data-theme="dark"] .document-grid a, [data-theme="dark"] .client-option-list label, [data-theme="dark"] .support-plan-grid div, [data-theme="dark"] .payment-summary div { background: var(--bg-primary); }
+[data-theme="dark"] .payment-method-row button { background: var(--bg-primary); }
 @media (min-width: 920px) { .client-login__grid { grid-template-columns: minmax(0, 1.1fr) minmax(360px, 0.55fr); } }
 @media (max-width: 1180px) {
     .client-app__shell { grid-template-columns: 1fr; }
@@ -927,6 +933,6 @@ section { padding-block: var(--section-pad); }
 }
 @media (max-width: 560px) {
     .client-app { padding-inline: 0.75rem; }
-    .client-action, .ticket-row, .payment-card { grid-template-columns: 1fr; }
+    .client-action, .ticket-row, .payment-card, .payment-method-row { grid-template-columns: 1fr; }
     .support-plan-grid, .payment-summary { grid-template-columns: 1fr; }
 }
