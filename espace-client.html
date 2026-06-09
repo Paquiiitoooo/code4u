@@ -206,78 +206,68 @@
                     </section>
 
                     <section class="client-view" data-view="support">
-                        <article class="client-panel client-panel--accent sub-configurator" data-sub-configurator hidden>
-                            <div class="client-panel__head">
-                                <div><span class="client-kicker">Abonnement support</span><h2>Composez votre formule</h2></div>
-                            </div>
-                            <p class="sub-configurator__intro">Choisissez votre volume d'heures par mois. Le tarif sans engagement reste dégressif, et l'engagement 12 mois applique une remise supplémentaire.</p>
-                            <div class="sub-configurator__commitment" role="radiogroup" aria-label="Type d'engagement">
-                                <label class="is-active">
-                                    <input type="radio" name="sub-commitment" value="0" checked>
-                                    <span>Sans engagement</span>
-                                    <strong>Flexible</strong>
-                                    <small>Résiliable à tout moment</small>
-                                </label>
-                                <label>
-                                    <input type="radio" name="sub-commitment" value="12">
-                                    <span>Avec engagement</span>
-                                    <strong>-15 % en plus</strong>
-                                    <small>Engagement 12 mois</small>
-                                </label>
-                            </div>
-                            <div class="sub-configurator__hours">
-                                <label for="sub-hours">Heures incluses / mois</label>
-                                <div class="sub-configurator__control">
-                                    <input type="range" id="sub-hours" min="2" max="40" step="1" value="10">
-                                    <output id="sub-hours-out">10 h</output>
+
+                        <!-- ══ CONFIGURATEUR (aucun abonnement actif) ══════════ -->
+                        <article class="client-panel sub-cfg" data-sub-configurator hidden>
+                            <div class="sub-cfg__grid">
+
+                                <div class="sub-cfg__left">
+                                    <span class="client-kicker">Abonnement support</span>
+                                    <h2 style="margin:0.25rem 0 0.6rem;font-size:clamp(1.3rem,3vw,1.7rem)">Choisissez votre formule</h2>
+                                    <p style="margin:0 0 1.5rem;color:var(--text-secondary);line-height:1.55;font-size:0.93rem">Heures de développement, maintenance et support incluses chaque mois. Tarif dégressif selon le volume.</p>
+
+                                    <div class="sub-cfg__commitment" role="radiogroup" aria-label="Type d'engagement">
+                                        <label class="sub-cfg__option is-active">
+                                            <input type="radio" name="sub-commitment" value="0" checked>
+                                            <span class="sub-cfg__option-tag">Sans engagement</span>
+                                            <strong>Flexible</strong>
+                                            <small>Résiliable à tout moment</small>
+                                        </label>
+                                        <label class="sub-cfg__option">
+                                            <input type="radio" name="sub-commitment" value="12">
+                                            <span class="sub-cfg__option-tag sub-cfg__option-tag--promo">−15 % remise</span>
+                                            <strong>Engagement 12 mois</strong>
+                                            <small>Tarif réduit sur toute la durée</small>
+                                        </label>
+                                    </div>
+
+                                    <p class="client-form__msg" id="subConfigMsg" role="status" aria-live="polite" style="margin:0.5rem 0"></p>
+                                    <button class="btn btn-primary sub-cfg__cta" type="button" data-action="create-subscription">
+                                        Souscrire via Stripe
+                                    </button>
+                                    <p style="margin:0.75rem 0 0;font-size:0.78rem;color:var(--text-secondary)">
+                                        Paiement mensuel sécurisé · Résiliable depuis cet espace à tout moment
+                                    </p>
+                                </div>
+
+                                <div class="sub-cfg__right">
+                                    <div class="sub-cfg__slider-wrap">
+                                        <div class="sub-cfg__slider-header">
+                                            <label for="sub-hours" style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-secondary)">Heures / mois</label>
+                                            <output id="sub-hours-out" class="sub-cfg__hours-chip">10 h</output>
+                                        </div>
+                                        <input type="range" id="sub-hours" min="2" max="40" step="1" value="10" class="sub-cfg__range">
+                                        <div class="sub-cfg__range-labels"><span>2 h</span><span>40 h</span></div>
+                                    </div>
+
+                                    <div class="sub-cfg__price-board">
+                                        <div class="sub-cfg__price-main">
+                                            <strong id="sub-monthly">—</strong>
+                                            <span>€ TTC / mois</span>
+                                        </div>
+                                        <div class="sub-cfg__price-sub">
+                                            <div><span>Tarif horaire</span><strong id="sub-rate">—</strong></div>
+                                            <div><span>Économie vs 30€/h</span><strong id="sub-discount">—</strong></div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="sub-configurator__price">
-                                <div><span>Tarif horaire</span><strong id="sub-rate">—</strong></div>
-                                <div><span>Économie vs 30 €/h</span><strong id="sub-discount">—</strong></div>
-                                <div class="sub-configurator__total"><span>Votre abonnement</span><strong id="sub-monthly">—</strong></div>
-                            </div>
-                            <p class="client-form__msg" id="subConfigMsg" role="status" aria-live="polite"></p>
-                            <button class="btn btn-primary btn-pay-online" type="button" data-action="create-subscription">Souscrire via Stripe</button>
-                            <p class="sub-configurator__note">Paiement mensuel sécurisé via Stripe, résiliable à tout moment depuis cet espace.</p>
                         </article>
 
-                        <div class="client-layout client-layout--wide client-layout--subscription" data-sub-active>
-                            <article class="client-panel client-panel--accent support-current-card">
-                                <div class="client-panel__head">
-                                    <div><span class="client-kicker">Plan actuel</span><h2>Support Premium</h2></div>
-                                    <span class="client-status client-status--ok">Renouvellement le 01/07</span>
-                                </div>
-                                <div class="support-plan-grid">
-                                <div><span>Mensualité TTC</span><strong>149 € TTC / mois</strong></div>
-                                    <div><span>SLA</span><strong>Réponse sous 8 h ouvrées</strong></div>
-                                    <div><span>Crédit inclus</span><strong>20 h / mois</strong></div>
-                                <div><span>Dépassement TTC</span><strong>65 € TTC / h</strong></div>
-                                </div>
-                                <div class="support-options-strip" data-support-options></div>
-                                <div class="support-progress">
-                                    <div><span>Utilisation mensuelle</span><strong>62 %</strong></div>
-                                    <meter min="0" max="100" value="62">62 %</meter>
-                                </div>
-                                <div class="client-inline-actions">
-                                    <button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button>
-                                    <button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>
-                                </div>
-                            </article>
+                        <!-- ══ ABONNEMENT ACTIF ═════════════════════════════ -->
+                        <div data-sub-active></div>
 
-                            <article class="client-panel">
-                                <div class="client-panel__head">
-                                    <div><span class="client-kicker">Options</span><h2>Modules support</h2></div>
-                                </div>
-                                <div class="client-option-list">
-                                    <label><input type="checkbox" checked disabled> Sauvegarde hebdomadaire supervisée</label>
-                                    <label><input type="checkbox" checked disabled> Correctifs rapides et mises à jour mineures</label>
-                                    <label><input type="checkbox" disabled> Monitoring uptime 24/7</label>
-                                    <label><input type="checkbox" disabled> Rapport SEO mensuel</label>
-                                </div>
-                            </article>
-                        </div>
-
+                        <!-- ══ HISTORIQUE CONSOMMATION ══════════════════════ -->
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Historique</span><h2>Consommation support</h2></div>
@@ -1047,15 +1037,15 @@
                     var progress = ((p.hours - min) / (max - min)) * 100;
                     slider.style.background = 'linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ' + progress + '%, var(--border-color) ' + progress + '%)';
                     if (out) out.textContent = p.hours + ' h';
-                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' € TTC / h';
-                    if (discEl) discEl.textContent = '−' + p.discount + ' % · ' + p.savings + ' € économisés' + (p.commitmentSavings ? ' dont ' + p.commitmentSavings + ' € via engagement' : '');
-                    if (monthEl) monthEl.textContent = p.monthly + ' € TTC / mois';
+                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' €/h TTC';
+                    if (discEl) discEl.textContent = '−' + p.discount + ' % · économie ' + p.savings + ' €/mois';
+                    if (monthEl) monthEl.textContent = p.monthly;
                 }
                 if (!subConfiguratorReady) {
                     slider.addEventListener('input', update);
                     document.querySelectorAll('input[name="sub-commitment"]').forEach(function (radio) {
                         radio.addEventListener('change', function () {
-                            document.querySelectorAll('.sub-configurator__commitment label').forEach(function (label) {
+                            document.querySelectorAll('.sub-cfg__option').forEach(function (label) {
                                 var input = label.querySelector('input');
                                 label.classList.toggle('is-active', !!input && input.checked);
                             });
@@ -1073,7 +1063,6 @@
                 var activeBlock = document.querySelector('[data-sub-active]');
                 var hasSub = sub && sub.status !== 'cancelled';
                 if (configurator) configurator.hidden = !!hasSub;
-                if (activeBlock) activeBlock.hidden = !hasSub;
 
                 /* ── Carte résumé du dashboard ──────────────────────── */
                 var dashCard = document.querySelector('[data-dash-sub-card]');
@@ -1086,77 +1075,89 @@
                         var dashBadge = dashCard.querySelector('[data-dash-sub-badge]');
                         if (dashName) dashName.textContent = sub.plan_name || 'Support';
                         if (dashBadge) {
-                            var isCancelled = sub.status === 'cancelled';
-                            var isPaused = sub.status === 'paused';
-                            var isPending = sub.payment_status === 'pending_payment';
+                            var isCancelledD = sub.status === 'cancelled';
+                            var isPausedD = sub.status === 'paused';
+                            var isPendingD = sub.payment_status === 'pending_payment';
                             dashBadge.className = 'client-status'
-                                + (isCancelled ? '' : (isPending || isPaused ? ' client-status--wait' : ' client-status--ok'));
-                            dashBadge.textContent = isCancelled ? 'Résilié'
-                                : (isPending ? 'Paiement à finaliser'
-                                : (isPaused ? 'En pause'
+                                + (isCancelledD ? '' : (isPendingD || isPausedD ? ' client-status--wait' : ' client-status--ok'));
+                            dashBadge.textContent = isCancelledD ? 'Résilié'
+                                : (isPendingD ? 'Paiement à finaliser'
+                                : (isPausedD ? 'En pause'
                                 : (sub.status_label || 'Actif')));
                         }
                     }
                 }
 
-                if (!hasSub) { initSubConfigurator(); return; }
+                if (!hasSub) {
+                    if (activeBlock) activeBlock.innerHTML = '';
+                    initSubConfigurator();
+                    return;
+                }
+
+                /* ── Abonnement actif : rendu dynamique complet ──────── */
                 var pendingPayment = sub.payment_status === 'pending_payment';
-                document.querySelectorAll('[data-sub-active] .client-panel--accent h2').forEach(function (node) {
-                    node.textContent = sub.plan_name;
-                });
-                document.querySelectorAll('[data-sub-active] .client-panel--accent .client-status').forEach(function (node) {
-                    node.className = 'client-status ' + (pendingPayment ? 'client-status--wait' : (sub.status === 'active' ? 'client-status--ok' : ''));
-                    node.textContent = pendingPayment ? 'Paiement à finaliser' : (sub.status_label || 'Actif');
-                });
-                document.querySelectorAll('.support-progress').forEach(function (box) {
-                    var strong = box.querySelector('strong');
-                    var meter = box.querySelector('meter');
-                    if (strong) strong.textContent = sub.used_hours + ' h / ' + sub.included_hours + ' h';
-                    if (meter) {
-                        meter.max = 100;
-                        meter.value = sub.usage_percent || 0;
-                    }
-                });
-                var planGrid = document.querySelector('.support-plan-grid');
-                if (planGrid) {
-                    planGrid.innerHTML = [
-                        ['Mensualité TTC', money(sub.monthly_price, sub.currency) + ' / mois'],
-                        ['SLA', sub.response_sla || 'Standard'],
-                        ['Crédit inclus', sub.included_hours + ' h / mois'],
-                        ['Dépassement TTC', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
-                    ].map(function (row) {
-                        return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
-                    }).join('');
+                var isCancelled = sub.status === 'cancelled';
+                var isPaused    = sub.status === 'paused';
+                var usePct = sub.usage_percent || 0;
+                var useFill = Math.min(100, usePct);
+                var fillClass = useFill >= 90 ? ' is-danger' : (useFill >= 70 ? ' is-warning' : '');
+                var badgeCls = pendingPayment ? 'client-status--wait'
+                             : (isCancelled   ? ''
+                             : (isPaused      ? 'client-status--wait' : 'client-status--ok'));
+                var badgeTxt = pendingPayment ? 'Paiement à finaliser'
+                             : (sub.status_label || 'Actif');
+
+                /* Boutons d'action */
+                var subscribeBtn = sub.stripe_subscription_id
+                    ? '<span class="client-status client-status--ok" style="align-self:center">Stripe actif</span>'
+                    : '<button class="btn btn-primary" type="button" data-action="subscribe-online">' + (pendingPayment ? 'Finaliser le paiement' : 'Activer Stripe') + '</button>';
+                var actions = '';
+                if (isCancelled) {
+                    actions = '<span class="client-status">Abonnement résilié</span>';
+                } else if (pendingPayment) {
+                    actions = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Annuler</button>';
+                } else if (isPaused) {
+                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                } else if (sub.stripe_subscription_id) {
+                    actions = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                } else {
+                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                 }
-                var optionStrip = document.querySelector('[data-support-options]');
-                if (optionStrip) {
-                    var optionItems = [
-                        sub.stripe_subscription_id ? 'Paiement automatique' : (pendingPayment ? 'Paiement a finaliser' : 'Paiement manuel'),
-                        (sub.included_hours || 0) + ' h incluses',
-                        sub.overage_rate ? 'Depassement ' + money(sub.overage_rate, sub.currency) + ' / h' : 'Sans depassement defini',
-                        sub.status === 'active' ? 'Resiliation autonome' : (sub.status_label || 'Gestion autonome')
-                    ];
-                    optionStrip.innerHTML = optionItems.map(function (item) {
-                        return '<span><i class="fas fa-check" aria-hidden="true"></i>' + esc(item) + '</span>';
-                    }).join('');
-                }
-                var inline = document.querySelector('[data-view="support"] .client-inline-actions');
-                if (inline) {
-                    var subscribeBtn = sub.stripe_subscription_id
-                        ? '<span class="client-status client-status--ok">Paiement auto. actif</span>'
-                        : '<button class="btn btn-primary btn-pay-online" type="button" data-action="subscribe-online">' + (pendingPayment ? 'Continuer le paiement Stripe' : 'Activer le paiement automatique') + '</button>';
-                    if (sub.status === 'cancelled') {
-                        inline.innerHTML = '<span class="client-status">Résiliation demandée</span>';
-                    } else if (pendingPayment) {
-                        inline.innerHTML = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Annuler</button>';
-                    } else if (sub.status === 'paused') {
-                        inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
-                    } else if (sub.stripe_subscription_id) {
-                        inline.innerHTML = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
-                    } else {
-                        inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
-                    }
-                }
+
+                var renewalLabel = sub.renewal_date ? dateFr(sub.renewal_date) : '—';
+
+                activeBlock.innerHTML =
+                    '<article class="client-panel sub-active-card">' +
+                        '<div class="sub-active__top">' +
+                            '<div>' +
+                                '<span class="client-kicker">Plan actuel</span>' +
+                                '<h2 style="margin:0.2rem 0 0;font-size:clamp(1.2rem,3vw,1.55rem)">' + esc(sub.plan_name) + '</h2>' +
+                            '</div>' +
+                            '<span class="client-status ' + badgeCls + '">' + esc(badgeTxt) + '</span>' +
+                        '</div>' +
+
+                        '<div class="sub-active__price">' +
+                            '<strong class="sub-active__price-num">' + money(sub.monthly_price, sub.currency) + '</strong>' +
+                            '<span class="sub-active__price-period">TTC / mois</span>' +
+                        '</div>' +
+
+                        '<div class="sub-active__stats">' +
+                            '<div><span>Heures incluses</span><strong>' + (sub.included_hours || 0) + ' h / mois</strong></div>' +
+                            '<div><span>SLA</span><strong>' + esc(sub.response_sla || 'Standard') + '</strong></div>' +
+                            '<div><span>Renouvellement</span><strong>' + renewalLabel + '</strong></div>' +
+                            '<div><span>Dépassement TTC</span><strong>' + (sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini') + '</strong></div>' +
+                        '</div>' +
+
+                        '<div class="sub-active__usage">' +
+                            '<div class="sub-active__usage-header">' +
+                                '<span>Heures utilisées ce mois</span>' +
+                                '<strong>' + sub.used_hours + ' h / ' + sub.included_hours + ' h (' + useFill + ' %)</strong>' +
+                            '</div>' +
+                            '<div class="sub-progress-bar"><div class="sub-progress-fill' + fillClass + '" style="width:' + useFill + '%"></div></div>' +
+                        '</div>' +
+
+                        '<div class="client-inline-actions">' + actions + '</div>' +
+                    '</article>';
             }
 
             function formatDuration(hours) {

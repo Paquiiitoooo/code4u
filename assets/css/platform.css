@@ -1220,3 +1220,182 @@ section { padding-block: var(--section-pad); }
 .client-loading { color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0; text-align: center; }
 .client-loading::before { content: '⏳ '; }
 [data-theme="dark"] .client-modal__box { background: #1a1d2e; }
+
+/* ── Configurateur abonnement (nouvelle version) ────────────── */
+.sub-cfg { padding: clamp(1.4rem, 4vw, 2.2rem); }
+.sub-cfg__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: start;
+}
+.sub-cfg__left { display: flex; flex-direction: column; }
+
+/* Options d'engagement */
+.sub-cfg__commitment {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-bottom: 1.75rem;
+}
+.sub-cfg__option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 1rem 1.1rem;
+    border: 2px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+.sub-cfg__option input { position: absolute; opacity: 0; pointer-events: none; }
+.sub-cfg__option strong { font-size: 1rem; font-weight: 700; color: var(--text-primary); }
+.sub-cfg__option small  { font-size: 0.82rem; color: var(--text-secondary); }
+.sub-cfg__option:hover  { border-color: rgba(46,64,229,.4); }
+.sub-cfg__option.is-active {
+    border-color: var(--accent-color);
+    background: linear-gradient(135deg, rgba(46,64,229,.08) 0%, #fff 80%);
+    box-shadow: 0 6px 24px rgba(46,64,229,.12);
+}
+.sub-cfg__option-tag {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-color);
+    margin-bottom: 0.15rem;
+}
+.sub-cfg__option-tag--promo {
+    display: inline-block;
+    background: rgba(46,64,229,.12);
+    color: var(--accent-color);
+    border-radius: 99px;
+    padding: 0.15em 0.55em;
+    font-size: 0.75rem;
+}
+
+/* CTA */
+.sub-cfg__cta {
+    width: 100%;
+    padding: 0.85rem 1.5rem;
+    font-size: 1rem;
+    justify-content: center;
+}
+
+/* Slider */
+.sub-cfg__right { display: flex; flex-direction: column; gap: 1.5rem; }
+.sub-cfg__slider-wrap { display: grid; gap: 0.6rem; }
+.sub-cfg__slider-header { display: flex; justify-content: space-between; align-items: center; }
+.sub-cfg__hours-chip {
+    font-family: var(--font-display, inherit);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent-color);
+    min-width: 4rem;
+    text-align: right;
+}
+.sub-cfg__range {
+    width: 100%; -webkit-appearance: none; appearance: none;
+    height: 6px; border-radius: 3px;
+    background: var(--border-color, #e5e7eb);
+    outline: none; cursor: pointer;
+}
+.sub-cfg__range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent-color); border: 3px solid #fff;
+    box-shadow: 0 2px 8px rgba(46,64,229,.35);
+    transition: transform 0.15s ease;
+}
+.sub-cfg__range::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.sub-cfg__range-labels { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--text-secondary); font-weight: 600; }
+
+/* Prix */
+.sub-cfg__price-board {
+    padding: 1.25rem 1.35rem;
+    border: 2px solid var(--accent-color);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(46,64,229,.07) 0%, rgba(255,255,255,.95) 100%);
+}
+.sub-cfg__price-main {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+}
+.sub-cfg__price-main strong {
+    font-family: var(--font-display, inherit);
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+    font-weight: 900;
+    color: var(--accent-color);
+    line-height: 1;
+}
+.sub-cfg__price-main span { color: var(--text-secondary); font-size: 0.95rem; }
+.sub-cfg__price-sub {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+    border-top: 1px solid rgba(46,64,229,.14);
+    padding-top: 0.85rem;
+}
+.sub-cfg__price-sub > div { display: flex; flex-direction: column; gap: 0.15rem; }
+.sub-cfg__price-sub span { font-size: 0.73rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; }
+.sub-cfg__price-sub strong { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+
+/* ── Abonnement actif ──────────────────────────────────────── */
+.sub-active-card { display: grid; gap: 1.35rem; }
+.sub-active__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.sub-active__price { display: flex; align-items: baseline; gap: 0.45rem; }
+.sub-active__price-num {
+    font-family: var(--font-display, inherit);
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: var(--accent-color);
+    line-height: 1;
+}
+.sub-active__price-period { color: var(--text-secondary); font-size: 0.9rem; }
+.sub-active__stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+.sub-active__stats > div {
+    display: flex; flex-direction: column; gap: 0.2rem;
+    padding: 0.8rem; border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 10px; background: rgba(255,255,255,.72);
+}
+.sub-active__stats span { font-size: 0.73rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; }
+.sub-active__stats strong { font-size: 0.92rem; font-weight: 700; color: var(--text-primary); }
+.sub-active__usage { display: grid; gap: 0.5rem; }
+.sub-active__usage-header { display: flex; justify-content: space-between; align-items: center; }
+.sub-active__usage-header span { font-size: 0.84rem; color: var(--text-secondary); }
+.sub-active__usage-header strong { font-size: 0.9rem; font-weight: 700; }
+
+/* Barre de progression CSS (remplace <meter>) */
+.sub-progress-bar {
+    height: 10px; background: var(--border-color, #e5e7eb);
+    border-radius: 99px; overflow: hidden;
+}
+.sub-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), #6b7afc);
+    border-radius: 99px;
+    transition: width 0.5s cubic-bezier(.4,0,.2,1);
+    min-width: 3px;
+}
+.sub-progress-fill.is-warning { background: linear-gradient(90deg, #f59e0b, #fcd34d); }
+.sub-progress-fill.is-danger  { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* Responsive */
+@media (max-width: 860px) {
+    .sub-cfg__grid { grid-template-columns: 1fr; gap: 2rem; }
+    .sub-active__stats { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 480px) {
+    .sub-cfg__commitment { grid-template-columns: 1fr; }
+    .sub-cfg__price-sub  { grid-template-columns: 1fr; }
+    .sub-active__stats   { grid-template-columns: 1fr; }
+    .sub-cfg__price-main strong { font-size: 2.4rem; }
+}
