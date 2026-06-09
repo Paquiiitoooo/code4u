@@ -207,7 +207,29 @@
                     </section>
 
                     <section class="client-view" data-view="support">
-                        <div class="client-layout client-layout--wide">
+                        <article class="client-panel client-panel--accent sub-configurator" data-sub-configurator hidden>
+                            <div class="client-panel__head">
+                                <div><span class="client-kicker">Sans engagement long</span><h2>Composez votre abonnement support</h2></div>
+                            </div>
+                            <p class="sub-configurator__intro">Choisissez votre volume d'heures par mois. Plus vous en prenez, plus le tarif horaire baisse — bien en‑dessous de notre taux standard de 30&nbsp;€/h.</p>
+                            <div class="sub-configurator__hours">
+                                <label for="sub-hours">Heures incluses / mois</label>
+                                <div class="sub-configurator__control">
+                                    <input type="range" id="sub-hours" min="2" max="40" step="1" value="10">
+                                    <output id="sub-hours-out">10 h</output>
+                                </div>
+                            </div>
+                            <div class="sub-configurator__price">
+                                <div><span>Tarif horaire</span><strong id="sub-rate">—</strong></div>
+                                <div><span>Économie vs 30 €/h</span><strong id="sub-discount">—</strong></div>
+                                <div class="sub-configurator__total"><span>Votre abonnement</span><strong id="sub-monthly">—</strong></div>
+                            </div>
+                            <p class="client-form__msg" id="subConfigMsg" role="status" aria-live="polite"></p>
+                            <button class="btn btn-primary btn-pay-online" type="button" data-action="create-subscription">Souscrire et payer en ligne</button>
+                            <p class="sub-configurator__note">Paiement mensuel sécurisé via Stripe, résiliable à tout moment depuis cet espace.</p>
+                        </article>
+
+                        <div class="client-layout client-layout--wide" data-sub-active>
                             <article class="client-panel client-panel--accent">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Plan actuel</span><h2>Support Premium</h2></div>
@@ -809,11 +831,47 @@
                 }
             }
 
+            function subscriptionPrice(hours) {
+                var h = Math.max(1, Math.min(60, parseInt(hours, 10) || 0));
+                var base = 30;
+                var rate = Math.max(14, 21 - 0.2 * (h - 2));
+                rate = Math.round(rate * 2) / 2;
+                var monthly = Math.round(h * rate);
+                return { hours: h, rate: rate, base: base, monthly: monthly, discount: Math.round((1 - rate / base) * 100), savings: Math.round(h * base) - monthly };
+            }
+
+            var subConfiguratorReady = false;
+            function initSubConfigurator() {
+                var slider = document.getElementById('sub-hours');
+                if (!slider) return;
+                function update() {
+                    var p = subscriptionPrice(slider.value);
+                    var out = document.getElementById('sub-hours-out');
+                    var rateEl = document.getElementById('sub-rate');
+                    var discEl = document.getElementById('sub-discount');
+                    var monthEl = document.getElementById('sub-monthly');
+                    if (out) out.textContent = p.hours + ' h';
+                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' € HT / h';
+                    if (discEl) discEl.textContent = '−' + p.discount + ' % · ' + p.savings + ' € économisés';
+                    if (monthEl) monthEl.textContent = p.monthly + ' € HT / mois';
+                }
+                if (!subConfiguratorReady) {
+                    slider.addEventListener('input', update);
+                    subConfiguratorReady = true;
+                }
+                update();
+            }
+
             function renderSubscription(data) {
                 var sub = data.subscription;
-                if (!sub) return;
-                document.querySelectorAll('.client-panel--accent h2').forEach(function (node) {
-                    if (node.textContent.indexOf('Support') !== -1) node.textContent = sub.plan_name;
+                var configurator = document.querySelector('[data-sub-configurator]');
+                var activeBlock = document.querySelector('[data-sub-active]');
+                var hasSub = sub && sub.status !== 'cancelled';
+                if (configurator) configurator.hidden = !!hasSub;
+                if (activeBlock) activeBlock.hidden = !hasSub;
+                if (!hasSub) { initSubConfigurator(); return; }
+                document.querySelectorAll('[data-sub-active] .client-panel--accent h2').forEach(function (node) {
+                    node.textContent = sub.plan_name;
                 });
                 document.querySelectorAll('.support-progress').forEach(function (box) {
                     var strong = box.querySelector('strong');
@@ -950,6 +1008,27 @@
                         window.location.href = subResp.pay_url;
                     } else {
                         notify('Souscription en ligne indisponible pour le moment.');
+                    }
+                    return;
+                }
+
+                if (action === 'create-subscription') {
+                    var hoursInput = document.getElementById('sub-hours');
+                    var hours = parseInt(hoursInput ? hoursInput.value : '10', 10) || 10;
+                    var configMsg = document.getElementById('subConfigMsg');
+                    if (configMsg) configMsg.textContent = 'Calcul du tarif…';
+                    button.disabled = true;
+                    button.textContent = 'Traitement…';
+                    var createResp = await api('create-subscription', { hours: hours });
+                    button.disabled = false;
+                    button.textContent = 'Souscrire et payer en ligne';
+                    if (configMsg) configMsg.textContent = '';
+                    if (createResp && createResp.pay_url) {
+                        window.location.href = createResp.pay_url;
+                    } else {
+                        var errMsg = (createResp && createResp.error) ? createResp.error : 'Souscription indisponible pour le moment.';
+                        notify(errMsg);
+                        if (configMsg) configMsg.textContent = errMsg;
                     }
                     return;
                 }

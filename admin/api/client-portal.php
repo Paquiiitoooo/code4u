@@ -811,6 +811,75 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     return ['success' => true, 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
 }
 
+/**
+ * Tarif support DÉGRESSIF. Base : 30€/h. Abonnement = -30% (21€/h),
+ * puis plus le volume d'heures est élevé, plus le taux horaire baisse.
+ * Calcul AUTORITAIRE côté serveur (le prix envoyé par le client est ignoré).
+ */
+function portalSubscriptionPrice($hours) {
+    $h = max(1, min(60, (int)$hours));
+    $base = 30.0;                       // taux horaire de référence
+    $rate = 21.0 - 0.2 * ($h - 2);      // 21€/h à 2h, dégressif
+    $rate = max(14.0, $rate);           // plancher 14€/h (-53%)
+    $rate = round($rate * 2) / 2;       // arrondi à 0,50€
+    $monthly = round($h * $rate);
+    return [
+        'hours' => $h,
+        'rate' => $rate,
+        'base_rate' => $base,
+        'monthly' => $monthly,
+        'discount_percent' => (int)round((1 - $rate / $base) * 100),
+        'monthly_without_discount' => round($h * $base),
+        'savings' => round($h * $base) - $monthly,
+    ];
+}
+
+/** Renvoie le tarif pour un nombre d'heures (affichage live, lecture seule). */
+function portalSubscriptionQuote(array $input) {
+    return ['success' => true, 'pricing' => portalSubscriptionPrice((int)($input['hours'] ?? 0))];
+}
+
+/**
+ * Création SELF-SERVICE d'un abonnement support : le client choisit ses heures,
+ * on crée l'abonnement (en attente de paiement) et on renvoie l'URL Stripe.
+ */
+function portalCreateSubscription(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'support_subscriptions')) {
+        portalRespond(['success' => false, 'message' => 'Abonnement indisponible.'], 503);
+    }
+    portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
+    $hours = (int)($input['hours'] ?? 0);
+    if ($hours < 1) {
+        portalRespond(['success' => false, 'message' => 'Choisissez un nombre d’heures.'], 422);
+    }
+    // Un seul abonnement actif à la fois.
+    $check = $db->prepare("SELECT id FROM support_subscriptions WHERE client_id = :cid AND status = 'active' LIMIT 1");
+    $check->execute([':cid' => (int)$client['id']]);
+    if ($check->fetch(PDO::FETCH_ASSOC)) {
+        portalRespond(['success' => false, 'message' => 'Vous avez déjà un abonnement actif.'], 422);
+    }
+    $price = portalSubscriptionPrice($hours);
+    $token = bin2hex(random_bytes(16));
+    // status 'paused' = en attente de paiement ; le webhook Stripe le passe en 'active'.
+    $stmt = $db->prepare("
+        INSERT INTO support_subscriptions
+            (client_id, plan_name, status, monthly_price, currency, included_hours, used_hours, response_sla, renewal_date, overage_rate, payment_token)
+        VALUES
+            (:cid, :plan, 'paused', :monthly, 'EUR', :hours, 0, :sla, :renewal, :overage, :token)
+    ");
+    $stmt->execute([
+        ':cid' => (int)$client['id'],
+        ':plan' => 'Support ' . $price['hours'] . ' h / mois',
+        ':monthly' => $price['monthly'],
+        ':hours' => $price['hours'],
+        ':sla' => 'Réponse sous 8 h ouvrées',
+        ':renewal' => date('Y-m-d', strtotime('+1 month')),
+        ':overage' => $price['rate'],
+        ':token' => $token,
+    ]);
+    return ['success' => true, 'pricing' => $price, 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+}
+
 function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
     if (!portalTableExists($db, 'support_subscriptions')) {
         portalRespond(['success' => false, 'message' => 'Table abonnement manquante.'], 503);
@@ -1122,6 +1191,14 @@ try {
 
     if ($action === 'subscribe-online') {
         portalRespond(portalSubscribeOnline($db, $client, $input));
+    }
+
+    if ($action === 'subscription-quote') {
+        portalRespond(portalSubscriptionQuote($input));
+    }
+
+    if ($action === 'create-subscription') {
+        portalRespond(portalCreateSubscription($db, $client, $input));
     }
 
     if ($action === 'pause-subscription') {
