@@ -1012,3 +1012,70 @@ section { padding-block: var(--section-pad); }
     .client-table td.client-table__actions::before { content: none; }
     .client-table td.client-table__actions button { flex: 1 1 auto; min-height: 44px; }
 }
+
+/* ---- Toast notification ----------------------------------------------- */
+.client-toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(6px);
+    z-index: 9999; min-width: 260px; max-width: 90vw;
+    background: #1e293b; color: #f8fafc;
+    padding: 0.78rem 1.2rem; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 500; text-align: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,.28);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.client-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
+.client-toast.is-success { background: #166534; }
+.client-toast.is-error   { background: #991b1b; }
+.client-toast.is-warn    { background: #92400e; }
+
+/* ---- Modal dialog -------------------------------------------------------- */
+.client-modal {
+    position: fixed; inset: 0; z-index: 9998;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    background: transparent;
+    border: none; max-width: none; width: 100%;
+}
+.client-modal::backdrop { background: rgba(10,12,24,.62); backdrop-filter: blur(2px); }
+.client-modal[open] { display: flex; }
+.client-modal__box {
+    background: var(--bg-primary); border: 1px solid var(--border-color);
+    border-radius: 12px; padding: 2rem; width: 100%; max-width: 440px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.22);
+    position: relative; max-height: 90vh; overflow-y: auto;
+}
+.client-modal__close {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--border-color); border-radius: 6px;
+    background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 1rem;
+    transition: var(--transition);
+}
+.client-modal__close:hover { background: var(--bg-secondary); color: var(--text-primary); }
+.client-modal__icon { font-size: 2rem; text-align: center; margin-bottom: 0.75rem; }
+.client-modal__title { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; text-align: center; margin: 0 0 0.5rem; }
+.client-modal__body { font-size: 0.9rem; color: var(--text-secondary); text-align: center; margin: 0 0 1.25rem; line-height: 1.55; }
+.client-modal__body strong { color: var(--text-primary); }
+.client-modal__form { display: grid; gap: 0.75rem; margin-bottom: 1.25rem; }
+.client-modal__form label { display: grid; gap: 0.3rem; font-size: 0.85rem; font-weight: 600; }
+.client-modal__form input, .client-modal__form textarea, .client-modal__form select {
+    width: 100%; padding: 0.55rem 0.8rem; border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); background: var(--bg-primary);
+    font: inherit; font-size: 0.9rem; color: var(--text-primary);
+    transition: border-color 0.15s ease;
+    box-sizing: border-box;
+}
+.client-modal__form input:focus, .client-modal__form textarea:focus, .client-modal__form select:focus {
+    outline: none; border-color: var(--accent-color);
+    box-shadow: var(--ring);
+}
+.client-modal__actions { display: flex; gap: 0.65rem; justify-content: flex-end; }
+.client-modal__actions .btn { flex: 1 1 auto; }
+.client-modal--danger .client-modal__confirm { background: #dc2626; border-color: #dc2626; }
+.client-modal--danger .client-modal__confirm:hover { background: #b91c1c; }
+
+/* Loading skeleton dans les zones dynamiques */
+.client-loading { color: var(--text-secondary); font-size: 0.85rem; padding: 1rem 0; text-align: center; }
+.client-loading::before { content: '⏳ '; }
+[data-theme="dark"] .client-modal__box { background: #1a1d2e; }

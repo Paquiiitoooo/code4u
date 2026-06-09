@@ -69,9 +69,9 @@
             <div class="client-app__shell">
                 <aside class="client-sidebar" aria-label="Navigation espace client">
                     <div class="client-sidebar__brand">
-                        <span class="client-avatar">CP</span>
+                        <span class="client-avatar">—</span>
                         <div>
-                            <strong>Chrono Pizza</strong>
+                            <strong>Chargement…</strong>
                             <small>Compte client</small>
                         </div>
                     </div>
@@ -100,7 +100,6 @@
                             <p>Vos services Code4U, vos paiements et votre support en temps réel.</p>
                         </div>
                         <div class="client-topbar__actions">
-                            <button class="client-ghost-btn" type="button"><i class="fas fa-bell" aria-hidden="true"></i> 3 alertes</button>
                             <button class="btn btn-secondary" id="logoutBtn" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Déconnexion</button>
                         </div>
                     </header>
@@ -284,34 +283,25 @@
                             <article class="client-panel">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Facturation</span><h2>Factures</h2></div>
-                                    <button class="client-ghost-btn" type="button" data-action="export-billing"><i class="fas fa-download" aria-hidden="true"></i> Export</button>
+                                    <button class="client-ghost-btn" type="button" data-action="export-billing"><i class="fas fa-download" aria-hidden="true"></i> Export CSV</button>
                                 </div>
                                 <div class="client-table-wrap">
                                     <table class="client-table">
-                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
-                                        <tbody>
-                                            <tr><td>FAC-000010</td><td>16/04/2026</td><td>480 €</td><td><span class="client-status client-status--wait">À payer</span></td><td><button type="button">Payer</button></td></tr>
-                                            <tr><td>FAC-000009</td><td>16/04/2026</td><td>690 €</td><td><span class="client-status client-status--ok">Payée</span></td><td><button type="button">PDF</button></td></tr>
-                                            <tr><td>FAC-000008</td><td>01/04/2026</td><td>149 €</td><td><span class="client-status client-status--ok">Payée</span></td><td><button type="button">PDF</button></td></tr>
-                                        </tbody>
+                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant dû</th><th>Statut</th><th></th></tr></thead>
+                                        <tbody><tr><td colspan="5" class="client-loading">Chargement des factures…</td></tr></tbody>
                                     </table>
                                 </div>
                             </article>
 
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Paiement</span><h2>Moyens enregistrés</h2></div>
-                                </div>
-                                <div class="payment-card">
-                                    <i class="fab fa-cc-visa" aria-hidden="true"></i>
-                                    <div><strong>Visa •••• 4242</strong><span>Expire 08/2028</span></div>
-                                    <span class="client-status client-status--ok">Par défaut</span>
+                                    <div><span class="client-kicker">Abonnement</span><h2>Prochaine mensualité</h2></div>
                                 </div>
                                 <div class="payment-summary">
-                                    <div><span>Prochain prélèvement</span><strong>149 € HT</strong></div>
-                                    <div><span>Date</span><strong>01/07/2026</strong></div>
+                                    <div><span>Prochain prélèvement</span><strong>—</strong></div>
+                                    <div><span>Date</span><strong>—</strong></div>
                                 </div>
-                                <button class="btn btn-secondary" type="button" data-action="add-payment-method">Ajouter un moyen de paiement</button>
+                                <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0;">Le paiement automatique s'active lors de la souscription à votre abonnement support.</p>
                             </article>
                         </div>
                     </section>
@@ -320,16 +310,12 @@
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Devis</span><h2>À signer ou consulter</h2></div>
-                                <button class="btn btn-primary" type="button" data-action="request-quote">Demander un nouveau devis</button>
+                                <button class="btn btn-primary" type="button" data-action="request-quote">Demander un devis</button>
                             </div>
                             <div class="client-table-wrap">
                                 <table class="client-table">
                                     <thead><tr><th>Numéro</th><th>Objet</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
-                                    <tbody>
-                                        <tr><td>DEV-000006</td><td>Module fidélité + QR code menu</td><td>04/06/2026</td><td>1 490 €</td><td><span class="client-status client-status--wait">Signature attendue</span></td><td><button type="button">Signer</button></td></tr>
-                                        <tr><td>DEV-000004</td><td>Correctifs tunnel commande</td><td>26/05/2026</td><td>270 €</td><td><span class="client-status client-status--ok">Accepté</span></td><td><button type="button">Voir</button></td></tr>
-                                        <tr><td>DEV-000003</td><td>Maintenance Premium</td><td>01/04/2026</td><td>149 €/mois</td><td><span class="client-status client-status--ok">Actif</span></td><td><button type="button">Contrat</button></td></tr>
-                                    </tbody>
+                                    <tbody><tr><td colspan="6" class="client-loading">Chargement des devis…</td></tr></tbody>
                                 </table>
                             </div>
                         </article>
@@ -374,25 +360,11 @@
                         <div class="client-layout">
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Support</span><h2>Tickets ouverts</h2></div>
+                                    <div><span class="client-kicker">Support</span><h2>Mes tickets</h2></div>
                                     <button class="btn btn-primary" type="button" data-action="focus-ticket-form">Nouveau ticket</button>
                                 </div>
                                 <div class="ticket-list">
-                                    <div class="ticket-row">
-                                        <span class="client-status client-status--wait">En attente</span>
-                                        <div><strong>#SUP-103 — Validation formulaire</strong><small>Réponse demandée par Code4U</small></div>
-                                        <button type="button">Ouvrir</button>
-                                    </div>
-                                    <div class="ticket-row">
-                                        <span class="client-status">Ouvert</span>
-                                        <div><strong>#SUP-102 — Image produit à remplacer</strong><small>Priorité normale</small></div>
-                                        <button type="button">Ouvrir</button>
-                                    </div>
-                                    <div class="ticket-row">
-                                        <span class="client-status client-status--ok">Résolu</span>
-                                        <div><strong>#SUP-101 — Correction bouton panier</strong><small>Clôturé le 06/06</small></div>
-                                        <button type="button">Voir</button>
-                                    </div>
+                                    <div class="client-loading">Chargement des tickets…</div>
                                 </div>
                             </article>
 
@@ -429,13 +401,9 @@
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Documents</span><h2>Bibliothèque client</h2></div>
-                                <button class="client-ghost-btn" type="button" data-action="add-document"><i class="fas fa-upload" aria-hidden="true"></i> Déposer un fichier</button>
                             </div>
                             <div class="document-grid">
-                                <a href="#"><i class="fas fa-file-invoice" aria-hidden="true"></i><strong>Factures</strong><span>12 fichiers</span></a>
-                                <a href="#"><i class="fas fa-file-contract" aria-hidden="true"></i><strong>Contrats</strong><span>3 fichiers</span></a>
-                                <a href="#"><i class="fas fa-image" aria-hidden="true"></i><strong>Assets</strong><span>Logo, visuels, menus</span></a>
-                                <a href="#"><i class="fas fa-clipboard-check" aria-hidden="true"></i><strong>Comptes rendus</strong><span>5 fichiers</span></a>
+                                <div class="client-loading" style="grid-column:1/-1">Chargement des documents…</div>
                             </div>
                         </article>
                     </section>
@@ -497,6 +465,21 @@
         </section>
     </main>
 
+    <!-- Modal dialog ── remplace window.confirm / window.prompt / window.alert -->
+    <dialog id="client-modal" class="client-modal">
+        <div class="client-modal__box">
+            <button class="client-modal__close" type="button" id="modalCloseBtn" aria-label="Fermer">✕</button>
+            <div class="client-modal__icon" id="modalIcon" aria-hidden="true"></div>
+            <h3 class="client-modal__title" id="modalTitle"></h3>
+            <p class="client-modal__body" id="modalBody"></p>
+            <div class="client-modal__form" id="modalForm"></div>
+            <div class="client-modal__actions" id="modalActions"></div>
+        </div>
+    </dialog>
+
+    <!-- Toast global ── remplace notify() qui écrivait dans le form ticket -->
+    <div id="clientToast" class="client-toast" role="status" aria-live="polite"></div>
+
     <div id="footer-placeholder"></div>
 
     <script src="assets/js/template-loader.js"></script>
@@ -540,15 +523,119 @@
                 return 'client-status';
             }
 
-            function notify(message) {
-                var ticketMsg = document.getElementById('clientTicketMsg');
-                if (ticketMsg) ticketMsg.textContent = message;
+            /* ── Toast global ──────────────────────────────────────────── */
+            var _toastTimer = null;
+            function notify(message, type) {
+                var toast = document.getElementById('clientToast');
+                if (!toast) return;
+                toast.textContent = message;
+                toast.className = 'client-toast' + (type ? ' is-' + type : '') + ' is-visible';
+                clearTimeout(_toastTimer);
+                _toastTimer = setTimeout(function () {
+                    toast.className = 'client-toast';
+                }, 4500);
             }
 
-            async function refresh(message) {
+            /* ── Modal système ─────────────────────────────────────────── */
+            var _modalResolve = null;
+
+            function _setupModal(opts) {
+                var modal = document.getElementById('client-modal');
+                if (!modal) return Promise.resolve(null);
+                document.getElementById('modalIcon').textContent = opts.icon || '';
+                document.getElementById('modalTitle').textContent = opts.title || '';
+                document.getElementById('modalBody').innerHTML = opts.body || '';
+                var formEl = document.getElementById('modalForm');
+                formEl.innerHTML = '';
+                formEl.hidden = true;
+                if (opts.fields && opts.fields.length) {
+                    formEl.hidden = false;
+                    opts.fields.forEach(function (field) {
+                        var label = document.createElement('label');
+                        label.textContent = field.label;
+                        var input = document.createElement(field.tag || 'input');
+                        input.type = field.type || 'text';
+                        input.id = 'modal-field-' + field.name;
+                        input.name = field.name;
+                        if (field.placeholder) input.placeholder = field.placeholder;
+                        if (field.value) input.value = field.value;
+                        if (field.required) input.required = true;
+                        if (field.rows) input.rows = field.rows;
+                        if (field.tag === 'select' && field.options) {
+                            field.options.forEach(function (opt) {
+                                var o = document.createElement('option');
+                                o.value = opt.value; o.textContent = opt.label;
+                                if (field.value && opt.value === field.value) o.selected = true;
+                                input.appendChild(o);
+                            });
+                        }
+                        label.appendChild(input);
+                        formEl.appendChild(label);
+                    });
+                }
+                var actionsEl = document.getElementById('modalActions');
+                actionsEl.innerHTML = '';
+                if (opts.cancelLabel !== false) {
+                    var cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn btn-secondary client-modal__cancel';
+                    cancelBtn.type = 'button';
+                    cancelBtn.textContent = opts.cancelLabel || 'Annuler';
+                    cancelBtn.addEventListener('click', function () { closeModal(null); });
+                    actionsEl.appendChild(cancelBtn);
+                }
+                if (opts.confirmLabel !== false) {
+                    var confirmBtn = document.createElement('button');
+                    confirmBtn.className = 'btn btn-primary client-modal__confirm';
+                    confirmBtn.type = 'button';
+                    confirmBtn.textContent = opts.confirmLabel || 'Confirmer';
+                    confirmBtn.addEventListener('click', function () {
+                        if (opts.fields && opts.fields.length) {
+                            var values = {};
+                            opts.fields.forEach(function (field) {
+                                var el = document.getElementById('modal-field-' + field.name);
+                                if (el) values[field.name] = el.value;
+                            });
+                            closeModal(values);
+                        } else {
+                            closeModal(true);
+                        }
+                    });
+                    actionsEl.appendChild(confirmBtn);
+                }
+                if (opts.danger) modal.classList.add('client-modal--danger');
+                else modal.classList.remove('client-modal--danger');
+                document.getElementById('modalCloseBtn').onclick = function () { closeModal(null); };
+                modal.addEventListener('cancel', function () { closeModal(null); }, { once: true });
+                modal.showModal();
+                setTimeout(function () {
+                    var first = formEl.querySelector('input, textarea, select');
+                    if (first) first.focus();
+                }, 50);
+                return new Promise(function (resolve) { _modalResolve = resolve; });
+            }
+
+            function closeModal(value) {
+                var modal = document.getElementById('client-modal');
+                if (modal && modal.open) modal.close();
+                if (_modalResolve) { _modalResolve(value); _modalResolve = null; }
+            }
+
+            function openConfirm(title, body, opts) {
+                return _setupModal(Object.assign({ icon: '⚠️', title: title, body: body, confirmLabel: 'Confirmer' }, opts || {}));
+            }
+
+            function openInfo(title, body, opts) {
+                return _setupModal(Object.assign({ icon: 'ℹ️', title: title, body: body, cancelLabel: false, confirmLabel: 'Fermer' }, opts || {}));
+            }
+
+            function openForm(title, body, fields, opts) {
+                return _setupModal(Object.assign({ icon: '📝', title: title, body: body, fields: fields, confirmLabel: 'Envoyer' }, opts || {}));
+            }
+
+            async function refresh(message, type) {
                 var data = await api('me');
                 render(data);
-                if (message) notify(message);
+                if (message) notify(message, type || 'success');
                 return data;
             }
 
@@ -756,7 +843,7 @@
                 (data.invoices || []).filter(function (invoice) {
                     return invoiceStatuses.indexOf(invoice.status) !== -1;
                 }).slice(0, 1).forEach(function (invoice) {
-                    actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: invoice.title || money(invoice.remaining_amount || invoice.amount, invoice.currency), label: 'Payer', action: 'pay-invoice', id: invoice.id });
+                    actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: money(invoice.remaining_amount || invoice.amount, invoice.currency) + ' TTC', label: 'Payer en ligne', action: 'pay-invoice-online', id: invoice.id });
                 });
                 (data.tickets || []).filter(function (ticket) {
                     return ['waiting', 'open', 'in_progress'].indexOf(ticket.status) !== -1;
@@ -958,81 +1045,107 @@
                 var id = button.dataset.id;
                 if (!action) return;
 
+                /* ── Actualiser ─────────────────────────────────────── */
                 if (action === 'refresh') {
                     await refresh('Données actualisées.');
                     return;
                 }
 
+                /* ── Focus form ticket ──────────────────────────────── */
                 if (action === 'focus-ticket-form') {
                     activateTab('tickets');
-                    var subject = document.getElementById('ticket-subject');
-                    if (subject) subject.focus();
+                    var subjectEl = document.getElementById('ticket-subject');
+                    if (subjectEl) { setTimeout(function () { subjectEl.focus(); }, 80); }
                     return;
                 }
 
+                /* ── Voir facture (PDF) ─────────────────────────────── */
                 if (action === 'open-invoice') {
-                    var invoice = findById(state && state.invoices, id);
-                    if (invoice) printableDocument('invoice', invoice);
+                    var inv = findById(state && state.invoices, id);
+                    if (inv) printableDocument('invoice', inv);
                     return;
                 }
 
-                if (action === 'pay-invoice') {
-                    var payableInvoice = findById(state && state.invoices, id);
-                    if (!payableInvoice) return;
-                    var amount = payableInvoice.remaining_amount || payableInvoice.amount;
-                    if (!window.confirm('Enregistrer le paiement de ' + money(amount, payableInvoice.currency) + ' pour ' + payableInvoice.number + ' ?')) return;
-                    await api('pay-invoice', { invoice_id: payableInvoice.id, amount: amount });
-                    await refresh('Paiement enregistré.');
-                    return;
-                }
-
+                /* ── Payer facture EN LIGNE (Stripe) ────────────────── */
+                /* NOTE : pay-invoice (marquage direct sans paiement) est
+                   intentionnellement absent — tout paiement passe par Stripe. */
                 if (action === 'pay-invoice-online') {
                     var onlineInvoice = findById(state && state.invoices, id);
                     if (!onlineInvoice) return;
+                    var origText = button.textContent;
                     button.textContent = 'Redirection…';
-                    var resp = await api('pay-invoice-online', { invoice_id: onlineInvoice.id });
-                    if (resp && resp.pay_url) {
-                        window.location.href = resp.pay_url;
-                    } else {
-                        notify('Paiement en ligne indisponible pour le moment.');
+                    try {
+                        var resp = await api('pay-invoice-online', { invoice_id: onlineInvoice.id });
+                        if (resp && resp.pay_url) {
+                            window.location.href = resp.pay_url;
+                        } else {
+                            notify('Paiement en ligne indisponible — contactez-nous.', 'error');
+                            button.textContent = origText;
+                        }
+                    } catch (e) {
+                        notify(e.message || 'Impossible de lancer le paiement.', 'error');
+                        button.textContent = origText;
                     }
                     return;
                 }
 
+                /* ── Activer paiement auto abonnement (Stripe) ─────── */
                 if (action === 'subscribe-online') {
                     var sub = state && state.subscription;
                     if (!sub) return;
+                    var origText2 = button.textContent;
                     button.textContent = 'Redirection…';
-                    var subResp = await api('subscribe-online', { subscription_id: sub.id });
-                    if (subResp && subResp.pay_url) {
-                        window.location.href = subResp.pay_url;
-                    } else {
-                        notify('Souscription en ligne indisponible pour le moment.');
+                    try {
+                        var subResp = await api('subscribe-online', { subscription_id: sub.id });
+                        if (subResp && subResp.pay_url) {
+                            window.location.href = subResp.pay_url;
+                        } else {
+                            notify('Paiement automatique indisponible — contactez-nous.', 'error');
+                            button.textContent = origText2;
+                        }
+                    } catch (e) {
+                        notify(e.message || 'Impossible de lancer le paiement.', 'error');
+                        button.textContent = origText2;
                     }
                     return;
                 }
 
+                /* ── Souscrire abonnement (self-service) ────────────── */
                 if (action === 'create-subscription') {
                     var hoursInput = document.getElementById('sub-hours');
                     var hours = parseInt(hoursInput ? hoursInput.value : '10', 10) || 10;
+                    var p = subscriptionPrice(hours);
+                    var confirmed = await openConfirm(
+                        'Confirmer votre abonnement',
+                        '<strong>' + hours + ' h / mois</strong> au tarif de <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € HT/h</strong><br>Soit <strong>' + p.monthly + ' € HT / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
+                        { icon: '🔒', confirmLabel: 'Continuer vers le paiement' }
+                    );
+                    if (!confirmed) return;
                     var configMsg = document.getElementById('subConfigMsg');
-                    if (configMsg) configMsg.textContent = 'Calcul du tarif…';
+                    if (configMsg) configMsg.textContent = 'Création en cours…';
                     button.disabled = true;
                     button.textContent = 'Traitement…';
-                    var createResp = await api('create-subscription', { hours: hours });
-                    button.disabled = false;
-                    button.textContent = 'Souscrire et payer en ligne';
-                    if (configMsg) configMsg.textContent = '';
-                    if (createResp && createResp.pay_url) {
-                        window.location.href = createResp.pay_url;
-                    } else {
-                        var errMsg = (createResp && createResp.error) ? createResp.error : 'Souscription indisponible pour le moment.';
-                        notify(errMsg);
-                        if (configMsg) configMsg.textContent = errMsg;
+                    try {
+                        var createResp = await api('create-subscription', { hours: hours });
+                        if (createResp && createResp.pay_url) {
+                            window.location.href = createResp.pay_url;
+                        } else {
+                            var errMsg = (createResp && createResp.error) ? createResp.error : 'Souscription indisponible pour le moment.';
+                            notify(errMsg, 'error');
+                            if (configMsg) configMsg.textContent = errMsg;
+                            button.disabled = false;
+                            button.textContent = 'Souscrire et payer en ligne';
+                        }
+                    } catch (e) {
+                        notify(e.message || 'Impossible de créer l\'abonnement.', 'error');
+                        if (configMsg) configMsg.textContent = '';
+                        button.disabled = false;
+                        button.textContent = 'Souscrire et payer en ligne';
                     }
                     return;
                 }
 
+                /* ── Ouvrir / signer devis ──────────────────────────── */
                 if (action === 'open-quote') {
                     var quote = findById(state && state.quotes, id);
                     if (!quote) return;
@@ -1044,64 +1157,73 @@
                     return;
                 }
 
+                /* ── Demander un devis (modal form) ─────────────────── */
                 if (action === 'request-quote') {
-                    var subject = window.prompt('Objet du devis souhaité', 'Nouvelle demande de devis');
-                    if (!subject) return;
-                    var description = window.prompt('Décrivez rapidement le besoin', 'Merci de me recontacter pour cadrer ce besoin.');
-                    await api('request-quote', { subject: subject, description: description || subject });
-                    await refresh('Demande de devis envoyée.');
+                    var formValues = await openForm(
+                        'Demander un devis',
+                        'Décrivez brièvement votre besoin. L\'équipe Code4U vous recontacte sous 24 h.',
+                        [
+                            { name: 'subject', label: 'Objet de la demande', type: 'text', placeholder: 'Ex : nouvelle page de vente, intégration CRM…', required: true },
+                            { name: 'description', label: 'Description (optionnel)', tag: 'textarea', rows: 3, placeholder: 'Contexte, contraintes, délai souhaité…' }
+                        ],
+                        { icon: '📋', confirmLabel: 'Envoyer la demande' }
+                    );
+                    if (!formValues || !formValues.subject) return;
+                    await api('request-quote', { subject: formValues.subject, description: formValues.description || formValues.subject });
+                    notify('Demande envoyée — un ticket de suivi a été créé.', 'success');
+                    await refresh();
                     activateTab('tickets');
                     return;
                 }
 
+                /* ── Ouvrir ticket ──────────────────────────────────── */
                 if (action === 'open-ticket') {
                     var ticket = findById(state && state.tickets, id);
                     if (!ticket) return;
                     if (ticket.access_code) {
                         window.open('admin/api/ticket-public.php?access_code=' + encodeURIComponent(ticket.access_code), '_blank', 'noopener');
                     } else {
-                        window.alert('Ticket ' + ticket.number + ' : ' + ticket.subject);
+                        await openInfo(
+                            'Ticket #' + ticket.number,
+                            '<strong>' + esc(ticket.subject) + '</strong><br><br>Priorité : ' + esc(ticket.priority || 'normale') + '<br>Statut : ' + esc(ticket.status_label || ticket.status),
+                            { icon: '🎫' }
+                        );
                     }
                     return;
                 }
 
+                /* ── Gérer abonnement (pause / résiliation) ─────────── */
                 if (action === 'pause-subscription' || action === 'resume-subscription' || action === 'cancel-subscription') {
-                    var sub = state && state.subscription;
-                    if (!sub) return;
-                    var label = action === 'cancel-subscription' ? 'résilier' : (action === 'pause-subscription' ? 'mettre en pause' : 'réactiver');
-                    if (!window.confirm('Confirmer la demande pour ' + label + ' cet abonnement ?')) return;
-                    await api(action, { subscription_id: sub.id });
-                    await refresh('Demande abonnement enregistrée.');
+                    var sub2 = state && state.subscription;
+                    if (!sub2) return;
+                    var labels = {
+                        'pause-subscription':  ['Mettre en pause', 'Votre abonnement sera suspendu. Vous pouvez le réactiver à tout moment.', '⏸️'],
+                        'resume-subscription': ['Réactiver l\'abonnement', 'Votre abonnement reprendra normalement.', '▶️'],
+                        'cancel-subscription': ['Résilier l\'abonnement', 'Cette action est définitive. Vous perdrez l\'accès au support inclus à la prochaine échéance.', '🛑']
+                    };
+                    var lconf = labels[action];
+                    var danger = action === 'cancel-subscription';
+                    var confirmed2 = await openConfirm(lconf[0], lconf[1], { icon: lconf[2], confirmLabel: lconf[0], danger: danger });
+                    if (!confirmed2) return;
+                    await api(action, { subscription_id: sub2.id });
+                    await refresh('Demande enregistrée.', 'success');
                     return;
                 }
 
-                if (action === 'add-payment-method') {
-                    var paymentLabel = window.prompt('Libellé du moyen de paiement', 'Carte •••• 4242');
-                    if (!paymentLabel) return;
-                    var expiresAt = window.prompt('Expiration', '08/2028') || '';
-                    await api('add-payment-method', { label: paymentLabel, brand: 'Carte', expires_at: expiresAt, is_default: true });
-                    await refresh('Moyen de paiement ajouté.');
-                    return;
-                }
-
+                /* ── Retirer moyen de paiement ──────────────────────── */
                 if (action === 'set-default-payment-method' || action === 'disable-payment-method') {
-                    if (action === 'disable-payment-method' && !window.confirm('Retirer ce moyen de paiement ?')) return;
+                    if (action === 'disable-payment-method') {
+                        var confirmed3 = await openConfirm('Retirer ce moyen de paiement', 'Cette carte ne sera plus utilisable pour vos paiements.', { icon: '💳', danger: true });
+                        if (!confirmed3) return;
+                    }
                     await api(action, { payment_method_id: id });
-                    await refresh(action === 'disable-payment-method' ? 'Moyen de paiement retiré.' : 'Moyen de paiement mis par défaut.');
+                    await refresh(action === 'disable-payment-method' ? 'Moyen de paiement retiré.' : 'Moyen de paiement mis par défaut.', 'success');
                     return;
                 }
 
-                if (action === 'add-document') {
-                    var title = window.prompt('Nom du document', 'Nouveau document client');
-                    if (!title) return;
-                    var fileUrl = window.prompt('Lien du fichier', '#') || '#';
-                    await api('add-document', { title: title, file_url: fileUrl, category: 'other' });
-                    await refresh('Document ajouté.');
-                    return;
-                }
-
+                /* ── Export facturation CSV ─────────────────────────── */
                 if (action === 'export-billing') {
-                    var lines = [['Type', 'Numéro', 'Date', 'Montant', 'Statut']];
+                    var lines = [['Type', 'Numéro', 'Date', 'Montant TTC', 'Statut']];
                     (state && state.invoices || []).forEach(function (invoice) {
                         lines.push(['Facture', invoice.number, dateFr(invoice.date), money(invoice.amount, invoice.currency), invoice.status_label]);
                     });
@@ -1112,6 +1234,8 @@
                         return line.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(';');
                     }).join('\n');
                     downloadText('facturation-code4u.csv', csv, 'text/csv;charset=utf-8');
+                    notify('Export CSV téléchargé.', 'success');
+                    return;
                 }
             }
 
