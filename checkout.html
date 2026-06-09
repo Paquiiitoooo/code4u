@@ -102,14 +102,65 @@
             font-size: 1rem;
             margin-bottom: 1.35rem;
         }
+        .card-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .field { margin-bottom: 1rem; }
+        .field.full { grid-column: 1 / -1; }
         label {
             display: block;
             color: var(--muted);
             font-size: 0.9rem;
             margin-bottom: 0.55rem;
         }
-        #payment-element {
-            padding: 0.1rem 0 0.5rem;
+        .input,
+        .stripe-field {
+            width: 100%;
+            min-height: 46px;
+            border: 1px solid var(--line);
+            border-radius: 7px;
+            background: #fff;
+            padding: 0.85rem 0.95rem;
+            font: inherit;
+            color: var(--ink);
+            box-shadow: 0 2px 7px rgba(15, 23, 42, .04);
+            transition: border-color .16s ease, box-shadow .16s ease;
+        }
+        .input:focus,
+        .stripe-field.focus {
+            outline: 0;
+            border-color: var(--blue);
+            box-shadow: 0 0 0 3px rgba(8, 120, 216, .13);
+        }
+        .stripe-field.invalid {
+            border-color: #b42318;
+            box-shadow: 0 0 0 3px rgba(180, 35, 24, .08);
+        }
+        .cards {
+            display: flex;
+            gap: 0.35rem;
+            margin-left: auto;
+            color: var(--muted);
+            font-size: 1rem;
+        }
+        .secure-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.55rem;
+            color: var(--muted);
+            font-size: 0.88rem;
+            line-height: 1.45;
+            margin: 0.25rem 0 0;
+        }
+        .secure-note i { color: #079455; margin-top: 0.1rem; }
+        select.input {
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+            background-position: calc(100% - 18px) 19px, calc(100% - 13px) 19px;
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
         }
         .pay {
             width: 100%;
@@ -151,6 +202,7 @@
             .checkout { grid-template-columns: 1fr; gap: 2rem; padding: 1.25rem; }
             .brand { margin-bottom: 2rem; }
             .payment { padding-top: 0; }
+            .card-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -176,9 +228,44 @@
             <h1>Moyen de paiement</h1>
             <form id="payment-form">
                 <div class="box method">
-                    <div class="method-title"><i class="fas fa-credit-card"></i><span>Carte</span></div>
-                    <label>Informations de paiement</label>
-                    <div id="payment-element"></div>
+                    <div class="method-title">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Carte bancaire</span>
+                        <span class="cards" aria-hidden="true">
+                            <i class="fab fa-cc-visa"></i>
+                            <i class="fab fa-cc-mastercard"></i>
+                            <i class="fab fa-cc-amex"></i>
+                        </span>
+                    </div>
+                    <div class="field">
+                        <label for="card-number">Numero de carte</label>
+                        <div class="stripe-field" id="card-number"></div>
+                    </div>
+                    <div class="card-grid">
+                        <div class="field">
+                            <label for="card-expiry">Expiration</label>
+                            <div class="stripe-field" id="card-expiry"></div>
+                        </div>
+                        <div class="field">
+                            <label for="card-cvc">CVC</label>
+                            <div class="stripe-field" id="card-cvc"></div>
+                        </div>
+                        <div class="field full">
+                            <label for="card-name">Nom sur la carte</label>
+                            <input class="input" id="card-name" autocomplete="cc-name" placeholder="Prenom et nom">
+                        </div>
+                        <div class="field full">
+                            <label for="billing-country">Pays</label>
+                            <select class="input" id="billing-country">
+                                <option value="FR">France</option>
+                                <option value="BE">Belgique</option>
+                                <option value="CH">Suisse</option>
+                                <option value="LU">Luxembourg</option>
+                                <option value="MC">Monaco</option>
+                            </select>
+                        </div>
+                    </div>
+                    <p class="secure-note"><i class="fas fa-lock"></i><span>Carte chiffree et verifiee par Stripe. Aucune donnee bancaire n'est stockee par Code4U.</span></p>
                 </div>
                 <button class="pay" id="submit" type="submit">Payer</button>
                 <p class="message" id="message"></p>
@@ -200,6 +287,9 @@
             var type = params.get('type') || 'invoice';
             var stripe = null;
             var elements = null;
+            var cardNumber = null;
+            var cardExpiry = null;
+            var cardCvc = null;
             var clientSecret = null;
             var submit = document.getElementById('submit');
             var message = document.getElementById('message');
@@ -321,14 +411,47 @@
                     }
                     await loadStripeJs();
                     stripe = Stripe(details.publishableKey);
-                    elements = stripe.elements({
-                        clientSecret: clientSecret,
-                        appearance: {
-                            theme: 'stripe',
-                            variables: { colorPrimary: '#0878d8', borderRadius: '7px' },
+                    elements = stripe.elements({ locale: 'fr' });
+                    var elementStyle = {
+                        base: {
+                            color: '#15151d',
+                            fontFamily: 'Inter, Arial, sans-serif',
+                            fontSize: '16px',
+                            fontSmoothing: 'antialiased',
+                            '::placeholder': { color: '#8a9099' },
                         },
+                        invalid: { color: '#b42318' },
+                    };
+                    cardNumber = elements.create('cardNumber', { style: elementStyle, placeholder: '1234 1234 1234 1234' });
+                    cardExpiry = elements.create('cardExpiry', { style: elementStyle, placeholder: 'MM / AA' });
+                    cardCvc = elements.create('cardCvc', { style: elementStyle, placeholder: 'CVC' });
+                    cardNumber.mount('#card-number');
+                    cardExpiry.mount('#card-expiry');
+                    cardCvc.mount('#card-cvc');
+                    [
+                        { element: cardNumber, id: 'card-number' },
+                        { element: cardExpiry, id: 'card-expiry' },
+                        { element: cardCvc, id: 'card-cvc' },
+                    ].forEach(function (field) {
+                        var element = field.element;
+                        element.on('focus', function () {
+                            var target = document.getElementById(field.id);
+                            if (target) target.classList.add('focus');
+                        });
+                        element.on('blur', function () {
+                            var target = document.getElementById(field.id);
+                            if (target) target.classList.remove('focus');
+                        });
+                        element.on('change', function (event) {
+                            var target = document.getElementById(field.id);
+                            if (target) target.classList.toggle('invalid', Boolean(event.error));
+                            if (event.error) {
+                                message.textContent = event.error.message;
+                            } else if (message.textContent) {
+                                message.textContent = '';
+                            }
+                        });
                     });
-                    elements.create('payment', { layout: 'tabs' }).mount('#payment-element');
                     document.getElementById('loader').hidden = true;
                     document.getElementById('checkout').hidden = false;
                 } catch (error) {
@@ -348,20 +471,28 @@
 
             document.getElementById('payment-form').addEventListener('submit', async function (event) {
                 event.preventDefault();
-                if (!stripe || !elements || !clientSecret) return;
+                if (!stripe || !elements || !clientSecret || !cardNumber) return;
                 submit.disabled = true;
                 message.textContent = '';
                 var config = configForType();
-                var result = await stripe.confirmPayment({
-                    elements: elements,
-                    confirmParams: {
-                        return_url: window.location.origin + '/espace-client.html?pay=' + config.successPay,
+                var result = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardNumber,
+                        billing_details: {
+                            name: document.getElementById('card-name').value || undefined,
+                            email: document.getElementById('email').textContent || undefined,
+                            address: {
+                                country: document.getElementById('billing-country').value || 'FR',
+                            },
+                        },
                     },
                 });
                 if (result.error) {
                     message.textContent = result.error.message || 'Paiement refuse.';
                     submit.disabled = false;
+                    return;
                 }
+                window.location.href = window.location.origin + '/espace-client.html?pay=' + config.successPay;
             });
 
             init();
