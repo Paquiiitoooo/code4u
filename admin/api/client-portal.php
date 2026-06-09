@@ -584,6 +584,72 @@ function portalFetchTickets(PDO $db, $clientEmail) {
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
 
+function portalFetchTicketThread(PDO $db, array $client, array $input) {
+    portalEnsureTicketTables($db);
+    $ticketId = (int)($input['ticket_id'] ?? 0);
+    $stmt = $db->prepare("
+        SELECT id, ticket_number, subject, description, status, priority, created_at, updated_at
+        FROM tickets
+        WHERE id = :id AND customer_email = :email
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $ticketId, ':email' => $client['email']]);
+    $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$ticket) {
+        portalRespond(['success' => false, 'message' => 'Ticket introuvable.'], 404);
+    }
+    $msg = $db->prepare("
+        SELECT sender_type, message, created_at
+        FROM ticket_messages
+        WHERE ticket_id = :id AND is_internal = 0
+        ORDER BY created_at ASC, id ASC
+    ");
+    $msg->execute([':id' => $ticketId]);
+    return [
+        'success' => true,
+        'ticket' => [
+            'id' => (int)$ticket['id'],
+            'number' => $ticket['ticket_number'],
+            'subject' => $ticket['subject'],
+            'description' => $ticket['description'],
+            'status' => $ticket['status'],
+            'status_label' => portalStatusLabel($ticket['status']),
+            'tone' => portalStatusTone($ticket['status']),
+            'priority' => $ticket['priority'],
+            'updated_at' => $ticket['updated_at'],
+        ],
+        'messages' => array_map(function ($row) {
+            return [
+                'sender_type' => $row['sender_type'],
+                'message' => $row['message'],
+                'created_at' => $row['created_at'],
+            ];
+        }, $msg->fetchAll(PDO::FETCH_ASSOC)),
+    ];
+}
+
+function portalReplyTicket(PDO $db, array $client, array $input) {
+    portalEnsureTicketTables($db);
+    $ticketId = (int)($input['ticket_id'] ?? 0);
+    $message = trim((string)($input['message'] ?? ''));
+    if ($message === '') {
+        portalRespond(['success' => false, 'message' => 'Message requis.'], 422);
+    }
+    $stmt = $db->prepare("SELECT id FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
+    $stmt->execute([':id' => $ticketId, ':email' => $client['email']]);
+    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+        portalRespond(['success' => false, 'message' => 'Ticket introuvable.'], 404);
+    }
+    $insert = $db->prepare("
+        INSERT INTO ticket_messages (ticket_id, sender_type, sender_id, message, is_internal)
+        VALUES (:ticket_id, 'customer', NULL, :message, 0)
+    ");
+    $insert->execute([':ticket_id' => $ticketId, ':message' => strip_tags($message)]);
+    $upd = $db->prepare("UPDATE tickets SET status = 'waiting', updated_at = NOW() WHERE id = :id");
+    $upd->execute([':id' => $ticketId]);
+    return portalFetchTicketThread($db, $client, ['ticket_id' => $ticketId]);
+}
+
 function portalFetchDocuments(PDO $db, $clientId) {
     if (!portalTableExists($db, 'client_documents')) {
         return [];
@@ -800,12 +866,22 @@ function portalPayInvoice(PDO $db, array $client, array $input) {
 
 // Base publique de l'API ERP (qui détient les clés Stripe).
 function portalErpBase() {
-    return (defined('IS_LOCAL') && IS_LOCAL) ? 'http://localhost:3000' : 'https://api.erp.code4u.fr';
+    if (defined('CLIENT_PORTAL_ERP_API_BASE') && CLIENT_PORTAL_ERP_API_BASE) {
+        return rtrim(CLIENT_PORTAL_ERP_API_BASE, '/');
+    }
+    $env = getenv('CLIENT_PORTAL_ERP_API_BASE');
+    if ($env) {
+        return rtrim($env, '/');
+    }
+    return 'https://api.erp.code4u.fr';
 }
 
 function portalEnsurePaymentTokenColumn(PDO $db, $table) {
     if (portalTableExists($db, $table) && !portalColumnExists($db, $table, 'payment_token')) {
         $db->exec("ALTER TABLE {$table} ADD COLUMN payment_token VARCHAR(64) DEFAULT NULL");
+    }
+    if ($table === 'support_subscriptions' && portalTableExists($db, $table) && !portalColumnExists($db, $table, 'options_json')) {
+        $db->exec("ALTER TABLE {$table} ADD COLUMN options_json JSON DEFAULT NULL");
     }
 }
 
@@ -867,13 +943,19 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
  * puis plus le volume d'heures est élevé, plus le taux horaire baisse.
  * Calcul AUTORITAIRE côté serveur (le prix envoyé par le client est ignoré).
  */
-function portalSubscriptionPrice($hours) {
+function portalSubscriptionPrice($hours, $commitmentMonths = 0) {
     $h = max(1, min(60, (int)$hours));
     $base = 30.0;                       // taux horaire de référence
     $rate = 21.0 - 0.2 * ($h - 2);      // 21€/h à 2h, dégressif
     $rate = max(14.0, $rate);           // plancher 14€/h (-53%)
+    $noCommitmentRate = $rate;
+    $commitment = ((int)$commitmentMonths >= 12) ? 12 : 0;
+    if ($commitment) {
+        $rate *= 0.85;                  // engagement 12 mois : -15% supplémentaire
+    }
     $rate = round($rate * 2) / 2;       // arrondi à 0,50€
     $monthly = round($h * $rate);
+    $noCommitmentMonthly = round($h * $noCommitmentRate);
     return [
         'hours' => $h,
         'rate' => $rate,
@@ -882,12 +964,15 @@ function portalSubscriptionPrice($hours) {
         'discount_percent' => (int)round((1 - $rate / $base) * 100),
         'monthly_without_discount' => round($h * $base),
         'savings' => round($h * $base) - $monthly,
+        'commitment_months' => $commitment,
+        'commitment_label' => $commitment ? 'Engagement 12 mois' : 'Sans engagement',
+        'commitment_savings' => $commitment ? max(0, $noCommitmentMonthly - $monthly) : 0,
     ];
 }
 
 /** Renvoie le tarif pour un nombre d'heures (affichage live, lecture seule). */
 function portalSubscriptionQuote(array $input) {
-    return ['success' => true, 'pricing' => portalSubscriptionPrice((int)($input['hours'] ?? 0))];
+    return ['success' => true, 'pricing' => portalSubscriptionPrice((int)($input['hours'] ?? 0), (int)($input['commitment_months'] ?? 0))];
 }
 
 /**
@@ -903,8 +988,16 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
     if ($hours < 1) {
         portalRespond(['success' => false, 'message' => 'Choisissez un nombre d’heures.'], 422);
     }
-    $price = portalSubscriptionPrice($hours);
+    $commitmentMonths = (int)($input['commitment_months'] ?? 0);
+    $price = portalSubscriptionPrice($hours, $commitmentMonths);
     $token = bin2hex(random_bytes(16));
+    $planName = 'Support ' . $price['hours'] . ' h / mois' . ($price['commitment_months'] ? ' - engagement 12 mois' : ' - sans engagement');
+    $optionsJson = json_encode([
+        'commitment_months' => $price['commitment_months'],
+        'commitment_label' => $price['commitment_label'],
+        'rate_ttc' => $price['rate'],
+        'stripe_checkout' => true,
+    ], JSON_UNESCAPED_UNICODE);
     $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
     $existingStmt = $db->prepare("
         SELECT id, status, payment_token{$stripeSelect}
@@ -933,18 +1026,20 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
                 response_sla = :sla,
                 renewal_date = :renewal,
                 overage_rate = :overage,
+                options_json = :options,
                 payment_token = :token
             WHERE id = :id AND client_id = :cid
         ");
         $stmt->execute([
             ':id' => (int)$existing['id'],
             ':cid' => (int)$client['id'],
-            ':plan' => 'Support ' . $price['hours'] . ' h / mois',
+            ':plan' => $planName,
             ':monthly' => $price['monthly'],
             ':hours' => $price['hours'],
             ':sla' => 'Reponse sous 8 h ouvrees',
             ':renewal' => date('Y-m-d', strtotime('+1 month')),
             ':overage' => $price['rate'],
+            ':options' => $optionsJson,
             ':token' => $token,
         ]);
         return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$existing['id'], 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
@@ -952,18 +1047,19 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
     // status 'paused' = en attente de paiement ; le webhook Stripe le passe en 'active'.
     $stmt = $db->prepare("
         INSERT INTO support_subscriptions
-            (client_id, plan_name, status, monthly_price, currency, included_hours, used_hours, response_sla, renewal_date, overage_rate, payment_token)
+            (client_id, plan_name, status, monthly_price, currency, included_hours, used_hours, response_sla, renewal_date, overage_rate, options_json, payment_token)
         VALUES
-            (:cid, :plan, 'paused', :monthly, 'EUR', :hours, 0, :sla, :renewal, :overage, :token)
+            (:cid, :plan, 'paused', :monthly, 'EUR', :hours, 0, :sla, :renewal, :overage, :options, :token)
     ");
     $stmt->execute([
         ':cid' => (int)$client['id'],
-        ':plan' => 'Support ' . $price['hours'] . ' h / mois',
+        ':plan' => $planName,
         ':monthly' => $price['monthly'],
         ':hours' => $price['hours'],
         ':sla' => 'Reponse sous 8 h ouvrees',
         ':renewal' => date('Y-m-d', strtotime('+1 month')),
         ':overage' => $price['rate'],
+        ':options' => $optionsJson,
         ':token' => $token,
     ]);
     return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$db->lastInsertId(), 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
@@ -986,6 +1082,20 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
     }
     if ($status === 'active' && empty($current['stripe_subscription_id']) && !empty($current['payment_token'])) {
         portalRespond(['success' => false, 'message' => 'Finalisez le paiement Stripe pour activer cet abonnement.'], 422);
+    }
+    if ($status === 'cancelled' && !empty($current['stripe_subscription_id'])) {
+        $token = bin2hex(random_bytes(16));
+        $tokenStmt = $db->prepare("UPDATE support_subscriptions SET payment_token = :token WHERE id = :id AND client_id = :client_id");
+        $tokenStmt->execute([
+            ':token' => $token,
+            ':id' => $subscriptionId,
+            ':client_id' => (int)$client['id'],
+        ]);
+        return [
+            'success' => true,
+            'message' => 'Redirection vers la résiliation Stripe.',
+            'cancel_url' => portalErpBase() . '/public/cancel/subscription/' . $token,
+        ];
     }
     $stmt = $db->prepare("
         UPDATE support_subscriptions
@@ -1276,8 +1386,16 @@ try {
         portalRespond(portalCreateTicket($db, $client, $input), 201);
     }
 
+    if ($action === 'get-ticket') {
+        portalRespond(portalFetchTicketThread($db, $client, $input));
+    }
+
+    if ($action === 'reply-ticket') {
+        portalRespond(portalReplyTicket($db, $client, $input));
+    }
+
     if ($action === 'pay-invoice') {
-        portalRespond(portalPayInvoice($db, $client, $input));
+        portalRespond(['success' => false, 'message' => 'Le paiement client passe uniquement par Stripe.'], 410);
     }
 
     if ($action === 'pay-invoice-online') {
@@ -1309,7 +1427,7 @@ try {
     }
 
     if ($action === 'add-payment-method') {
-        portalRespond(portalAddPaymentMethod($db, $client, $input), 201);
+        portalRespond(['success' => false, 'message' => 'Les moyens de paiement sont gérés par Stripe lors du paiement en ligne.'], 410);
     }
 
     if ($action === 'set-default-payment-method') {

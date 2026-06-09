@@ -238,7 +238,7 @@
                                 <div class="sub-configurator__total"><span>Votre abonnement</span><strong id="sub-monthly">—</strong></div>
                             </div>
                             <p class="client-form__msg" id="subConfigMsg" role="status" aria-live="polite"></p>
-                            <button class="btn btn-primary btn-pay-online" type="button" data-action="create-subscription">Souscrire et payer en ligne</button>
+                            <button class="btn btn-primary btn-pay-online" type="button" data-action="create-subscription">Souscrire via Stripe</button>
                             <p class="sub-configurator__note">Paiement mensuel sécurisé via Stripe, résiliable à tout moment depuis cet espace.</p>
                         </article>
 
@@ -249,10 +249,10 @@
                                     <span class="client-status client-status--ok">Renouvellement le 01/07</span>
                                 </div>
                                 <div class="support-plan-grid">
-                                    <div><span>Mensualité</span><strong>149 € HT / mois</strong></div>
+                                <div><span>Mensualité TTC</span><strong>149 € TTC / mois</strong></div>
                                     <div><span>SLA</span><strong>Réponse sous 8 h ouvrées</strong></div>
                                     <div><span>Crédit inclus</span><strong>20 h / mois</strong></div>
-                                    <div><span>Dépassement</span><strong>65 € HT / h</strong></div>
+                                <div><span>Dépassement TTC</span><strong>65 € TTC / h</strong></div>
                                 </div>
                                 <div class="support-progress">
                                     <div><span>Utilisation mensuelle</span><strong>62 %</strong></div>
@@ -301,7 +301,7 @@
                                 </div>
                                 <div class="client-table-wrap">
                                     <table class="client-table">
-                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant dû</th><th>Statut</th><th></th></tr></thead>
+                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant TTC dû</th><th>Statut</th><th></th></tr></thead>
                                         <tbody><tr><td colspan="5" class="client-loading">Chargement des factures…</td></tr></tbody>
                                     </table>
                                 </div>
@@ -312,7 +312,7 @@
                                     <div><span class="client-kicker">Abonnement</span><h2>Prochaine mensualité</h2></div>
                                 </div>
                                 <div class="payment-summary">
-                                    <div><span>Prochain prélèvement</span><strong>—</strong></div>
+                                    <div><span>Prochain prélèvement TTC</span><strong>—</strong></div>
                                     <div><span>Date</span><strong>—</strong></div>
                                 </div>
                                 <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0;">Le paiement automatique s'active lors de la souscription à votre abonnement support.</p>
@@ -328,7 +328,7 @@
                             </div>
                             <div class="client-table-wrap">
                                 <table class="client-table">
-                                    <thead><tr><th>Numéro</th><th>Objet</th><th>Date</th><th>Montant</th><th>Statut</th><th></th></tr></thead>
+                                        <thead><tr><th>Numéro</th><th>Objet</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th></th></tr></thead>
                                     <tbody><tr><td colspan="6" class="client-loading">Chargement des devis…</td></tr></tbody>
                                 </table>
                             </div>
@@ -485,7 +485,7 @@
             <button class="client-modal__close" type="button" id="modalCloseBtn" aria-label="Fermer">✕</button>
             <div class="client-modal__icon" id="modalIcon" aria-hidden="true"></div>
             <h3 class="client-modal__title" id="modalTitle"></h3>
-            <p class="client-modal__body" id="modalBody"></p>
+            <div class="client-modal__body" id="modalBody"></div>
             <div class="client-modal__form" id="modalForm"></div>
             <div class="client-modal__actions" id="modalActions"></div>
         </div>
@@ -621,7 +621,13 @@
                 if (opts.danger) modal.classList.add('client-modal--danger');
                 else modal.classList.remove('client-modal--danger');
                 document.getElementById('modalCloseBtn').onclick = function () { closeModal(null); };
-                modal.addEventListener('cancel', function () { closeModal(null); }, { once: true });
+                modal.onclick = function (event) {
+                    if (event.target === modal) closeModal(null);
+                };
+                modal.addEventListener('cancel', function (event) {
+                    event.preventDefault();
+                    closeModal(null);
+                }, { once: true });
                 modal.showModal();
                 setTimeout(function () {
                     var first = formEl.querySelector('input, textarea, select');
@@ -633,6 +639,7 @@
             function closeModal(value) {
                 var modal = document.getElementById('client-modal');
                 if (modal && modal.open) modal.close();
+                if (modal) modal.onclick = null;
                 if (_modalResolve) { _modalResolve(value); _modalResolve = null; }
             }
 
@@ -681,6 +688,12 @@
                             notify((error && error.message) || 'Impossible de générer le PDF.', 'error');
                         });
                 }
+                if (!isInvoice && window.Code4UInvoicePDF && typeof window.Code4UInvoicePDF.downloadQuote === 'function') {
+                    return window.Code4UInvoicePDF.downloadQuote(item, (state && state.client) || {})
+                        .catch(function (error) {
+                            notify((error && error.message) || 'Impossible de générer le PDF.', 'error');
+                        });
+                }
                 var docLabel = isInvoice ? 'FACTURE' : 'DEVIS';
                 var title = (isInvoice ? 'Facture ' : 'Devis ') + (item.number || '');
                 var client = (state && state.client) || {};
@@ -708,16 +721,14 @@
                     return '<tr>'
                         + '<td>' + desc + '</td>'
                         + '<td class="r">' + (Number(l.quantite || 0)) + '</td>'
-                        + '<td class="r">' + money(l.montant_ht || 0, currency) + '</td>'
+                        + '<td class="r">' + money(l.montant_ttc || l.montant_ht || 0, currency) + '</td>'
                         + '</tr>';
                 }).join('');
                 if (!rowsHtml) {
-                    rowsHtml = '<tr><td>' + esc(item.title || item.notes || docLabel) + '</td><td class="r">1</td><td class="r">' + money(item.amount_ht || 0, currency) + '</td></tr>';
+                    rowsHtml = '<tr><td>' + esc(item.title || item.notes || docLabel) + '</td><td class="r">1</td><td class="r">' + money(item.amount || item.amount_ht || 0, currency) + '</td></tr>';
                 }
 
                 var totalsRows = ''
-                    + '<div class="row"><span>Total HT</span><strong>' + money(item.amount_ht || 0, currency) + '</strong></div>'
-                    + '<div class="row"><span>TVA</span><strong>' + money(item.amount_tva || 0, currency) + '</strong></div>'
                     + '<div class="row ttc"><span>Total TTC</span><strong>' + money(item.amount || 0, currency) + '</strong></div>';
                 if (isInvoice && (item.paid_amount || 0) > 0) {
                     totalsRows += '<div class="row"><span>Payé</span><strong>' + money(item.paid_amount || 0, currency) + '</strong></div>'
@@ -765,7 +776,7 @@
                     + '<div class="block"><h3>Client</h3><div class="body">' + clientLines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div></div>'
                     + '<div class="block"><h3>Informations</h3><div class="body"><p><strong>N° :</strong> ' + esc(item.number || '') + '</p><p><strong>Date :</strong> ' + dateFr(item.date) + '</p>' + (item.due_date ? '<p><strong>Échéance :</strong> ' + dateFr(item.due_date) + '</p>' : '') + '<p><strong>Statut :</strong> ' + esc(item.status_label || '') + '</p></div></div>'
                     + '</div>'
-                    + '<table><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Total HT</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+                    + '<table><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Total TTC</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>'
                     + '<div class="totals">' + totalsRows + '</div>'
                     + '<div class="legal">TVA non applicable, art. 293 B du CGI.</div>'
                     + (item.conditions ? '<div class="notes">' + esc(item.conditions) + '</div>' : '')
@@ -860,12 +871,12 @@
                 (data.quotes || []).filter(function (quote) {
                     return quoteStatuses.indexOf(quote.status) !== -1;
                 }).slice(0, 1).forEach(function (quote) {
-                    actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: 'open-quote', id: quote.id });
+                    actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: quote.signature_url ? 'sign-quote' : 'download-quote', id: quote.id });
                 });
                 (data.invoices || []).filter(function (invoice) {
                     return invoiceStatuses.indexOf(invoice.status) !== -1;
                 }).slice(0, 1).forEach(function (invoice) {
-                    actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: money(invoice.remaining_amount || invoice.amount, invoice.currency) + ' TTC', label: 'Payer en ligne', action: 'pay-invoice-online', id: invoice.id });
+                    actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: money(invoice.remaining_amount || invoice.amount, invoice.currency) + ' TTC via Stripe', label: 'Payer via Stripe', action: 'pay-invoice-online', id: invoice.id });
                 });
                 (data.tickets || []).filter(function (ticket) {
                     return ['waiting', 'open', 'in_progress'].indexOf(ticket.status) !== -1;
@@ -885,9 +896,9 @@
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
                     var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
                     var actions = payable
-                        ? '<button type="button" class="btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '">Payer en ligne</button> <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Télécharger</button>'
-                        : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Télécharger</button>';
-                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
+                        ? '<button type="button" class="client-icon-action btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '" aria-label="Payer via Stripe" title="Payer via Stripe"><i class="fas fa-credit-card" aria-hidden="true"></i></button><button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>'
+                        : '<button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
+                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant TTC">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
                 }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
             }
 
@@ -906,7 +917,7 @@
                 var summary = document.querySelector('.payment-summary');
                 if (summary && sub.plan_name) {
                     var pendingPayment = sub.payment_status === 'pending_payment';
-                    var summaryLabel = pendingPayment ? 'Paiement à finaliser' : 'Prochain prélèvement';
+                    var summaryLabel = pendingPayment ? 'Paiement à finaliser' : 'Prochain prélèvement TTC';
                     var summaryDate = pendingPayment ? 'Stripe' : dateFr(sub.renewal_date);
                     summary.innerHTML = '<div><span>' + summaryLabel + '</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + summaryDate + '</strong></div>';
                 }
@@ -916,8 +927,11 @@
                 var tbody = document.querySelector('[data-view="quotes"] tbody');
                 if (!tbody) return;
                 tbody.innerHTML = (data.quotes || []).map(function (quote) {
-                    var label = quote.tone === 'wait' ? 'Signer' : 'Voir';
-                    return '<tr><td data-label="Numéro">' + esc(quote.number) + '</td><td data-label="Objet">' + esc(quote.title) + '</td><td data-label="Date">' + dateFr(quote.date) + '</td><td data-label="Montant">' + money(quote.amount, quote.currency) + '</td><td data-label="Statut"><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td class="client-table__actions"><button type="button" data-action="open-quote" data-id="' + esc(quote.id) + '">' + label + '</button></td></tr>';
+                    var signBtn = quote.signature_url && quote.tone === 'wait'
+                        ? '<button type="button" class="client-icon-action" data-action="sign-quote" data-id="' + esc(quote.id) + '" aria-label="Signer le devis" title="Signer"><i class="fas fa-signature" aria-hidden="true"></i></button>'
+                        : '';
+                    var actions = signBtn + '<button type="button" class="client-icon-action" data-action="download-quote" data-id="' + esc(quote.id) + '" aria-label="Télécharger le devis" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
+                    return '<tr><td data-label="Numéro">' + esc(quote.number) + '</td><td data-label="Objet">' + esc(quote.title) + '</td><td data-label="Date">' + dateFr(quote.date) + '</td><td data-label="Montant TTC">' + money(quote.amount, quote.currency) + '</td><td data-label="Statut"><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
                 }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
             }
 
@@ -925,7 +939,7 @@
                 var list = document.querySelector('.ticket-list');
                 if (!list) return;
                 list.innerHTML = (data.tickets || []).map(function (ticket) {
-                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button type="button" data-action="open-ticket" data-id="' + esc(ticket.id) + '">' + (ticket.status === 'closed' ? 'Voir' : 'Ouvrir') + '</button></div>';
+                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button class="client-icon-action" type="button" data-action="open-ticket" data-id="' + esc(ticket.id) + '" aria-label="Ouvrir le ticket" title="Ouvrir"><i class="fas fa-comments" aria-hidden="true"></i></button></div>';
                 }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est à jour.</small></div><button type="button" data-action="focus-ticket-form">Créer</button></div>';
             }
 
@@ -991,9 +1005,9 @@
                     var progress = ((p.hours - min) / (max - min)) * 100;
                     slider.style.background = 'linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ' + progress + '%, var(--border-color) ' + progress + '%)';
                     if (out) out.textContent = p.hours + ' h';
-                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' € HT / h';
+                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' € TTC / h';
                     if (discEl) discEl.textContent = '−' + p.discount + ' % · ' + p.savings + ' € économisés' + (p.commitmentSavings ? ' dont ' + p.commitmentSavings + ' € via engagement' : '');
-                    if (monthEl) monthEl.textContent = p.monthly + ' € HT / mois';
+                    if (monthEl) monthEl.textContent = p.monthly + ' € TTC / mois';
                 }
                 if (!subConfiguratorReady) {
                     slider.addEventListener('input', update);
@@ -1039,10 +1053,10 @@
                 var planGrid = document.querySelector('.support-plan-grid');
                 if (planGrid) {
                     planGrid.innerHTML = [
-                        ['Mensualité', money(sub.monthly_price, sub.currency) + ' / mois'],
+                        ['Mensualité TTC', money(sub.monthly_price, sub.currency) + ' / mois'],
                         ['SLA', sub.response_sla || 'Standard'],
                         ['Crédit inclus', sub.included_hours + ' h / mois'],
-                        ['Dépassement', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
+                        ['Dépassement TTC', sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini']
                     ].map(function (row) {
                         return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
                     }).join('');
@@ -1058,6 +1072,8 @@
                         inline.innerHTML = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Annuler</button>';
                     } else if (sub.status === 'paused') {
                         inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
+                    } else if (sub.stripe_subscription_id) {
+                        inline.innerHTML = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                     } else {
                         inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                     }
@@ -1079,6 +1095,25 @@
                 tbody.innerHTML = rows.length ? rows.map(function (item) {
                     return '<tr><td data-label="Date">' + dateFr(item.date) + '</td><td data-label="Demande">' + esc(item.title) + '</td><td data-label="Temps">' + formatDuration(item.duration) + '</td><td data-label="Statut"><span class="' + statusClass(item.tone) + '">' + esc(item.status_label) + '</span></td></tr>';
                 }).join('') : '<tr><td colspan="4">Aucune intervention enregistrée pour le moment.</td></tr>';
+            }
+
+            function renderTicketThread(thread) {
+                var ticket = thread.ticket || {};
+                var messages = thread.messages || [];
+                var header = '<div class="ticket-thread__meta">'
+                    + '<span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label || ticket.status) + '</span>'
+                    + '<span>Priorité ' + esc(ticket.priority || 'normale') + '</span>'
+                    + '</div>'
+                    + '<p class="ticket-thread__description">' + esc(ticket.description || 'Aucune description initiale.').replace(/\n/g, '<br>') + '</p>';
+                var rows = messages.map(function (msg) {
+                    var mine = msg.sender_type === 'customer';
+                    return '<div class="ticket-message ' + (mine ? 'is-client' : 'is-team') + '">'
+                        + '<strong>' + (mine ? 'Vous' : 'Code4U') + '</strong>'
+                        + '<p>' + esc(msg.message).replace(/\n/g, '<br>') + '</p>'
+                        + '<small>' + dateFr(msg.created_at) + '</small>'
+                        + '</div>';
+                }).join('');
+                return '<div class="ticket-thread">' + header + '<div class="ticket-thread__messages">' + (rows || '<p class="ticket-thread__empty">Aucun échange pour le moment.</p>') + '</div></div>';
             }
 
             function renderAccount(data) {
@@ -1187,7 +1222,7 @@
                     var p = subscriptionPrice(hours, commitmentMonths);
                     var confirmed = await openConfirm(
                         'Confirmer votre abonnement',
-                        '<strong>' + hours + ' h / mois</strong><br>' + esc(p.commitmentLabel) + '<br><br>Tarif : <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € HT/h</strong><br>Soit <strong>' + p.monthly + ' € HT / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
+                        '<strong>' + hours + ' h / mois</strong><br>' + esc(p.commitmentLabel) + '<br><br>Tarif : <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € TTC/h</strong><br>Soit <strong>' + p.monthly + ' € TTC / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
                         { icon: '🔒', confirmLabel: 'Continuer vers le paiement' }
                     );
                     if (!confirmed) return;
@@ -1204,25 +1239,29 @@
                             notify(errMsg, 'error');
                             if (configMsg) configMsg.textContent = errMsg;
                             button.disabled = false;
-                            button.textContent = 'Souscrire et payer en ligne';
+                            button.textContent = 'Souscrire via Stripe';
                         }
                     } catch (e) {
                         notify(e.message || 'Impossible de créer l\'abonnement.', 'error');
                         if (configMsg) configMsg.textContent = '';
                         button.disabled = false;
-                        button.textContent = 'Souscrire et payer en ligne';
+                        button.textContent = 'Souscrire via Stripe';
                     }
                     return;
                 }
 
-                /* ── Ouvrir / signer devis ──────────────────────────── */
-                if (action === 'open-quote') {
+                /* ── Télécharger / signer devis ─────────────────────── */
+                if (action === 'download-quote' || action === 'open-quote') {
                     var quote = findById(state && state.quotes, id);
                     if (!quote) return;
-                    if (quote.signature_url && quote.tone === 'wait') {
-                        window.open(quote.signature_url, '_blank', 'noopener');
-                    } else {
-                        printableDocument('quote', quote);
+                    printableDocument('quote', quote);
+                    return;
+                }
+
+                if (action === 'sign-quote') {
+                    var quoteToSign = findById(state && state.quotes, id);
+                    if (quoteToSign && quoteToSign.signature_url) {
+                        window.open(quoteToSign.signature_url, '_blank', 'noopener');
                     }
                     return;
                 }
@@ -1250,14 +1289,18 @@
                 if (action === 'open-ticket') {
                     var ticket = findById(state && state.tickets, id);
                     if (!ticket) return;
-                    if (ticket.access_code) {
-                        window.open('admin/api/ticket-public.php?access_code=' + encodeURIComponent(ticket.access_code), '_blank', 'noopener');
-                    } else {
-                        await openInfo(
-                            'Ticket #' + ticket.number,
-                            '<strong>' + esc(ticket.subject) + '</strong><br><br>Priorité : ' + esc(ticket.priority || 'normale') + '<br>Statut : ' + esc(ticket.status_label || ticket.status),
-                            { icon: '🎫' }
-                        );
+                    var thread = await api('get-ticket', { ticket_id: ticket.id });
+                    var reply = await openForm(
+                        'Ticket #' + ticket.number,
+                        '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread),
+                        [
+                            { name: 'message', label: 'Répondre', tag: 'textarea', rows: 4, placeholder: 'Votre message…' }
+                        ],
+                        { icon: '🎫', confirmLabel: 'Envoyer la réponse', cancelLabel: 'Fermer' }
+                    );
+                    if (reply && reply.message && reply.message.trim()) {
+                        await api('reply-ticket', { ticket_id: ticket.id, message: reply.message.trim() });
+                        await refresh('Réponse envoyée.', 'success');
                     }
                     return;
                 }
@@ -1275,7 +1318,11 @@
                     var danger = action === 'cancel-subscription';
                     var confirmed2 = await openConfirm(lconf[0], lconf[1], { icon: lconf[2], confirmLabel: lconf[0], danger: danger });
                     if (!confirmed2) return;
-                    await api(action, { subscription_id: sub2.id });
+                    var subActionResp = await api(action, { subscription_id: sub2.id });
+                    if (subActionResp && subActionResp.cancel_url) {
+                        window.location.href = subActionResp.cancel_url;
+                        return;
+                    }
                     await refresh('Demande enregistrée.', 'success');
                     return;
                 }
@@ -1446,6 +1493,7 @@
                 var messages = {
                     success: 'Paiement réussi' + (ref ? ' — ' + ref : '') + '. Merci !',
                     sub_success: 'Abonnement activé. Merci !',
+                    sub_cancelled: 'Abonnement résilié. La demande a bien été transmise à Stripe.',
                     cancel: 'Paiement annulé.',
                     already: 'Cette facture est déjà réglée.',
                     error: 'Le paiement n’a pas pu être lancé. Réessayez ou contactez-nous.',

@@ -85,6 +85,33 @@
     };
   }
 
+  function normalizeQuote(quote, client) {
+    return {
+      numero: quote.numero || quote.number || '',
+      date_facture: quote.date_devis || quote.date || new Date().toISOString(),
+      date_echeance: quote.date_validite || quote.due_date || '',
+      client: {
+        raison_sociale: client.company_name || client.raison_sociale || '',
+        prenom: client.contact_firstname || client.prenom || '',
+        nom: client.contact_lastname || client.nom || '',
+        adresse: client.adresse || '',
+        code_postal: client.code_postal || '',
+        ville: client.ville || '',
+        email: client.email || '',
+        telephone: client.phone || client.telephone || '',
+      },
+      lignes: quote.lignes || quote.lines || [],
+      montant_ht: number(quote.montant_ht != null ? quote.montant_ht : quote.amount_ht),
+      montant_tva: number(quote.montant_tva != null ? quote.montant_tva : quote.amount_tva),
+      montant_ttc: number(quote.montant_ttc != null ? quote.montant_ttc : quote.amount),
+      montant_paye: 0,
+      remise: number(quote.remise),
+      notes: quote.notes || '',
+      conditions: quote.conditions || '',
+      isQuote: true,
+    };
+  }
+
   function drawPaidStamp(pdf, cx, cy, dateStr) {
     var green = [31, 157, 107];
     pdf.saveGraphicsState && pdf.saveGraphicsState();
@@ -123,6 +150,17 @@
     return number(line.quantite) * linePrice(line) * (1 - discount / 100);
   }
 
+  function lineTotalTtc(line) {
+    if (line.montant_ttc != null) return number(line.montant_ttc);
+    return lineTotal(line);
+  }
+
+  function linePriceTtc(line) {
+    var qty = number(line.quantite);
+    if (line.montant_ttc != null && qty > 0) return number(line.montant_ttc) / qty;
+    return linePrice(line);
+  }
+
   function buildLineGroups(lines) {
     var detailsByParent = {};
     var main = [];
@@ -142,13 +180,14 @@
     });
   }
 
-  async function downloadInvoice(invoiceInput, clientInput) {
+  async function downloadDocument(documentInput, clientInput, kind) {
     var JsPDF = jsPDFCtor();
     if (!JsPDF) {
       throw new Error('Module PDF indisponible.');
     }
 
-    var facture = normalizeInvoice(invoiceInput || {}, clientInput || {});
+    var isQuote = kind === 'quote';
+    var facture = isQuote ? normalizeQuote(documentInput || {}, clientInput || {}) : normalizeInvoice(documentInput || {}, clientInput || {});
     var pdf = new JsPDF();
     var pageWidth = pdf.internal.pageSize.getWidth();
     var pageHeight = pdf.internal.pageSize.getHeight();
@@ -191,7 +230,7 @@
     pdf.setFontSize(18);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(darkBlue[0], darkBlue[1], darkBlue[2]);
-    pdf.text('FACTURE n°' + facture.numero, pageWidth - margin, margin + (logo ? 25 : 0), { align: 'right' });
+    pdf.text((isQuote ? 'DEVIS n°' : 'FACTURE n°') + facture.numero, pageWidth - margin, margin + (logo ? 25 : 0), { align: 'right' });
     y = Math.max(y + 10, margin + (logo ? 40 : 15));
 
     var clientLines = 1;
@@ -269,8 +308,8 @@
       pdf.text('Description', descX, y + 5);
       pdf.text('Qté', qtyX, y + 5, { align: 'center' });
       pdf.text('Unité', unitX, y + 5, { align: 'center' });
-      pdf.text('P.U. HT', priceX, y + 5, { align: 'right' });
-      pdf.text('Total HT', totalXCol, y + 5, { align: 'right' });
+      pdf.text('P.U. TTC', priceX, y + 5, { align: 'right' });
+      pdf.text('Total TTC', totalXCol, y + 5, { align: 'right' });
       y += headerH;
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(7.5);
@@ -326,8 +365,8 @@
         pdf.text(pdf.splitTextToSize(line.libelle || '', wDesc - 4)[0] || '', descX, y + 4);
         pdf.text(String(number(line.quantite)), qtyX, y + 4, { align: 'center' });
         pdf.text(lineUnit(line), unitX, y + 4, { align: 'center' });
-        pdf.text(formatMoney(linePrice(line)), priceX, y + 4, { align: 'right' });
-        pdf.text(formatMoney(lineTotal(line)), totalXCol, y + 4, { align: 'right' });
+        pdf.text(formatMoney(linePriceTtc(line)), priceX, y + 4, { align: 'right' });
+        pdf.text(formatMoney(lineTotalTtc(line)), totalXCol, y + 4, { align: 'right' });
       }
       pdf.setFont('helvetica', 'normal');
       y += rowHeight;
@@ -354,14 +393,14 @@
 
     var totalX = pageWidth - margin - wTotal - wPrice;
     var sousTotalHT = groups.reduce(function (sum, group) {
-      return lineType(group.line) === 'titre' ? sum : sum + lineTotal(group.line);
+      return lineType(group.line) === 'titre' ? sum : sum + lineTotalTtc(group.line);
     }, 0);
-    if (!sousTotalHT && facture.montant_ht) sousTotalHT = facture.montant_ht;
+    if (!sousTotalHT && facture.montant_ttc) sousTotalHT = facture.montant_ttc;
 
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(darkGray[0], darkGray[1], darkGray[2]);
-    pdf.text('Sous-total HT:', totalX, y, { align: 'right' });
+    pdf.text('Sous-total TTC:', totalX, y, { align: 'right' });
     pdf.setFont('helvetica', 'bold');
     pdf.text(formatMoney(sousTotalHT), pageWidth - margin, y, { align: 'right' });
     y += 6;
@@ -376,7 +415,7 @@
       y += 6;
       sousTotalHT = sousTotalHT * (1 - facture.remise / 100);
       pdf.setFont('helvetica', 'normal');
-      pdf.text('Sous-total HT (après remise):', totalX, y, { align: 'right' });
+      pdf.text('Sous-total TTC (après remise):', totalX, y, { align: 'right' });
       pdf.setFont('helvetica', 'bold');
       pdf.text(formatMoney(sousTotalHT), pageWidth - margin, y, { align: 'right' });
       y += 6;
@@ -394,7 +433,7 @@
     pdf.setFontSize(14);
     pdf.text(formatMoney(totalFinal), pageWidth - margin, y, { align: 'right' });
 
-    if (facture.montant_paye > 0) {
+    if (!isQuote && facture.montant_paye > 0) {
       y += 8;
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(8);
@@ -449,7 +488,7 @@
     pdf.setFontSize(7);
     pdf.text('Document généré le ' + formatDateLong(new Date().toISOString()), pageWidth / 2, pageHeight - 12, { align: 'center' });
 
-    if (facture.montant_ttc > 0 && facture.montant_paye >= facture.montant_ttc - 0.01) {
+    if (!isQuote && facture.montant_ttc > 0 && facture.montant_paye >= facture.montant_ttc - 0.01) {
       pdf.setPage(1);
       drawPaidStamp(pdf, pageWidth * 0.62, pageHeight * 0.45, formatDate(facture.date_facture));
     }
@@ -463,10 +502,19 @@
       pdf.text('Page ' + page + ' / ' + totalPages, pageWidth / 2, pageHeight - 5, { align: 'center' });
     }
 
-    pdf.save('Facture-' + facture.numero + '.pdf');
+    pdf.save((isQuote ? 'Devis-' : 'Facture-') + facture.numero + '.pdf');
+  }
+
+  async function downloadInvoice(invoiceInput, clientInput) {
+    return downloadDocument(invoiceInput, clientInput, 'invoice');
+  }
+
+  async function downloadQuote(quoteInput, clientInput) {
+    return downloadDocument(quoteInput, clientInput, 'quote');
   }
 
   window.Code4UInvoicePDF = {
     downloadInvoice: downloadInvoice,
+    downloadQuote: downloadQuote,
   };
 }());
