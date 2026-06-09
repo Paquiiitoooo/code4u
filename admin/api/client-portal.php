@@ -280,7 +280,7 @@ function portalFetchSubscription(PDO $db, $clientId) {
     $used = (float)$row['used_hours'];
     $hasStripeSubscription = !empty($row['stripe_subscription_id']) && $row['status'] === 'active';
     $hasPaymentToken = !empty($row['payment_token'] ?? null);
-    $paymentStatus = $hasStripeSubscription ? 'active' : (($row['status'] === 'paused' && $hasPaymentToken) ? 'pending_payment' : 'manual');
+    $paymentStatus = $hasStripeSubscription ? 'active' : ($hasPaymentToken && $row['status'] !== 'cancelled' ? 'pending_payment' : 'manual');
     return [
         'id' => (int)$row['id'],
         'plan_name' => $row['plan_name'],
