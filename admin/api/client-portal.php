@@ -974,7 +974,7 @@ function portalPayInvoiceOnline(PDO $db, array $client, array $input) {
     $token = bin2hex(random_bytes(16));
     $stmt = $db->prepare("UPDATE factures SET payment_token = :t WHERE id = :id AND client_id = :cid");
     $stmt->execute([':t' => $token, ':id' => $invoiceId, ':cid' => (int)$client['id']]);
-    return ['success' => true, 'pay_url' => portalErpBase() . '/public/pay/invoice/' . $token];
+    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=invoice&token=' . rawurlencode($token)];
 }
 
 /** Souscription EN LIGNE (Stripe) à un abonnement support. */

@@ -1558,7 +1558,7 @@
                     cancel: 'Paiement annulé.',
                     already: 'Cette facture est déjà réglée.',
                     error: 'Le paiement n’a pas pu être lancé. Réessayez ou contactez-nous.',
-                    disabled: 'Le paiement en ligne est momentanément indisponible.'
+                    disabled: 'Stripe n’est pas configuré sur le serveur ERP. Vérifiez STRIPE_SECRET_KEY puis redémarrez le backend.'
                 };
                 if (messages[pay]) notify(messages[pay]);
                 window.history.replaceState({}, '', window.location.pathname);
