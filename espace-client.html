@@ -156,13 +156,13 @@
                                 </div>
                             </article>
 
-                            <article class="client-panel client-panel--accent">
+                            <article class="client-panel client-panel--accent" data-dash-sub-card>
                                 <div class="client-panel__head">
                                     <div>
                                         <span class="client-kicker">Abonnement</span>
-                                        <h2>Support Premium</h2>
+                                        <h2 data-dash-sub-name>Support Premium</h2>
                                     </div>
-                                    <span class="client-status client-status--ok">Actif</span>
+                                    <span class="client-status client-status--ok" data-dash-sub-badge>Actif</span>
                                 </div>
                                 <div class="support-progress">
                                     <div><span>Temps inclus utilisé</span><strong>12 h 30 / 20 h</strong></div>
@@ -1061,6 +1061,31 @@
                 var hasSub = sub && sub.status !== 'cancelled';
                 if (configurator) configurator.hidden = !!hasSub;
                 if (activeBlock) activeBlock.hidden = !hasSub;
+
+                /* ── Carte résumé du dashboard ──────────────────────── */
+                var dashCard = document.querySelector('[data-dash-sub-card]');
+                if (dashCard) {
+                    if (!sub) {
+                        dashCard.hidden = true;
+                    } else {
+                        dashCard.hidden = false;
+                        var dashName = dashCard.querySelector('[data-dash-sub-name]');
+                        var dashBadge = dashCard.querySelector('[data-dash-sub-badge]');
+                        if (dashName) dashName.textContent = sub.plan_name || 'Support';
+                        if (dashBadge) {
+                            var isCancelled = sub.status === 'cancelled';
+                            var isPaused = sub.status === 'paused';
+                            var isPending = sub.payment_status === 'pending_payment';
+                            dashBadge.className = 'client-status'
+                                + (isCancelled ? '' : (isPending || isPaused ? ' client-status--wait' : ' client-status--ok'));
+                            dashBadge.textContent = isCancelled ? 'Résilié'
+                                : (isPending ? 'Paiement à finaliser'
+                                : (isPaused ? 'En pause'
+                                : (sub.status_label || 'Actif')));
+                        }
+                    }
+                }
+
                 if (!hasSub) { initSubConfigurator(); return; }
                 var pendingPayment = sub.payment_status === 'pending_payment';
                 document.querySelectorAll('[data-sub-active] .client-panel--accent h2').forEach(function (node) {
