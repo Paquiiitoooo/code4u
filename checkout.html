@@ -313,9 +313,9 @@
 
             setTimeout(function () {
                 if (!document.getElementById('loader').hidden) {
-                    showError('Chargement trop long. Le backend ERP ne repond pas sur les routes de paiement.');
+                    showError('Chargement trop long. Le backend ERP ne répond pas (CORS ou serveur hors ligne). Contactez le support.');
                 }
-            }, 15000);
+            }, 13000);
 
             document.getElementById('backBtn').addEventListener('click', function () {
                 window.location.href = 'espace-client.html?pay=cancel';
