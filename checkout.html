@@ -213,8 +213,28 @@
             }
 
             async function api(path, options) {
-                var response = await fetch(API_BASE + path, options || {});
-                var data = await response.json();
+                var controller = new AbortController();
+                var timer = setTimeout(function () { controller.abort(); }, 12000);
+                var requestOptions = Object.assign({}, options || {}, { signal: controller.signal });
+                var response;
+                var raw;
+                var data;
+                try {
+                    response = await fetch(API_BASE + path, requestOptions);
+                    raw = await response.text();
+                } catch (error) {
+                    clearTimeout(timer);
+                    if (error && error.name === 'AbortError') {
+                        throw new Error('L’API de paiement ne répond pas. Vérifiez le déploiement ERP.');
+                    }
+                    throw new Error('Impossible de joindre l’API de paiement. Vérifiez CORS ou le serveur ERP.');
+                }
+                clearTimeout(timer);
+                try {
+                    data = raw ? JSON.parse(raw) : {};
+                } catch (error) {
+                    throw new Error('Réponse API invalide sur ' + path + '. Le backend ERP n’est probablement pas à jour.');
+                }
                 if (!response.ok || data.success === false) {
                     throw new Error(data.message || 'Paiement indisponible');
                 }
@@ -235,6 +255,9 @@
 
                     var intent = await api('/public/pay/invoice/' + encodeURIComponent(token) + '/intent', { method: 'POST' });
                     clientSecret = intent.clientSecret;
+                    if (!window.Stripe) {
+                        throw new Error('Stripe.js ne s’est pas chargé. Désactivez le bloqueur ou vérifiez js.stripe.com.');
+                    }
                     stripe = Stripe(details.publishableKey);
                     elements = stripe.elements({
                         clientSecret: clientSecret,
@@ -250,6 +273,12 @@
                     showError(error.message);
                 }
             }
+
+            setTimeout(function () {
+                if (!document.getElementById('loader').hidden) {
+                    showError('Chargement trop long. Le backend ERP ne répond pas sur les routes /details ou /intent.');
+                }
+            }, 15000);
 
             document.getElementById('backBtn').addEventListener('click', function () {
                 window.location.href = 'espace-client.html?pay=cancel';
