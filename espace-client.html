@@ -554,10 +554,12 @@
 
             /* ── Modal système ─────────────────────────────────────────── */
             var _modalResolve = null;
+            var _modalEscHandler = null;
 
             function _setupModal(opts) {
                 var modal = document.getElementById('client-modal');
                 if (!modal) return Promise.resolve(null);
+                if (modal.open) closeModal(null);
                 document.getElementById('modalIcon').textContent = opts.icon || '';
                 document.getElementById('modalTitle').textContent = opts.title || '';
                 document.getElementById('modalBody').innerHTML = opts.body || '';
@@ -620,15 +622,31 @@
                 }
                 if (opts.danger) modal.classList.add('client-modal--danger');
                 else modal.classList.remove('client-modal--danger');
-                document.getElementById('modalCloseBtn').onclick = function () { closeModal(null); };
-                modal.onclick = function (event) {
-                    if (event.target === modal) closeModal(null);
+                var closeBtn = document.getElementById('modalCloseBtn');
+                if (closeBtn) closeBtn.onclick = function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    closeModal(null);
                 };
+                modal.onclick = function (event) {
+                    if (!event.target.closest('.client-modal__box')) {
+                        closeModal(null);
+                    }
+                };
+                if (_modalEscHandler) document.removeEventListener('keydown', _modalEscHandler);
+                _modalEscHandler = function (event) {
+                    if (event.key === 'Escape') closeModal(null);
+                };
+                document.addEventListener('keydown', _modalEscHandler);
                 modal.addEventListener('cancel', function (event) {
                     event.preventDefault();
                     closeModal(null);
                 }, { once: true });
-                modal.showModal();
+                if (typeof modal.showModal === 'function') {
+                    modal.showModal();
+                } else {
+                    modal.setAttribute('open', '');
+                }
                 setTimeout(function () {
                     var first = formEl.querySelector('input, textarea, select');
                     if (first) first.focus();
@@ -638,8 +656,18 @@
 
             function closeModal(value) {
                 var modal = document.getElementById('client-modal');
-                if (modal && modal.open) modal.close();
-                if (modal) modal.onclick = null;
+                if (modal) {
+                    try {
+                        if (modal.open && typeof modal.close === 'function') modal.close();
+                    } catch (e) {}
+                    modal.removeAttribute('open');
+                    modal.onclick = null;
+                    modal.classList.remove('client-modal--danger');
+                }
+                if (_modalEscHandler) {
+                    document.removeEventListener('keydown', _modalEscHandler);
+                    _modalEscHandler = null;
+                }
                 if (_modalResolve) { _modalResolve(value); _modalResolve = null; }
             }
 
@@ -869,12 +897,12 @@
                 var quoteStatuses = ['pending', 'quote_sent', 'brouillon', 'envoye'];
                 var invoiceStatuses = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'];
                 (data.quotes || []).filter(function (quote) {
-                    return quoteStatuses.indexOf(quote.status) !== -1;
+                    return quote.can_sign || quoteStatuses.indexOf(quote.status) !== -1;
                 }).slice(0, 1).forEach(function (quote) {
-                    actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: quote.signature_url ? 'sign-quote' : 'download-quote', id: quote.id });
+                    actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: 'sign-quote', id: quote.id });
                 });
                 (data.invoices || []).filter(function (invoice) {
-                    return invoiceStatuses.indexOf(invoice.status) !== -1;
+                    return invoice.can_pay_online || invoiceStatuses.indexOf(invoice.status) !== -1;
                 }).slice(0, 1).forEach(function (invoice) {
                     actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: money(invoice.remaining_amount || invoice.amount, invoice.currency) + ' TTC via Stripe', label: 'Payer via Stripe', action: 'pay-invoice-online', id: invoice.id });
                 });
@@ -894,7 +922,7 @@
                 var tbody = document.querySelector('[data-view="billing"] tbody');
                 if (!tbody) return;
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
-                    var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
+                    var payable = invoice.can_pay_online || ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
                     var actions = payable
                         ? '<button type="button" class="client-icon-action btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '" aria-label="Payer via Stripe" title="Payer via Stripe"><i class="fas fa-credit-card" aria-hidden="true"></i></button><button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>'
                         : '<button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
@@ -927,7 +955,7 @@
                 var tbody = document.querySelector('[data-view="quotes"] tbody');
                 if (!tbody) return;
                 tbody.innerHTML = (data.quotes || []).map(function (quote) {
-                    var signBtn = quote.signature_url && quote.tone === 'wait'
+                    var signBtn = quote.can_sign || quote.signature_url
                         ? '<button type="button" class="client-icon-action" data-action="sign-quote" data-id="' + esc(quote.id) + '" aria-label="Signer le devis" title="Signer"><i class="fas fa-signature" aria-hidden="true"></i></button>'
                         : '';
                     var actions = signBtn + '<button type="button" class="client-icon-action" data-action="download-quote" data-id="' + esc(quote.id) + '" aria-label="Télécharger le devis" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
@@ -1177,18 +1205,25 @@
                     var onlineInvoice = findById(state && state.invoices, id);
                     if (!onlineInvoice) return;
                     var origText = button.textContent;
-                    button.textContent = 'Redirection…';
+                    var origHtml = button.innerHTML;
+                    if (origText.trim()) {
+                        button.textContent = 'Redirection...';
+                    } else {
+                        button.setAttribute('aria-busy', 'true');
+                    }
                     try {
                         var resp = await api('pay-invoice-online', { invoice_id: onlineInvoice.id });
                         if (resp && resp.pay_url) {
                             window.location.href = resp.pay_url;
                         } else {
                             notify('Paiement en ligne indisponible — contactez-nous.', 'error');
-                            button.textContent = origText;
+                            button.innerHTML = origHtml;
+                            button.removeAttribute('aria-busy');
                         }
                     } catch (e) {
                         notify(e.message || 'Impossible de lancer le paiement.', 'error');
-                        button.textContent = origText;
+                        button.innerHTML = origHtml;
+                        button.removeAttribute('aria-busy');
                     }
                     return;
                 }
@@ -1260,8 +1295,34 @@
 
                 if (action === 'sign-quote') {
                     var quoteToSign = findById(state && state.quotes, id);
-                    if (quoteToSign && quoteToSign.signature_url) {
-                        window.open(quoteToSign.signature_url, '_blank', 'noopener');
+                    if (!quoteToSign) return;
+                    var signUrl = quoteToSign.signature_url;
+                    var origText3 = button.textContent;
+                    var origHtml3 = button.innerHTML;
+                    button.disabled = true;
+                    if (origText3.trim()) {
+                        button.textContent = 'Signature...';
+                    } else {
+                        button.setAttribute('aria-busy', 'true');
+                    }
+                    try {
+                        if (!signUrl) {
+                            var signResp = await api('sign-quote', { quote_id: quoteToSign.id });
+                            signUrl = signResp && signResp.signature_url;
+                        }
+                        if (signUrl) {
+                            window.location.href = signUrl;
+                        } else {
+                            notify('Lien de signature indisponible.', 'error');
+                            button.disabled = false;
+                            button.innerHTML = origHtml3;
+                            button.removeAttribute('aria-busy');
+                        }
+                    } catch (e) {
+                        notify(e.message || 'Impossible d’ouvrir la signature.', 'error');
+                        button.disabled = false;
+                        button.innerHTML = origHtml3;
+                        button.removeAttribute('aria-busy');
                     }
                     return;
                 }

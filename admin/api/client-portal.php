@@ -408,6 +408,8 @@ function portalFetchInvoices(PDO $db, $clientId) {
     ");
     $stmt->execute([':client_id' => $clientId]);
     return array_map(function ($row) use ($db) {
+        $remainingAmount = max(0, (float)$row['montant_ttc'] - (float)$row['montant_paye']);
+        $canPayOnline = $remainingAmount > 0.009 && !in_array($row['statut'], ['payee', 'annulee'], true);
         return [
             'id' => (int)$row['id'],
             'number' => $row['numero'],
@@ -419,11 +421,12 @@ function portalFetchInvoices(PDO $db, $clientId) {
             'amount' => (float)$row['montant_ttc'],
             'remise' => isset($row['remise']) ? (float)$row['remise'] : 0,
             'paid_amount' => (float)$row['montant_paye'],
-            'remaining_amount' => max(0, (float)$row['montant_ttc'] - (float)$row['montant_paye']),
+            'remaining_amount' => $remainingAmount,
             'currency' => 'EUR',
             'status' => $row['statut'],
             'status_label' => portalStatusLabel($row['statut']),
             'tone' => portalStatusTone($row['statut']),
+            'can_pay_online' => $canPayOnline,
             'notes' => $row['notes'],
             'conditions' => $row['conditions'],
             'lines' => portalFetchDocumentLines($db, 'facture_lignes', 'facture_id', (int)$row['id']),
@@ -505,6 +508,8 @@ function portalFetchQuotes(PDO $db, $clientId) {
     ");
     $stmt->execute([':client_id' => $clientId]);
     return array_map(function ($row) use ($db) {
+        $canSign = in_array($row['statut'], ['pending', 'quote_sent', 'brouillon', 'envoye'], true);
+        $signatureUrl = $row['signature_token'] ? portalPublicSignBase() . '/sign/devis/' . rawurlencode($row['signature_token']) : null;
         return [
             'id' => (int)$row['id'],
             'number' => $row['numero'],
@@ -520,7 +525,8 @@ function portalFetchQuotes(PDO $db, $clientId) {
             'notes' => $row['notes'],
             'conditions' => $row['conditions'],
             'lines' => portalFetchDocumentLines($db, 'devis_lignes', 'devis_id', (int)$row['id']),
-            'signature_url' => $row['signature_token'] ? ('sign/devis/' . rawurlencode($row['signature_token'])) : null,
+            'signature_url' => $signatureUrl,
+            'can_sign' => $canSign,
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
@@ -876,6 +882,20 @@ function portalErpBase() {
     return 'https://api.erp.code4u.fr';
 }
 
+function portalPublicSignBase() {
+    if (defined('PUBLIC_SIGN_URL') && PUBLIC_SIGN_URL) {
+        return rtrim(PUBLIC_SIGN_URL, '/');
+    }
+    if (defined('CLIENT_PORTAL_PUBLIC_BASE') && CLIENT_PORTAL_PUBLIC_BASE) {
+        return rtrim(CLIENT_PORTAL_PUBLIC_BASE, '/');
+    }
+    $env = getenv('PUBLIC_SIGN_URL') ?: getenv('CLIENT_PORTAL_PUBLIC_BASE');
+    if ($env) {
+        return rtrim($env, '/');
+    }
+    return 'https://code4u.fr';
+}
+
 function portalEnsurePaymentTokenColumn(PDO $db, $table) {
     if (portalTableExists($db, $table) && !portalColumnExists($db, $table, 'payment_token')) {
         $db->exec("ALTER TABLE {$table} ADD COLUMN payment_token VARCHAR(64) DEFAULT NULL");
@@ -883,6 +903,54 @@ function portalEnsurePaymentTokenColumn(PDO $db, $table) {
     if ($table === 'support_subscriptions' && portalTableExists($db, $table) && !portalColumnExists($db, $table, 'options_json')) {
         $db->exec("ALTER TABLE {$table} ADD COLUMN options_json JSON DEFAULT NULL");
     }
+}
+
+/** Signature de devis : cree le meme lien public que l'envoi email ERP. */
+function portalSignQuote(PDO $db, array $client, array $input) {
+    if (!portalTableExists($db, 'devis')) {
+        portalRespond(['success' => false, 'message' => 'Devis indisponibles.'], 503);
+    }
+
+    $quoteId = (int)($input['quote_id'] ?? 0);
+    $stmt = $db->prepare("
+        SELECT id, numero, statut, signature_token
+        FROM devis
+        WHERE id = :id AND client_id = :client_id
+        LIMIT 1
+    ");
+    $stmt->execute([':id' => $quoteId, ':client_id' => (int)$client['id']]);
+    $quote = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$quote) {
+        portalRespond(['success' => false, 'message' => 'Devis introuvable.'], 404);
+    }
+    if (!in_array($quote['statut'], ['pending', 'quote_sent', 'brouillon', 'envoye'], true)) {
+        portalRespond(['success' => false, 'message' => 'Ce devis ne peut plus etre signe.'], 422);
+    }
+
+    $token = $quote['signature_token'] ?: bin2hex(random_bytes(32));
+    if (empty($quote['signature_token'])) {
+        $sets = ['signature_token = :token'];
+        $params = [
+            ':token' => $token,
+            ':id' => (int)$quote['id'],
+            ':client_id' => (int)$client['id'],
+        ];
+        if (portalColumnExists($db, 'devis', 'signature_token_expires_at')) {
+            $sets[] = 'signature_token_expires_at = :expires_at';
+            $params[':expires_at'] = date('Y-m-d H:i:s', strtotime('+30 days'));
+        }
+        $update = $db->prepare("
+            UPDATE devis
+            SET " . implode(', ', $sets) . "
+            WHERE id = :id AND client_id = :client_id
+        ");
+        $update->execute($params);
+    }
+
+    return [
+        'success' => true,
+        'signature_url' => portalPublicSignBase() . '/sign/devis/' . rawurlencode($token),
+    ];
 }
 
 /** Paiement EN LIGNE (Stripe) : génère un token et renvoie l'URL de paiement ERP. */
@@ -1392,6 +1460,10 @@ try {
 
     if ($action === 'reply-ticket') {
         portalRespond(portalReplyTicket($db, $client, $input));
+    }
+
+    if ($action === 'sign-quote') {
+        portalRespond(portalSignQuote($db, $client, $input));
     }
 
     if ($action === 'pay-invoice') {
