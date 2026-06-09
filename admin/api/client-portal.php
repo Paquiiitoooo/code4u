@@ -278,11 +278,16 @@ function portalFetchSubscription(PDO $db, $clientId) {
 
     $included = (float)$row['included_hours'];
     $used = (float)$row['used_hours'];
+    $hasStripeSubscription = !empty($row['stripe_subscription_id']);
+    $hasPaymentToken = !empty($row['payment_token'] ?? null);
+    $paymentStatus = $hasStripeSubscription ? 'active' : (($row['status'] === 'paused' && $hasPaymentToken) ? 'pending_payment' : 'manual');
     return [
         'id' => (int)$row['id'],
         'plan_name' => $row['plan_name'],
         'status' => $row['status'],
         'status_label' => portalStatusLabel($row['status']),
+        'payment_status' => $paymentStatus,
+        'has_pending_payment' => $paymentStatus === 'pending_payment',
         'monthly_price' => (float)$row['monthly_price'],
         'currency' => $row['currency'],
         'included_hours' => $included,
@@ -326,27 +331,64 @@ function portalFetchDocumentLines(PDO $db, $table, $foreignKey, $documentId) {
     if (!portalTableExists($db, $table)) {
         return [];
     }
+    if (!preg_match('/^[a-zA-Z0-9_]+$/', $table) || !preg_match('/^[a-zA-Z0-9_]+$/', $foreignKey)) {
+        return [];
+    }
+
+    $hasId = portalColumnExists($db, $table, 'id');
+    $hasParentId = portalColumnExists($db, $table, 'parent_id');
+    $hasProduitId = portalColumnExists($db, $table, 'produit_id');
+    $hasRemise = portalColumnExists($db, $table, 'remise');
+    $hasOrdre = portalColumnExists($db, $table, 'ordre');
+    $joinProduit = $hasProduitId && portalTableExists($db, 'produits');
+
+    $select = [
+        $hasId ? 'l.id' : 'NULL AS id',
+        $hasParentId ? 'l.parent_id' : 'NULL AS parent_id',
+        $hasProduitId ? 'l.produit_id' : 'NULL AS produit_id',
+        'l.type_ligne',
+        'l.libelle',
+        'l.description',
+        'l.quantite',
+        'l.prix_unitaire_ht',
+        'l.tva',
+        $hasRemise ? 'l.remise' : '0 AS remise',
+        $joinProduit ? 'p.unite AS produit_unite' : 'NULL AS produit_unite',
+    ];
+    $order = [];
+    if ($hasOrdre) {
+        $order[] = 'l.ordre ASC';
+    }
+    $order[] = $hasId ? 'l.id ASC' : 'l.libelle ASC';
+
     $stmt = $db->prepare("
-        SELECT type_ligne, libelle, description, quantite, prix_unitaire_ht, tva
-        FROM {$table}
-        WHERE {$foreignKey} = :id
-        ORDER BY ordre ASC, id ASC
+        SELECT " . implode(', ', $select) . "
+        FROM {$table} l
+        " . ($joinProduit ? "LEFT JOIN produits p ON p.id = l.produit_id" : "") . "
+        WHERE l.{$foreignKey} = :id
+        ORDER BY " . implode(', ', $order) . "
     ");
     $stmt->execute([':id' => $documentId]);
     return array_map(function ($row) {
         $qte = (float)$row['quantite'];
         $pu = (float)$row['prix_unitaire_ht'];
         $tva = (float)$row['tva'];
-        $ht = $qte * $pu;
+        $remise = (float)($row['remise'] ?? 0);
+        $ht = $qte * $pu * (1 - max(0, min(100, $remise)) / 100);
         return [
+            'id' => $row['id'] !== null ? (int)$row['id'] : null,
+            'parent_id' => $row['parent_id'] !== null ? (int)$row['parent_id'] : null,
+            'produit_id' => $row['produit_id'] !== null ? (int)$row['produit_id'] : null,
             'type_ligne' => $row['type_ligne'],
             'libelle' => $row['libelle'],
             'description' => $row['description'],
             'quantite' => $qte,
             'prix_unitaire_ht' => $pu,
             'tva' => $tva,
+            'remise' => $remise,
             'montant_ht' => $ht,
             'montant_ttc' => $ht * (1 + $tva / 100),
+            'produit' => ['unite' => $row['produit_unite'] ?? null],
         ];
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
@@ -356,8 +398,9 @@ function portalFetchInvoices(PDO $db, $clientId) {
         return [];
     }
 
+    $remiseSelect = portalColumnExists($db, 'factures', 'remise') ? ', remise' : '';
     $stmt = $db->prepare("
-        SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_ttc, montant_paye, notes, conditions
+        SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_ttc, montant_paye, notes, conditions{$remiseSelect}
         FROM factures
         WHERE client_id = :client_id
         ORDER BY date_facture DESC, id DESC
@@ -374,6 +417,7 @@ function portalFetchInvoices(PDO $db, $clientId) {
             'amount_ht' => (float)$row['montant_ht'],
             'amount_tva' => (float)$row['montant_tva'],
             'amount' => (float)$row['montant_ttc'],
+            'remise' => isset($row['remise']) ? (float)$row['remise'] : 0,
             'paid_amount' => (float)$row['montant_paye'],
             'remaining_amount' => max(0, (float)$row['montant_ttc'] - (float)$row['montant_paye']),
             'currency' => 'EUR',
@@ -796,11 +840,18 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     }
     portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
     $subId = (int)($input['subscription_id'] ?? 0);
-    $stmt = $db->prepare("SELECT id, monthly_price FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
+    $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
+    $stmt = $db->prepare("SELECT id, monthly_price, status{$stripeSelect} FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
     $stmt->execute([':id' => $subId, ':cid' => (int)$client['id']]);
     $sub = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$sub) {
         portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
+    }
+    if (!empty($sub['stripe_subscription_id'])) {
+        portalRespond(['success' => false, 'message' => 'Le paiement automatique est deja actif.'], 422);
+    }
+    if ($sub['status'] === 'cancelled') {
+        portalRespond(['success' => false, 'message' => 'Cet abonnement est resilie.'], 422);
     }
     if ((float)$sub['monthly_price'] <= 0) {
         portalRespond(['success' => false, 'message' => 'Montant d’abonnement invalide.'], 422);
@@ -852,14 +903,52 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
     if ($hours < 1) {
         portalRespond(['success' => false, 'message' => 'Choisissez un nombre d’heures.'], 422);
     }
-    // Un seul abonnement actif à la fois.
-    $check = $db->prepare("SELECT id FROM support_subscriptions WHERE client_id = :cid AND status = 'active' LIMIT 1");
-    $check->execute([':cid' => (int)$client['id']]);
-    if ($check->fetch(PDO::FETCH_ASSOC)) {
-        portalRespond(['success' => false, 'message' => 'Vous avez déjà un abonnement actif.'], 422);
-    }
     $price = portalSubscriptionPrice($hours);
     $token = bin2hex(random_bytes(16));
+    $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
+    $existingStmt = $db->prepare("
+        SELECT id, status, payment_token{$stripeSelect}
+        FROM support_subscriptions
+        WHERE client_id = :cid AND status IN ('active', 'paused')
+        ORDER BY FIELD(status, 'active', 'paused'), created_at DESC
+        LIMIT 1
+    ");
+    $existingStmt->execute([':cid' => (int)$client['id']]);
+    $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
+    if ($existing && $existing['status'] === 'active') {
+        portalRespond(['success' => false, 'message' => 'Vous avez deja un abonnement actif.'], 422);
+    }
+    if ($existing && !empty($existing['stripe_subscription_id'])) {
+        portalRespond(['success' => false, 'message' => 'Vous avez deja un abonnement support.'], 422);
+    }
+    if ($existing) {
+        $stmt = $db->prepare("
+            UPDATE support_subscriptions
+            SET plan_name = :plan,
+                status = 'paused',
+                monthly_price = :monthly,
+                currency = 'EUR',
+                included_hours = :hours,
+                used_hours = 0,
+                response_sla = :sla,
+                renewal_date = :renewal,
+                overage_rate = :overage,
+                payment_token = :token
+            WHERE id = :id AND client_id = :cid
+        ");
+        $stmt->execute([
+            ':id' => (int)$existing['id'],
+            ':cid' => (int)$client['id'],
+            ':plan' => 'Support ' . $price['hours'] . ' h / mois',
+            ':monthly' => $price['monthly'],
+            ':hours' => $price['hours'],
+            ':sla' => 'Reponse sous 8 h ouvrees',
+            ':renewal' => date('Y-m-d', strtotime('+1 month')),
+            ':overage' => $price['rate'],
+            ':token' => $token,
+        ]);
+        return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$existing['id'], 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+    }
     // status 'paused' = en attente de paiement ; le webhook Stripe le passe en 'active'.
     $stmt = $db->prepare("
         INSERT INTO support_subscriptions
@@ -872,12 +961,12 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
         ':plan' => 'Support ' . $price['hours'] . ' h / mois',
         ':monthly' => $price['monthly'],
         ':hours' => $price['hours'],
-        ':sla' => 'Réponse sous 8 h ouvrées',
+        ':sla' => 'Reponse sous 8 h ouvrees',
         ':renewal' => date('Y-m-d', strtotime('+1 month')),
         ':overage' => $price['rate'],
         ':token' => $token,
     ]);
-    return ['success' => true, 'pricing' => $price, 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+    return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$db->lastInsertId(), 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
 }
 
 function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
@@ -888,6 +977,16 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
         portalRespond(['success' => false, 'message' => 'Statut abonnement invalide.'], 422);
     }
     $subscriptionId = (int)($input['subscription_id'] ?? 0);
+    $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
+    $currentStmt = $db->prepare("SELECT id, status, payment_token{$stripeSelect} FROM support_subscriptions WHERE id = :id AND client_id = :client_id LIMIT 1");
+    $currentStmt->execute([':id' => $subscriptionId, ':client_id' => (int)$client['id']]);
+    $current = $currentStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$current) {
+        portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
+    }
+    if ($status === 'active' && empty($current['stripe_subscription_id']) && !empty($current['payment_token'])) {
+        portalRespond(['success' => false, 'message' => 'Finalisez le paiement Stripe pour activer cet abonnement.'], 422);
+    }
     $stmt = $db->prepare("
         UPDATE support_subscriptions
         SET status = :status
@@ -898,10 +997,6 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
         ':id' => $subscriptionId,
         ':client_id' => (int)$client['id'],
     ]);
-    if ($stmt->rowCount() === 0) {
-        portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
-    }
-
     $label = $status === 'cancelled' ? 'Résiliation demandée' : ($status === 'paused' ? 'Mise en pause demandée' : 'Réactivation demandée');
     if (portalHasTables($db, ['tickets', 'ticket_messages'])) {
         // notify=false : on envoie un email dédié abonnement ci-dessous (pas le mail "demande reçue").

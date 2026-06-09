@@ -208,9 +208,23 @@
                     <section class="client-view" data-view="support">
                         <article class="client-panel client-panel--accent sub-configurator" data-sub-configurator hidden>
                             <div class="client-panel__head">
-                                <div><span class="client-kicker">Sans engagement long</span><h2>Composez votre abonnement support</h2></div>
+                                <div><span class="client-kicker">Abonnement support</span><h2>Composez votre formule</h2></div>
                             </div>
-                            <p class="sub-configurator__intro">Choisissez votre volume d'heures par mois. Plus vous en prenez, plus le tarif horaire baisse — bien en‑dessous de notre taux standard de 30&nbsp;€/h.</p>
+                            <p class="sub-configurator__intro">Choisissez votre volume d'heures par mois. Le tarif sans engagement reste dégressif, et l'engagement 12 mois applique une remise supplémentaire.</p>
+                            <div class="sub-configurator__commitment" role="radiogroup" aria-label="Type d'engagement">
+                                <label class="is-active">
+                                    <input type="radio" name="sub-commitment" value="0" checked>
+                                    <span>Sans engagement</span>
+                                    <strong>Flexible</strong>
+                                    <small>Résiliable à tout moment</small>
+                                </label>
+                                <label>
+                                    <input type="radio" name="sub-commitment" value="12">
+                                    <span>Avec engagement</span>
+                                    <strong>-15 % en plus</strong>
+                                    <small>Engagement 12 mois</small>
+                                </label>
+                            </div>
                             <div class="sub-configurator__hours">
                                 <label for="sub-hours">Heures incluses / mois</label>
                                 <div class="sub-configurator__control">
@@ -484,6 +498,8 @@
 
     <script src="assets/js/template-loader.js"></script>
     <script src="assets/js/main.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="assets/js/client-invoice-pdf.js"></script>
     <script>
         (function () {
             var API = 'admin/api/client-portal.php';
@@ -659,6 +675,12 @@
 
             function printableDocument(kind, item) {
                 var isInvoice = kind === 'invoice';
+                if (isInvoice && window.Code4UInvoicePDF && typeof window.Code4UInvoicePDF.downloadInvoice === 'function') {
+                    return window.Code4UInvoicePDF.downloadInvoice(item, (state && state.client) || {})
+                        .catch(function (error) {
+                            notify((error && error.message) || 'Impossible de générer le PDF.', 'error');
+                        });
+                }
                 var docLabel = isInvoice ? 'FACTURE' : 'DEVIS';
                 var title = (isInvoice ? 'Facture ' : 'Devis ') + (item.number || '');
                 var client = (state && state.client) || {};
@@ -862,8 +884,10 @@
                 if (!tbody) return;
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
                     var payable = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
-                    var mainAction = payable ? '<button type="button" class="btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '">Payer en ligne</button>' : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">PDF</button>';
-                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + mainAction + ' <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Voir</button></td></tr>';
+                    var actions = payable
+                        ? '<button type="button" class="btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '">Payer en ligne</button> <button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Télécharger</button>'
+                        : '<button type="button" data-action="open-invoice" data-id="' + esc(invoice.id) + '">Télécharger</button>';
+                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
                 }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
             }
 
@@ -881,7 +905,10 @@
                 var sub = data.subscription || {};
                 var summary = document.querySelector('.payment-summary');
                 if (summary && sub.plan_name) {
-                    summary.innerHTML = '<div><span>Prochain prélèvement</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + dateFr(sub.renewal_date) + '</strong></div>';
+                    var pendingPayment = sub.payment_status === 'pending_payment';
+                    var summaryLabel = pendingPayment ? 'Paiement à finaliser' : 'Prochain prélèvement';
+                    var summaryDate = pendingPayment ? 'Stripe' : dateFr(sub.renewal_date);
+                    summary.innerHTML = '<div><span>' + summaryLabel + '</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + summaryDate + '</strong></div>';
                 }
             }
 
@@ -918,13 +945,34 @@
                 }
             }
 
-            function subscriptionPrice(hours) {
+            function selectedCommitmentMonths() {
+                var checked = document.querySelector('input[name="sub-commitment"]:checked');
+                return checked ? parseInt(checked.value, 10) || 0 : 0;
+            }
+
+            function subscriptionPrice(hours, commitmentMonths) {
                 var h = Math.max(1, Math.min(60, parseInt(hours, 10) || 0));
                 var base = 30;
                 var rate = Math.max(14, 21 - 0.2 * (h - 2));
+                var noCommitmentRate = rate;
+                var commitment = commitmentMonths >= 12 ? 12 : 0;
+                if (commitment) {
+                    rate = rate * 0.85;
+                }
                 rate = Math.round(rate * 2) / 2;
                 var monthly = Math.round(h * rate);
-                return { hours: h, rate: rate, base: base, monthly: monthly, discount: Math.round((1 - rate / base) * 100), savings: Math.round(h * base) - monthly };
+                var noCommitmentMonthly = Math.round(h * noCommitmentRate);
+                return {
+                    hours: h,
+                    rate: rate,
+                    base: base,
+                    monthly: monthly,
+                    discount: Math.round((1 - rate / base) * 100),
+                    savings: Math.round(h * base) - monthly,
+                    commitmentMonths: commitment,
+                    commitmentLabel: commitment ? 'Engagement 12 mois' : 'Sans engagement',
+                    commitmentSavings: commitment ? Math.max(0, noCommitmentMonthly - monthly) : 0
+                };
             }
 
             var subConfiguratorReady = false;
@@ -932,18 +980,32 @@
                 var slider = document.getElementById('sub-hours');
                 if (!slider) return;
                 function update() {
-                    var p = subscriptionPrice(slider.value);
+                    var commitment = selectedCommitmentMonths();
+                    var p = subscriptionPrice(slider.value, commitment);
                     var out = document.getElementById('sub-hours-out');
                     var rateEl = document.getElementById('sub-rate');
                     var discEl = document.getElementById('sub-discount');
                     var monthEl = document.getElementById('sub-monthly');
+                    var min = parseInt(slider.min || '2', 10);
+                    var max = parseInt(slider.max || '40', 10);
+                    var progress = ((p.hours - min) / (max - min)) * 100;
+                    slider.style.background = 'linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ' + progress + '%, var(--border-color) ' + progress + '%)';
                     if (out) out.textContent = p.hours + ' h';
                     if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' € HT / h';
-                    if (discEl) discEl.textContent = '−' + p.discount + ' % · ' + p.savings + ' € économisés';
+                    if (discEl) discEl.textContent = '−' + p.discount + ' % · ' + p.savings + ' € économisés' + (p.commitmentSavings ? ' dont ' + p.commitmentSavings + ' € via engagement' : '');
                     if (monthEl) monthEl.textContent = p.monthly + ' € HT / mois';
                 }
                 if (!subConfiguratorReady) {
                     slider.addEventListener('input', update);
+                    document.querySelectorAll('input[name="sub-commitment"]').forEach(function (radio) {
+                        radio.addEventListener('change', function () {
+                            document.querySelectorAll('.sub-configurator__commitment label').forEach(function (label) {
+                                var input = label.querySelector('input');
+                                label.classList.toggle('is-active', !!input && input.checked);
+                            });
+                            update();
+                        });
+                    });
                     subConfiguratorReady = true;
                 }
                 update();
@@ -957,8 +1019,13 @@
                 if (configurator) configurator.hidden = !!hasSub;
                 if (activeBlock) activeBlock.hidden = !hasSub;
                 if (!hasSub) { initSubConfigurator(); return; }
+                var pendingPayment = sub.payment_status === 'pending_payment';
                 document.querySelectorAll('[data-sub-active] .client-panel--accent h2').forEach(function (node) {
                     node.textContent = sub.plan_name;
+                });
+                document.querySelectorAll('[data-sub-active] .client-panel--accent .client-status').forEach(function (node) {
+                    node.className = 'client-status ' + (pendingPayment ? 'client-status--wait' : (sub.status === 'active' ? 'client-status--ok' : ''));
+                    node.textContent = pendingPayment ? 'Paiement à finaliser' : (sub.status_label || 'Actif');
                 });
                 document.querySelectorAll('.support-progress').forEach(function (box) {
                     var strong = box.querySelector('strong');
@@ -984,9 +1051,11 @@
                 if (inline) {
                     var subscribeBtn = sub.stripe_subscription_id
                         ? '<span class="client-status client-status--ok">Paiement auto. actif</span>'
-                        : '<button class="btn btn-primary btn-pay-online" type="button" data-action="subscribe-online">Activer le paiement automatique</button>';
+                        : '<button class="btn btn-primary btn-pay-online" type="button" data-action="subscribe-online">' + (pendingPayment ? 'Continuer le paiement Stripe' : 'Activer le paiement automatique') + '</button>';
                     if (sub.status === 'cancelled') {
                         inline.innerHTML = '<span class="client-status">Résiliation demandée</span>';
+                    } else if (pendingPayment) {
+                        inline.innerHTML = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Annuler</button>';
                     } else if (sub.status === 'paused') {
                         inline.innerHTML = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                     } else {
@@ -1114,10 +1183,11 @@
                 if (action === 'create-subscription') {
                     var hoursInput = document.getElementById('sub-hours');
                     var hours = parseInt(hoursInput ? hoursInput.value : '10', 10) || 10;
-                    var p = subscriptionPrice(hours);
+                    var commitmentMonths = selectedCommitmentMonths();
+                    var p = subscriptionPrice(hours, commitmentMonths);
                     var confirmed = await openConfirm(
                         'Confirmer votre abonnement',
-                        '<strong>' + hours + ' h / mois</strong> au tarif de <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € HT/h</strong><br>Soit <strong>' + p.monthly + ' € HT / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
+                        '<strong>' + hours + ' h / mois</strong><br>' + esc(p.commitmentLabel) + '<br><br>Tarif : <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € HT/h</strong><br>Soit <strong>' + p.monthly + ' € HT / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
                         { icon: '🔒', confirmLabel: 'Continuer vers le paiement' }
                     );
                     if (!confirmed) return;
@@ -1126,7 +1196,7 @@
                     button.disabled = true;
                     button.textContent = 'Traitement…';
                     try {
-                        var createResp = await api('create-subscription', { hours: hours });
+                        var createResp = await api('create-subscription', { hours: hours, commitment_months: commitmentMonths });
                         if (createResp && createResp.pay_url) {
                             window.location.href = createResp.pay_url;
                         } else {
