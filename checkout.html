@@ -6,7 +6,6 @@
     <title>Paiement securise - Code4U</title>
     <link rel="icon" href="assets/images/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <script src="https://js.stripe.com/v3/"></script>
     <style>
         :root {
             --blue: #0878d8;
@@ -241,6 +240,33 @@
                 message.textContent = text || 'Paiement indisponible.';
             }
 
+            function loadStripeJs() {
+                if (window.Stripe) {
+                    return Promise.resolve();
+                }
+                return new Promise(function (resolve, reject) {
+                    var existing = document.querySelector('script[data-stripe-js]');
+                    var script = existing || document.createElement('script');
+                    var timer = setTimeout(function () {
+                        reject(new Error('Stripe.js ne repond pas. Desactivez le bloqueur de publicite sur code4u.fr puis rechargez la page.'));
+                    }, 10000);
+                    script.onload = function () {
+                        clearTimeout(timer);
+                        resolve();
+                    };
+                    script.onerror = function () {
+                        clearTimeout(timer);
+                        reject(new Error('Stripe.js est bloque. Desactivez le bloqueur de publicite sur code4u.fr puis rechargez la page.'));
+                    };
+                    if (!existing) {
+                        script.src = 'https://js.stripe.com/v3/';
+                        script.async = true;
+                        script.setAttribute('data-stripe-js', 'true');
+                        document.head.appendChild(script);
+                    }
+                });
+            }
+
             async function api(path, options) {
                 var controller = new AbortController();
                 var timer = setTimeout(function () { controller.abort(); }, 12000);
@@ -292,9 +318,7 @@
                     if (!clientSecret) {
                         throw new Error('Client secret Stripe manquant. Le backend ERP doit etre redeploye.');
                     }
-                    if (!window.Stripe) {
-                        throw new Error('Stripe.js ne s est pas charge. Desactivez le bloqueur ou verifiez js.stripe.com.');
-                    }
+                    await loadStripeJs();
                     stripe = Stripe(details.publishableKey);
                     elements = stripe.elements({
                         clientSecret: clientSecret,

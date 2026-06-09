@@ -1005,10 +1005,18 @@ function portalPayInvoiceOnline(PDO $db, array $client, array $input) {
     if ($remaining <= 0.009) {
         portalRespond(['success' => false, 'message' => 'Cette facture est déjà réglée.'], 422);
     }
-    $token = bin2hex(random_bytes(16));
+    $token = !empty($invoice['payment_token'] ?? null) && preg_match('/^[a-f0-9]{32,64}$/i', (string)$invoice['payment_token'])
+        ? (string)$invoice['payment_token']
+        : bin2hex(random_bytes(16));
     $stmt = $db->prepare("UPDATE factures SET payment_token = :t WHERE id = :id AND client_id = :cid");
     $stmt->execute([':t' => $token, ':id' => $invoiceId, ':cid' => (int)$client['id']]);
-    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=invoice&token=' . rawurlencode($token)];
+    $check = $db->prepare("SELECT payment_token FROM factures WHERE id = :id AND client_id = :cid LIMIT 1");
+    $check->execute([':id' => $invoiceId, ':cid' => (int)$client['id']]);
+    $savedToken = (string)$check->fetchColumn();
+    if (!preg_match('/^[a-f0-9]{32,64}$/i', $savedToken)) {
+        portalRespond(['success' => false, 'message' => 'Impossible de preparer le lien de paiement.'], 500);
+    }
+    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=invoice&token=' . rawurlencode($savedToken)];
 }
 
 /** Souscription EN LIGNE (Stripe) à un abonnement support. */
@@ -1016,7 +1024,7 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     portalEnsureSupportSubscriptionTable($db);
     $subId = (int)($input['subscription_id'] ?? 0);
     $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
-    $stmt = $db->prepare("SELECT id, monthly_price, status{$stripeSelect} FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
+    $stmt = $db->prepare("SELECT id, monthly_price, status, payment_token{$stripeSelect} FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
     $stmt->execute([':id' => $subId, ':cid' => (int)$client['id']]);
     $sub = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$sub) {
@@ -1031,10 +1039,18 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     if ((float)$sub['monthly_price'] <= 0) {
         portalRespond(['success' => false, 'message' => 'Montant d’abonnement invalide.'], 422);
     }
-    $token = bin2hex(random_bytes(16));
+    $token = !empty($sub['payment_token'] ?? null) && preg_match('/^[a-f0-9]{32,64}$/i', (string)$sub['payment_token'])
+        ? (string)$sub['payment_token']
+        : bin2hex(random_bytes(16));
     $upd = $db->prepare("UPDATE support_subscriptions SET payment_token = :t WHERE id = :id AND client_id = :cid");
     $upd->execute([':t' => $token, ':id' => $subId, ':cid' => (int)$client['id']]);
-    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . $token];
+    $check = $db->prepare("SELECT payment_token FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
+    $check->execute([':id' => $subId, ':cid' => (int)$client['id']]);
+    $savedToken = (string)$check->fetchColumn();
+    if (!preg_match('/^[a-f0-9]{32,64}$/i', $savedToken)) {
+        portalRespond(['success' => false, 'message' => 'Impossible de preparer le lien d abonnement.'], 500);
+    }
+    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . rawurlencode($savedToken)];
 }
 
 /**
