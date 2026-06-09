@@ -905,6 +905,39 @@ function portalEnsurePaymentTokenColumn(PDO $db, $table) {
     }
 }
 
+function portalEnsureSupportSubscriptionTable(PDO $db) {
+    if (!portalTableExists($db, 'support_subscriptions')) {
+        $db->exec("
+            CREATE TABLE IF NOT EXISTS support_subscriptions (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                client_id INT NOT NULL,
+                plan_name VARCHAR(120) NOT NULL,
+                status ENUM('active','paused','cancelled') NOT NULL DEFAULT 'active',
+                monthly_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                currency VARCHAR(3) NOT NULL DEFAULT 'EUR',
+                included_hours DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+                used_hours DECIMAL(6,2) NOT NULL DEFAULT 0.00,
+                response_sla VARCHAR(120) DEFAULT NULL,
+                renewal_date DATE DEFAULT NULL,
+                overage_rate DECIMAL(10,2) DEFAULT NULL,
+                options_json JSON DEFAULT NULL,
+                payment_token VARCHAR(64) DEFAULT NULL,
+                stripe_subscription_id VARCHAR(64) DEFAULT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                KEY idx_support_subscriptions_client (client_id),
+                KEY idx_support_subscriptions_status (status),
+                KEY idx_support_subscriptions_payment_token (payment_token),
+                KEY idx_support_subscriptions_stripe_subscription (stripe_subscription_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        ");
+    }
+    portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
+    if (!portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id')) {
+        $db->exec("ALTER TABLE support_subscriptions ADD COLUMN stripe_subscription_id VARCHAR(64) DEFAULT NULL");
+    }
+}
+
 /** Signature de devis : cree le meme lien public que l'envoi email ERP. */
 function portalSignQuote(PDO $db, array $client, array $input) {
     if (!portalTableExists($db, 'devis')) {
@@ -979,10 +1012,7 @@ function portalPayInvoiceOnline(PDO $db, array $client, array $input) {
 
 /** Souscription EN LIGNE (Stripe) à un abonnement support. */
 function portalSubscribeOnline(PDO $db, array $client, array $input) {
-    if (!portalTableExists($db, 'support_subscriptions')) {
-        portalRespond(['success' => false, 'message' => 'Aucun abonnement disponible.'], 404);
-    }
-    portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
+    portalEnsureSupportSubscriptionTable($db);
     $subId = (int)($input['subscription_id'] ?? 0);
     $stripeSelect = portalColumnExists($db, 'support_subscriptions', 'stripe_subscription_id') ? ', stripe_subscription_id' : ', NULL AS stripe_subscription_id';
     $stmt = $db->prepare("SELECT id, monthly_price, status{$stripeSelect} FROM support_subscriptions WHERE id = :id AND client_id = :cid LIMIT 1");
@@ -1048,10 +1078,7 @@ function portalSubscriptionQuote(array $input) {
  * on crée l'abonnement (en attente de paiement) et on renvoie l'URL Stripe.
  */
 function portalCreateSubscription(PDO $db, array $client, array $input) {
-    if (!portalTableExists($db, 'support_subscriptions')) {
-        portalRespond(['success' => false, 'message' => 'Abonnement indisponible.'], 503);
-    }
-    portalEnsurePaymentTokenColumn($db, 'support_subscriptions');
+    portalEnsureSupportSubscriptionTable($db);
     $hours = (int)($input['hours'] ?? 0);
     if ($hours < 1) {
         portalRespond(['success' => false, 'message' => 'Choisissez un nombre d’heures.'], 422);
@@ -1134,9 +1161,7 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
 }
 
 function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
-    if (!portalTableExists($db, 'support_subscriptions')) {
-        portalRespond(['success' => false, 'message' => 'Table abonnement manquante.'], 503);
-    }
+    portalEnsureSupportSubscriptionTable($db);
     if (!in_array($status, ['active', 'paused', 'cancelled'], true)) {
         portalRespond(['success' => false, 'message' => 'Statut abonnement invalide.'], 422);
     }
