@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paiement sécurisé - Code4U</title>
+    <title>Paiement securise - Code4U</title>
     <link rel="icon" href="assets/images/logo.png">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://js.stripe.com/v3/"></script>
     <style>
         :root {
-            --blue: #1877f2;
+            --blue: #0878d8;
             --ink: #15151d;
             --muted: #626875;
             --line: #dedede;
@@ -116,7 +116,7 @@
             min-height: 54px;
             border: 0;
             border-radius: 7px;
-            background: #0878d8;
+            background: var(--blue);
             color: #fff;
             font: inherit;
             font-weight: 700;
@@ -129,6 +129,7 @@
             color: #b42318;
             margin: 0.9rem 0 0;
             font-size: 0.92rem;
+            line-height: 1.5;
         }
         .foot {
             display: flex;
@@ -162,12 +163,12 @@
                 <span><i class="fas fa-store"></i></span>
                 <span>Code4U</span>
             </div>
-            <small id="invoiceTitle">Facture Code4U</small>
+            <small id="checkoutTitle">Paiement Code4U</small>
             <strong id="amount">--</strong>
-            <p>Paiement sécurisé par carte. Vos informations bancaires sont chiffrées et traitées directement par Stripe.</p>
+            <p>Paiement securise par carte. Vos informations bancaires sont chiffrees et traitees directement par Stripe.</p>
         </section>
         <section class="payment">
-            <h1>Coordonnées</h1>
+            <h1>Coordonnees</h1>
             <div class="box email">
                 <span>E-mail</span>
                 <b id="email">--</b>
@@ -183,13 +184,14 @@
                 <p class="message" id="message"></p>
             </form>
             <div class="foot">
-                <span>Propulsé par <strong>stripe</strong></span>
+                <span>Propulse par <strong>stripe</strong></span>
                 <span>|</span>
                 <span>Conditions d'utilisation</span>
-                <span>Confidentialité</span>
+                <span>Confidentialite</span>
             </div>
         </section>
     </main>
+    <noscript>JavaScript doit etre active pour payer en ligne.</noscript>
     <script>
         (function () {
             var API_BASE = 'https://api.erp.code4u.fr';
@@ -206,9 +208,36 @@
                 return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(Number(amount || 0));
             }
 
+            function configForType() {
+                if (type === 'subscription') {
+                    return {
+                        detailsPath: '/public/pay/subscription/' + encodeURIComponent(token) + '/details',
+                        intentPath: '/public/pay/subscription/' + encodeURIComponent(token) + '/intent',
+                        itemKey: 'subscription',
+                        titlePrefix: 'Abonnement',
+                        successPay: 'sub_success',
+                        invalidMessage: 'Lien d abonnement invalide.',
+                    };
+                }
+                return {
+                    detailsPath: '/public/pay/invoice/' + encodeURIComponent(token) + '/details',
+                    intentPath: '/public/pay/invoice/' + encodeURIComponent(token) + '/intent',
+                    itemKey: 'invoice',
+                    titlePrefix: 'Facture',
+                    successPay: 'success',
+                    invalidMessage: 'Lien de paiement invalide.',
+                };
+            }
+
             function showError(text) {
                 document.getElementById('loader').hidden = true;
                 document.getElementById('checkout').hidden = false;
+                document.getElementById('payment-form').hidden = true;
+                document.querySelector('.foot').hidden = true;
+                document.getElementById('checkoutTitle').textContent = 'Paiement indisponible';
+                document.getElementById('amount').textContent = '--';
+                document.getElementById('email').textContent = 'Erreur';
+                message.hidden = false;
                 message.textContent = text || 'Paiement indisponible.';
             }
 
@@ -225,15 +254,15 @@
                 } catch (error) {
                     clearTimeout(timer);
                     if (error && error.name === 'AbortError') {
-                        throw new Error('L’API de paiement ne répond pas. Vérifiez le déploiement ERP.');
+                        throw new Error('L API de paiement ne repond pas. Le backend ERP doit etre redeploye ou redemarre.');
                     }
-                    throw new Error('Impossible de joindre l’API de paiement. Vérifiez CORS ou le serveur ERP.');
+                    throw new Error('Impossible de joindre l API de paiement. Verifiez le serveur ERP et CORS.');
                 }
                 clearTimeout(timer);
                 try {
                     data = raw ? JSON.parse(raw) : {};
                 } catch (error) {
-                    throw new Error('Réponse API invalide sur ' + path + '. Le backend ERP n’est probablement pas à jour.');
+                    throw new Error('Reponse API invalide sur ' + path + '. Le backend ERP n est probablement pas a jour.');
                 }
                 if (!response.ok || data.success === false) {
                     throw new Error(data.message || 'Paiement indisponible');
@@ -242,21 +271,29 @@
             }
 
             async function init() {
-                if (type !== 'invoice' || !/^[a-f0-9]{32,64}$/i.test(token)) {
-                    showError('Lien de paiement invalide.');
+                var config = configForType();
+                if ((type !== 'invoice' && type !== 'subscription') || !/^[a-f0-9]{32,64}$/i.test(token)) {
+                    showError(config.invalidMessage);
                     return;
                 }
                 try {
-                    var details = await api('/public/pay/invoice/' + encodeURIComponent(token) + '/details');
-                    document.getElementById('invoiceTitle').textContent = 'Facture ' + details.invoice.number + ' — Code4U';
-                    document.getElementById('amount').textContent = money(details.invoice.amount);
-                    document.getElementById('email').textContent = details.invoice.email || 'Client Code4U';
-                    submit.textContent = 'Payer ' + money(details.invoice.amount);
+                    var details = await api(config.detailsPath);
+                    var item = details[config.itemKey];
+                    if (!item || !details.publishableKey) {
+                        throw new Error('Reponse de paiement incomplete. Le backend ERP doit etre redeploye.');
+                    }
+                    document.getElementById('checkoutTitle').textContent = config.titlePrefix + ' ' + item.number + ' - Code4U';
+                    document.getElementById('amount').textContent = money(item.amount);
+                    document.getElementById('email').textContent = item.email || 'Client Code4U';
+                    submit.textContent = 'Payer ' + money(item.amount);
 
-                    var intent = await api('/public/pay/invoice/' + encodeURIComponent(token) + '/intent', { method: 'POST' });
+                    var intent = await api(config.intentPath, { method: 'POST' });
                     clientSecret = intent.clientSecret;
+                    if (!clientSecret) {
+                        throw new Error('Client secret Stripe manquant. Le backend ERP doit etre redeploye.');
+                    }
                     if (!window.Stripe) {
-                        throw new Error('Stripe.js ne s’est pas chargé. Désactivez le bloqueur ou vérifiez js.stripe.com.');
+                        throw new Error('Stripe.js ne s est pas charge. Desactivez le bloqueur ou verifiez js.stripe.com.');
                     }
                     stripe = Stripe(details.publishableKey);
                     elements = stripe.elements({
@@ -276,7 +313,7 @@
 
             setTimeout(function () {
                 if (!document.getElementById('loader').hidden) {
-                    showError('Chargement trop long. Le backend ERP ne répond pas sur les routes /details ou /intent.');
+                    showError('Chargement trop long. Le backend ERP ne repond pas sur les routes de paiement.');
                 }
             }, 15000);
 
@@ -289,14 +326,15 @@
                 if (!stripe || !elements || !clientSecret) return;
                 submit.disabled = true;
                 message.textContent = '';
+                var config = configForType();
                 var result = await stripe.confirmPayment({
                     elements: elements,
                     confirmParams: {
-                        return_url: window.location.origin + '/espace-client.html?pay=success',
+                        return_url: window.location.origin + '/espace-client.html?pay=' + config.successPay,
                     },
                 });
                 if (result.error) {
-                    message.textContent = result.error.message || 'Paiement refusé.';
+                    message.textContent = result.error.message || 'Paiement refuse.';
                     submit.disabled = false;
                 }
             });

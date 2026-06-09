@@ -278,7 +278,7 @@ function portalFetchSubscription(PDO $db, $clientId) {
 
     $included = (float)$row['included_hours'];
     $used = (float)$row['used_hours'];
-    $hasStripeSubscription = !empty($row['stripe_subscription_id']);
+    $hasStripeSubscription = !empty($row['stripe_subscription_id']) && $row['status'] === 'active';
     $hasPaymentToken = !empty($row['payment_token'] ?? null);
     $paymentStatus = $hasStripeSubscription ? 'active' : (($row['status'] === 'paused' && $hasPaymentToken) ? 'pending_payment' : 'manual');
     return [
@@ -403,6 +403,7 @@ function portalFetchInvoices(PDO $db, $clientId) {
         SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_ttc, montant_paye, notes, conditions{$remiseSelect}
         FROM factures
         WHERE client_id = :client_id
+          AND statut IN ('envoyee', 'payee')
         ORDER BY date_facture DESC, id DESC
         LIMIT 20
     ");
@@ -1033,7 +1034,7 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     $token = bin2hex(random_bytes(16));
     $upd = $db->prepare("UPDATE support_subscriptions SET payment_token = :t WHERE id = :id AND client_id = :cid");
     $upd->execute([':t' => $token, ':id' => $subId, ':cid' => (int)$client['id']]);
-    return ['success' => true, 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+    return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . $token];
 }
 
 /**
@@ -1137,7 +1138,7 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
             ':options' => $optionsJson,
             ':token' => $token,
         ]);
-        return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$existing['id'], 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+        return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$existing['id'], 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . $token];
     }
     // status 'paused' = en attente de paiement ; le webhook Stripe le passe en 'active'.
     $stmt = $db->prepare("
@@ -1157,7 +1158,7 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
         ':options' => $optionsJson,
         ':token' => $token,
     ]);
-    return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$db->lastInsertId(), 'pay_url' => portalErpBase() . '/public/pay/subscription/' . $token];
+    return ['success' => true, 'pricing' => $price, 'subscription_id' => (int)$db->lastInsertId(), 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . $token];
 }
 
 function portalUpdateSubscription(PDO $db, array $client, array $input, $status) {
@@ -1192,32 +1193,23 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
     }
     $stmt = $db->prepare("
         UPDATE support_subscriptions
-        SET status = :status
+        SET status = :status, payment_token = CASE WHEN :status_cancelled = 'cancelled' THEN NULL ELSE payment_token END
         WHERE id = :id AND client_id = :client_id
     ");
     $stmt->execute([
         ':status' => $status,
+        ':status_cancelled' => $status,
         ':id' => $subscriptionId,
         ':client_id' => (int)$client['id'],
     ]);
-    $label = $status === 'cancelled' ? 'Résiliation demandée' : ($status === 'paused' ? 'Mise en pause demandée' : 'Réactivation demandée');
-    if (portalHasTables($db, ['tickets', 'ticket_messages'])) {
-        // notify=false : on envoie un email dédié abonnement ci-dessous (pas le mail "demande reçue").
-        portalCreateTicket($db, $client, [
-            'subject' => $label,
-            'description' => 'Action demandée depuis l’espace client pour l’abonnement support.',
-            'priority' => 'medium',
-            'category' => 'abonnement',
-        ], false);
-    }
-
+    $label = $status === 'cancelled' ? 'Résiliation confirmée' : ($status === 'paused' ? 'Mise en pause confirmée' : 'Réactivation confirmée');
     portalSendClientMail(
         $client,
         $label . ' — Abonnement support',
         $label,
         '<p style="margin:0 0 12px">Bonjour,</p>'
-        . '<p style="margin:0 0 12px">Votre demande concernant votre abonnement support a bien été prise en compte : <strong>' . htmlspecialchars($label) . '</strong>.</p>'
-        . '<p style="margin:0">Notre équipe revient vers vous si une action de votre part est nécessaire. Vous pouvez gérer votre abonnement à tout moment depuis votre espace client.</p>'
+        . '<p style="margin:0 0 12px">Votre action concernant votre abonnement support a bien été appliquée : <strong>' . htmlspecialchars($label) . '</strong>.</p>'
+        . '<p style="margin:0">Vous pouvez gérer votre abonnement à tout moment depuis votre espace client.</p>'
     );
 
     return ['success' => true, 'message' => $label . '.'];

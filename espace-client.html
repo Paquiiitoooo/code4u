@@ -242,8 +242,8 @@
                             <p class="sub-configurator__note">Paiement mensuel sécurisé via Stripe, résiliable à tout moment depuis cet espace.</p>
                         </article>
 
-                        <div class="client-layout client-layout--wide" data-sub-active>
-                            <article class="client-panel client-panel--accent">
+                        <div class="client-layout client-layout--wide client-layout--subscription" data-sub-active>
+                            <article class="client-panel client-panel--accent support-current-card">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Plan actuel</span><h2>Support Premium</h2></div>
                                     <span class="client-status client-status--ok">Renouvellement le 01/07</span>
@@ -254,6 +254,7 @@
                                     <div><span>Crédit inclus</span><strong>20 h / mois</strong></div>
                                 <div><span>Dépassement TTC</span><strong>65 € TTC / h</strong></div>
                                 </div>
+                                <div class="support-options-strip" data-support-options></div>
                                 <div class="support-progress">
                                     <div><span>Utilisation mensuelle</span><strong>62 %</strong></div>
                                     <meter min="0" max="100" value="62">62 %</meter>
@@ -1089,6 +1090,18 @@
                         return '<div><span>' + row[0] + '</span><strong>' + row[1] + '</strong></div>';
                     }).join('');
                 }
+                var optionStrip = document.querySelector('[data-support-options]');
+                if (optionStrip) {
+                    var optionItems = [
+                        sub.stripe_subscription_id ? 'Paiement automatique' : (pendingPayment ? 'Paiement a finaliser' : 'Paiement manuel'),
+                        (sub.included_hours || 0) + ' h incluses',
+                        sub.overage_rate ? 'Depassement ' + money(sub.overage_rate, sub.currency) + ' / h' : 'Sans depassement defini',
+                        sub.status === 'active' ? 'Resiliation autonome' : (sub.status_label || 'Gestion autonome')
+                    ];
+                    optionStrip.innerHTML = optionItems.map(function (item) {
+                        return '<span><i class="fas fa-check" aria-hidden="true"></i>' + esc(item) + '</span>';
+                    }).join('');
+                }
                 var inline = document.querySelector('[data-view="support"] .client-inline-actions');
                 if (inline) {
                     var subscribeBtn = sub.stripe_subscription_id
@@ -1384,7 +1397,7 @@
                         window.location.href = subActionResp.cancel_url;
                         return;
                     }
-                    await refresh('Demande enregistrée.', 'success');
+                    await refresh(action === 'cancel-subscription' ? 'Abonnement résilié.' : 'Abonnement mis à jour.', 'success');
                     return;
                 }
 

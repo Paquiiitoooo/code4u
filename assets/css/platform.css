@@ -1039,12 +1039,45 @@ section { padding-block: var(--section-pad); }
     .sub-configurator__price { grid-template-columns: 1fr; }
     .sub-configurator__control { flex-wrap: wrap; }
     .sub-configurator__control input[type="range"] { width: 100%; }
+    .support-current-card .support-plan-grid { grid-template-columns: 1fr; }
 }
 
 .support-progress, .project-progress { display: grid; gap: 0.6rem; }
 .support-progress > div, .project-progress { display: flex; justify-content: space-between; gap: 1rem; }
 .support-progress meter, .project-progress meter { width: 100%; height: 12px; }
 .client-inline-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: center; margin-top: 1rem; }
+.client-layout--subscription { grid-template-columns: minmax(0, 1fr); }
+.client-layout--subscription > .client-panel:not(.support-current-card) { display: none; }
+.support-current-card { display: grid; gap: 1rem; }
+.support-current-card .client-panel__head { margin-bottom: 0; }
+.support-current-card .support-plan-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-bottom: 0;
+}
+.support-current-card .support-plan-grid div {
+    padding: 0.7rem;
+    min-height: 76px;
+}
+.support-current-card .support-plan-grid strong { font-size: 0.98rem; }
+.support-options-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.support-options-strip span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.support-options-strip i { color: var(--accent-color); }
 .client-checklist, .client-checklist--stacked { display: grid; gap: 0.65rem; padding: 0; margin: 1rem 0; list-style: none; }
 .client-checklist li { display: flex; align-items: center; gap: 0.6rem; color: var(--text-primary); font-weight: 650; }
 .client-checklist i { color: var(--accent-color); }
