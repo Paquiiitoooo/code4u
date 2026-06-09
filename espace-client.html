@@ -337,36 +337,11 @@
                     </section>
 
                     <section class="client-view" data-view="projects">
-                        <div class="client-layout client-layout--wide">
+                        <div class="client-layout client-layout--wide" id="projects-container">
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Projet principal</span><h2>Refonte tunnel commande</h2></div>
-                                    <span class="client-status client-status--wait">En cours</span>
+                                    <div><span class="client-kicker">Projet</span><h2>Chargement…</h2></div>
                                 </div>
-                                <div class="project-progress">
-                                    <strong>76 %</strong>
-                                    <meter min="0" max="100" value="76">76 %</meter>
-                                </div>
-                                <div class="client-timeline">
-                                    <div class="is-done"><span></span><strong>Cadrage</strong><small>Objectifs, budget, contraintes</small></div>
-                                    <div class="is-done"><span></span><strong>Design</strong><small>Écrans desktop et mobile</small></div>
-                                    <div class="is-current"><span></span><strong>Développement</strong><small>Paiement, panier, emails</small></div>
-                                    <div><span></span><strong>Recette</strong><small>Tests client et corrections</small></div>
-                                    <div><span></span><strong>Mise en production</strong><small>Déploiement et monitoring</small></div>
-                                </div>
-                            </article>
-
-                            <article class="client-panel">
-                                <div class="client-panel__head">
-                                    <div><span class="client-kicker">Livrables</span><h2>Checklist</h2></div>
-                                </div>
-                                <ul class="client-checklist client-checklist--stacked">
-                                    <li><i class="fas fa-check" aria-hidden="true"></i> Nouveau panier mobile</li>
-                                    <li><i class="fas fa-check" aria-hidden="true"></i> Emails transactionnels</li>
-                                    <li><i class="fas fa-spinner" aria-hidden="true"></i> Paiement Stripe</li>
-                                    <li><i class="fas fa-clock" aria-hidden="true"></i> Tests finaux</li>
-                                    <li><i class="fas fa-clock" aria-hidden="true"></i> Déploiement production</li>
-                                </ul>
                             </article>
                         </div>
                     </section>
@@ -865,7 +840,7 @@
                 var values = [
                     [summary.due_amount_label || money(0), summary.due_date ? 'Échéance le ' + dateFr(summary.due_date) : 'Aucune échéance'],
                     [summary.support_plan || 'Aucun', (summary.support_remaining_hours || 0) + ' h restantes ce mois-ci'],
-                    [(summary.active_project_progress || 0) + ' %', summary.active_project_name || 'Aucun projet actif'],
+                    [(summary.active_project_progress != null ? summary.active_project_progress + ' %' : '—'), summary.active_project_name || 'Aucun projet actif'],
                     [summary.open_tickets || 0, (summary.quotes_to_sign || 0) + ' devis à traiter']
                 ];
                 metrics.forEach(function (metric, index) {
@@ -877,20 +852,58 @@
             }
 
             function renderProjects(data) {
-                var project = (data.projects || [])[0];
-                if (!project) return;
-                setText('[data-view="projects"] h2', project.name);
-                var progress = document.querySelector('.project-progress strong');
-                var meter = document.querySelector('.project-progress meter');
-                if (progress) progress.textContent = project.progress + ' %';
-                if (meter) meter.value = project.progress;
-                var timelines = document.querySelectorAll('.client-timeline');
-                timelines.forEach(function (timeline) {
-                    timeline.innerHTML = (project.milestones || []).map(function (step) {
+                var container = document.getElementById('projects-container');
+                if (!container) return;
+                var projects = (data.projects || []);
+
+                var statusLabelFr = function (s) {
+                    return { planned: 'Planifié', in_progress: 'En cours', review: 'Recette', completed: 'Terminé', paused: 'En pause' }[s] || s || '—';
+                };
+                var statusBadgeClass = function (s) {
+                    if (s === 'completed') return 'client-status--ok';
+                    if (s === 'paused') return '';
+                    return 'client-status--wait';
+                };
+                var buildMilestones = function (milestones) {
+                    var sorted = (milestones || []).slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+                    if (!sorted.length) return '<p style="color:var(--c-text-muted,#6b7280);margin:0.5rem 0 0">Aucune étape définie.</p>';
+                    return sorted.map(function (step) {
                         var cls = step.status === 'done' ? 'is-done' : (step.status === 'current' ? 'is-current' : '');
-                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title) + '</strong><small>' + esc(step.description || step.due_date || '') + '</small></div>';
+                        var sub = step.description || (step.due_date ? dateFr(step.due_date) : '');
+                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title) + '</strong>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
                     }).join('');
-                });
+                };
+
+                if (!projects.length) {
+                    container.innerHTML =
+                        '<article class="client-panel">' +
+                            '<div class="client-panel__head">' +
+                                '<div><span class="client-kicker">Projets</span><h2>Aucun projet en cours</h2></div>' +
+                            '</div>' +
+                            '<p style="color:var(--c-text-muted,#6b7280);margin:1rem 0 0">Vous n\'avez pas de projet actif pour le moment.<br>' +
+                            'N\'hésitez pas à <a href="https://code4u.fr/#contact" target="_blank" rel="noopener">nous contacter</a> pour en démarrer un.</p>' +
+                        '</article>';
+                    return;
+                }
+
+                container.innerHTML = projects.map(function (project, idx) {
+                    var kicker = idx === 0 ? 'Projet principal' : 'Projet';
+                    var phase = project.current_phase
+                        ? '<p style="margin:0.5rem 0 0;font-size:0.9em;color:var(--c-text-muted,#6b7280)"><strong>Phase :</strong> ' + esc(project.current_phase) + '</p>'
+                        : '';
+                    return '<article class="client-panel">' +
+                        '<div class="client-panel__head">' +
+                            '<div><span class="client-kicker">' + kicker + '</span><h2>' + esc(project.name) + '</h2></div>' +
+                            '<span class="client-status ' + statusBadgeClass(project.status) + '">' + statusLabelFr(project.status) + '</span>' +
+                        '</div>' +
+                        phase +
+                        '<div class="project-progress">' +
+                            '<strong>' + (project.progress || 0) + ' %</strong>' +
+                            '<meter min="0" max="100" value="' + (project.progress || 0) + '">' + (project.progress || 0) + ' %</meter>' +
+                        '</div>' +
+                        '<div class="client-timeline">' + buildMilestones(project.milestones) + '</div>' +
+                    '</article>';
+                }).join('');
             }
 
             function renderActions(data) {
