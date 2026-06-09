@@ -8,11 +8,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
-            --blue: #0878d8;
-            --ink: #15151d;
-            --muted: #626875;
-            --line: #dedede;
-            --soft: #f6f7f9;
+            --orange: #f46d2f;
+            --orange-dark: #df5a1d;
+            --ink: #080b2b;
+            --muted: #5f6475;
+            --line: #e7e2dc;
+            --soft: #fff7f1;
+            --panel: #ffffff;
         }
         * { box-sizing: border-box; }
         [hidden] { display: none !important; }
@@ -21,87 +23,160 @@
             min-height: 100vh;
             font-family: Inter, Arial, sans-serif;
             color: var(--ink);
-            background: linear-gradient(90deg, #fff 0 50%, #fafafa 50% 100%);
+            background: #fff;
+        }
+        .checkout-hero {
+            background: #fff8f4;
+            border-bottom: 1px solid #f0e6df;
+        }
+        .hero-inner {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 2rem 2rem 1.9rem;
+        }
+        .eyebrow {
+            color: var(--orange);
+            display: block;
+            font-size: 0.76rem;
+            font-weight: 800;
+            letter-spacing: 0.22em;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        .hero-title {
+            font-size: clamp(2.2rem, 4vw, 3.1rem);
+            line-height: 1;
+            margin: 0 0 0.55rem;
+        }
+        .hero-sub {
+            color: var(--muted);
+            font-size: 1.02rem;
+            margin: 0;
+        }
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            align-items: end;
+            margin-top: 2rem;
+        }
+        .step {
+            display: grid;
+            gap: 0.55rem;
+            justify-items: center;
+            color: var(--muted);
+            font-weight: 800;
+        }
+        .step-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: #fff;
+            color: var(--orange);
+            border: 2px solid #ffd2bd;
+            box-shadow: 0 4px 12px rgba(244, 109, 47, .24);
+            font-size: 0.72rem;
+            order: -1;
+        }
+        .step.is-active {
+            color: var(--ink);
+        }
+        .step.is-active .step-dot {
+            background: var(--orange);
+            color: #fff;
+            border-color: #fff;
         }
         .checkout {
-            min-height: 100vh;
             display: grid;
-            grid-template-columns: minmax(320px, 1fr) minmax(360px, 480px);
-            gap: clamp(2rem, 7vw, 8rem);
-            max-width: 1200px;
+            grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+            gap: 2rem;
+            max-width: 1180px;
             margin: 0 auto;
-            padding: clamp(2rem, 6vw, 4.5rem) 2rem;
+            padding: 2.4rem 2rem;
         }
-        .summary, .payment { padding-top: 0.5rem; }
-        .brand {
+        .panel {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            padding: clamp(1.4rem, 3vw, 2rem);
+        }
+        .panel-title {
+            font-size: 1.05rem;
+            letter-spacing: 0.08em;
+            margin: 0 0 1.9rem;
+            text-transform: uppercase;
+            display: inline-block;
+            padding-bottom: 0.7rem;
+            border-bottom: 2px solid var(--orange);
+        }
+        .back-row {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: clamp(2rem, 7vw, 5rem);
-            font-size: 1rem;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.4rem;
         }
         .back {
-            width: 36px;
-            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-height: 42px;
+            padding: 0 0.95rem;
             border: 0;
-            border-radius: 999px;
-            background: #fff;
-            color: var(--muted);
-            box-shadow: 0 3px 14px rgba(15, 23, 42, .12);
+            border-radius: 0;
+            background: #f6f6f7;
+            color: var(--ink);
+            font-weight: 800;
             cursor: pointer;
         }
-        .summary small {
-            display: block;
-            color: var(--muted);
-            font-size: 1.05rem;
-            margin-bottom: 0.6rem;
+        .brand-name {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-weight: 800;
         }
-        .summary strong {
-            display: block;
-            font-size: clamp(2.4rem, 5vw, 3.6rem);
-            letter-spacing: 0;
-            line-height: 1;
+        .payment-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.55rem;
+            margin-bottom: 1.7rem;
         }
-        .summary p {
-            color: var(--muted);
-            line-height: 1.6;
-            max-width: 440px;
-            margin-top: 1.5rem;
-        }
-        h1 {
-            font-size: 1.35rem;
-            font-weight: 600;
-            margin: 0 0 1.2rem;
-        }
-        .box {
+        .pay-tab {
+            min-height: 58px;
             border: 1px solid var(--line);
-            border-radius: 8px;
             background: #fff;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, .07);
+            color: var(--muted);
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .pay-tab.is-active {
+            border-color: var(--orange);
+            color: var(--orange);
+            background: #fff8f4;
+        }
+        .pay-tab:disabled {
+            opacity: 0.55;
         }
         .email {
             display: flex;
             justify-content: space-between;
             gap: 1rem;
-            padding: 1rem 1.15rem;
-            margin-bottom: 2.2rem;
+            padding: 0.9rem 1rem;
+            margin-bottom: 1.6rem;
             color: var(--muted);
+            border: 1px solid var(--line);
+            background: #fff;
         }
         .email b {
             color: var(--ink);
-            font-weight: 500;
+            font-weight: 800;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .method { padding: 1.25rem; margin-bottom: 1.8rem; }
-        .method-title {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-            font-size: 1rem;
-            margin-bottom: 1.35rem;
-        }
+        .method { margin-bottom: 1.1rem; }
         .card-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -111,28 +186,30 @@
         .field.full { grid-column: 1 / -1; }
         label {
             display: block;
-            color: var(--muted);
-            font-size: 0.9rem;
+            color: var(--ink);
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.08em;
             margin-bottom: 0.55rem;
+            text-transform: uppercase;
         }
         .input,
         .stripe-field {
             width: 100%;
-            min-height: 46px;
+            min-height: 50px;
             border: 1px solid var(--line);
-            border-radius: 7px;
+            border-radius: 0;
             background: #fff;
-            padding: 0.85rem 0.95rem;
+            padding: 0.95rem 1rem;
             font: inherit;
             color: var(--ink);
-            box-shadow: 0 2px 7px rgba(15, 23, 42, .04);
             transition: border-color .16s ease, box-shadow .16s ease;
         }
         .input:focus,
         .stripe-field.focus {
             outline: 0;
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(8, 120, 216, .13);
+            border-color: var(--orange);
+            box-shadow: 0 0 0 3px rgba(244, 109, 47, .12);
         }
         .stripe-field.invalid {
             border-color: #b42318;
@@ -140,21 +217,26 @@
         }
         .cards {
             display: flex;
-            gap: 0.35rem;
-            margin-left: auto;
-            color: var(--muted);
-            font-size: 1rem;
+            justify-content: center;
+            gap: 0.45rem;
+            color: var(--ink);
+            font-size: 1.35rem;
+            margin-top: 0.8rem;
         }
         .secure-note {
             display: flex;
+            justify-content: center;
             align-items: flex-start;
             gap: 0.55rem;
             color: var(--muted);
-            font-size: 0.88rem;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.12em;
             line-height: 1.45;
-            margin: 0.25rem 0 0;
+            margin: 0.75rem 0 0;
+            text-transform: uppercase;
         }
-        .secure-note i { color: #079455; margin-top: 0.1rem; }
+        .secure-note i { color: var(--orange); margin-top: 0.1rem; }
         select.input {
             appearance: none;
             background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%);
@@ -164,16 +246,19 @@
         }
         .pay {
             width: 100%;
-            min-height: 54px;
+            min-height: 60px;
             border: 0;
-            border-radius: 7px;
-            background: var(--blue);
+            border-radius: 0;
+            background: var(--orange);
             color: #fff;
             font: inherit;
-            font-weight: 700;
+            font-weight: 900;
+            letter-spacing: 0.04em;
             cursor: pointer;
-            box-shadow: 0 5px 14px rgba(8, 120, 216, .28);
+            text-transform: uppercase;
+            box-shadow: 4px 4px 0 rgba(8, 11, 43, .12);
         }
+        .pay:hover { background: var(--orange-dark); }
         .pay:disabled { opacity: .6; cursor: wait; }
         .message {
             min-height: 22px;
@@ -182,15 +267,75 @@
             font-size: 0.92rem;
             line-height: 1.5;
         }
+        .error-box {
+            border: 1px solid #f3b5ae;
+            background: #fff1ef;
+            color: #9f1d16;
+            padding: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
         .foot {
             display: flex;
+            justify-content: center;
             align-items: center;
             gap: 1rem;
             color: #777;
             font-size: 0.86rem;
-            padding: 0 1.25rem;
+            padding: 0;
         }
-        .foot strong { color: #635bff; }
+        .foot strong { color: var(--ink); }
+        .summary-card h2 {
+            font-size: 1.05rem;
+            letter-spacing: 0.08em;
+            margin: 0 0 1.9rem;
+            text-transform: uppercase;
+            display: inline-block;
+            padding-bottom: 0.7rem;
+            border-bottom: 2px solid var(--orange);
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.95rem 0;
+            border-bottom: 1px dashed var(--line);
+            color: var(--muted);
+        }
+        .summary-row strong {
+            color: var(--ink);
+            white-space: nowrap;
+        }
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 1.3rem 0 1.5rem;
+            font-size: 1.55rem;
+            font-weight: 900;
+        }
+        .summary-total strong { color: var(--orange); }
+        .deliver {
+            border-top: 1px solid var(--line);
+            padding-top: 1.4rem;
+        }
+        .deliver span {
+            color: var(--muted);
+            display: block;
+            font-size: 0.76rem;
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+        }
+        .deliver strong { display: block; margin-bottom: 0.35rem; }
+        .deliver p {
+            color: var(--muted);
+            margin: 0;
+            line-height: 1.5;
+        }
         .loader {
             display: grid;
             place-items: center;
@@ -199,85 +344,115 @@
         }
         @media (max-width: 820px) {
             body { background: #fff; }
-            .checkout { grid-template-columns: 1fr; gap: 2rem; padding: 1.25rem; }
-            .brand { margin-bottom: 2rem; }
-            .payment { padding-top: 0; }
+            .hero-inner { padding: 1.5rem 1.25rem; }
+            .steps { grid-template-columns: 1fr; justify-items: start; }
+            .step { grid-template-columns: auto 1fr; justify-items: start; align-items: center; }
+            .step-dot { order: 0; }
+            .checkout { grid-template-columns: 1fr; gap: 1.25rem; padding: 1.25rem; }
             .card-grid { grid-template-columns: 1fr; }
+            .payment-tabs { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="loader" id="loader">Chargement du paiement...</div>
-    <main class="checkout" id="checkout" hidden>
-        <section class="summary">
-            <div class="brand">
-                <button class="back" type="button" id="backBtn" aria-label="Retour"><i class="fas fa-arrow-left"></i></button>
-                <span><i class="fas fa-store"></i></span>
-                <span>Code4U</span>
-            </div>
-            <small id="checkoutTitle">Paiement Code4U</small>
-            <strong id="amount">--</strong>
-            <p>Paiement securise par carte. Vos informations bancaires sont chiffrees et traitees directement par Stripe.</p>
-        </section>
-        <section class="payment">
-            <h1>Coordonnees</h1>
-            <div class="box email">
-                <span>E-mail</span>
-                <b id="email">--</b>
-            </div>
-            <h1>Moyen de paiement</h1>
-            <form id="payment-form">
-                <div class="box method">
-                    <div class="method-title">
-                        <i class="fas fa-credit-card"></i>
-                        <span>Carte bancaire</span>
-                        <span class="cards" aria-hidden="true">
-                            <i class="fab fa-cc-visa"></i>
-                            <i class="fab fa-cc-mastercard"></i>
-                            <i class="fab fa-cc-amex"></i>
-                        </span>
-                    </div>
-                    <div class="field">
-                        <label for="card-number">Numero de carte</label>
-                        <div class="stripe-field" id="card-number"></div>
-                    </div>
-                    <div class="card-grid">
-                        <div class="field">
-                            <label for="card-expiry">Expiration</label>
-                            <div class="stripe-field" id="card-expiry"></div>
-                        </div>
-                        <div class="field">
-                            <label for="card-cvc">CVC</label>
-                            <div class="stripe-field" id="card-cvc"></div>
-                        </div>
-                        <div class="field full">
-                            <label for="card-name">Nom sur la carte</label>
-                            <input class="input" id="card-name" autocomplete="cc-name" placeholder="Prenom et nom">
-                        </div>
-                        <div class="field full">
-                            <label for="billing-country">Pays</label>
-                            <select class="input" id="billing-country">
-                                <option value="FR">France</option>
-                                <option value="BE">Belgique</option>
-                                <option value="CH">Suisse</option>
-                                <option value="LU">Luxembourg</option>
-                                <option value="MC">Monaco</option>
-                            </select>
-                        </div>
-                    </div>
-                    <p class="secure-note"><i class="fas fa-lock"></i><span>Carte chiffree et verifiee par Stripe. Aucune donnee bancaire n'est stockee par Code4U.</span></p>
+    <div id="checkout" hidden>
+        <header class="checkout-hero">
+            <div class="hero-inner">
+                <span class="eyebrow">Commande</span>
+                <h1 class="hero-title">Paiement</h1>
+                <p class="hero-sub">Etape 3 / 3 - Paiement securise.</p>
+                <div class="steps" aria-label="Progression">
+                    <div class="step"><span class="step-dot">01</span><span>Panier</span></div>
+                    <div class="step"><span class="step-dot">02</span><span>Informations</span></div>
+                    <div class="step is-active"><span class="step-dot">03</span><span>Paiement</span></div>
                 </div>
-                <button class="pay" id="submit" type="submit">Payer</button>
-                <p class="message" id="message"></p>
-            </form>
-            <div class="foot">
-                <span>Propulse par <strong>stripe</strong></span>
-                <span>|</span>
-                <span>Conditions d'utilisation</span>
-                <span>Confidentialite</span>
             </div>
-        </section>
-    </main>
+        </header>
+        <main class="checkout">
+            <section class="panel payment">
+                <div class="back-row">
+                    <button class="back" type="button" id="backBtn"><i class="fas fa-arrow-left"></i> Retour</button>
+                    <span class="brand-name"><i class="fas fa-store"></i> Code4U</span>
+                </div>
+                <h2 class="panel-title">Paiement</h2>
+                <form id="payment-form">
+                    <div class="payment-tabs" aria-label="Moyen de paiement">
+                        <button class="pay-tab is-active" type="button"><i class="fas fa-lock"></i> Carte</button>
+                        <button class="pay-tab" type="button" disabled>PayPal</button>
+                    </div>
+                    <div class="email">
+                        <span>E-mail</span>
+                        <b id="email">--</b>
+                    </div>
+                    <div class="method">
+                        <div class="field">
+                            <label for="card-number">Numero de carte</label>
+                            <div class="stripe-field" id="card-number"></div>
+                        </div>
+                        <div class="card-grid">
+                            <div class="field">
+                                <label for="card-expiry">Expiration</label>
+                                <div class="stripe-field" id="card-expiry"></div>
+                            </div>
+                            <div class="field">
+                                <label for="card-cvc">CVC</label>
+                                <div class="stripe-field" id="card-cvc"></div>
+                            </div>
+                            <div class="field full">
+                                <label for="card-name">Nom sur la carte</label>
+                                <input class="input" id="card-name" autocomplete="cc-name" placeholder="Prenom et nom">
+                            </div>
+                            <div class="field full">
+                                <label for="billing-country">Pays</label>
+                                <select class="input" id="billing-country">
+                                    <option value="FR">France</option>
+                                    <option value="BE">Belgique</option>
+                                    <option value="CH">Suisse</option>
+                                    <option value="LU">Luxembourg</option>
+                                    <option value="MC">Monaco</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="pay" id="submit" type="submit"><i class="fas fa-lock"></i> Payer</button>
+                    <p class="message" id="message"></p>
+                    <p class="secure-note"><i class="fas fa-lock"></i><span>Stripe - SSL 256-bit</span></p>
+                    <span class="cards" aria-hidden="true">
+                        <i class="fab fa-cc-visa"></i>
+                        <i class="fab fa-cc-mastercard"></i>
+                        <i class="fab fa-cc-amex"></i>
+                    </span>
+                </form>
+                <div class="error-box" id="checkoutError" hidden></div>
+                <div class="foot">
+                    <span>Propulse par <strong>Stripe</strong></span>
+                    <span>|</span>
+                    <span>Paiement securise</span>
+                </div>
+            </section>
+            <aside class="panel summary-card">
+                <h2>Recapitulatif</h2>
+                <div class="summary-row">
+                    <span id="summaryItem">Paiement Code4U</span>
+                    <strong id="summaryAmount">--</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Frais de paiement</span>
+                    <strong>0,00 €</strong>
+                </div>
+                <div class="summary-total">
+                    <span>Total</span>
+                    <strong id="amount">--</strong>
+                </div>
+                <div class="deliver">
+                    <span>Facture</span>
+                    <strong id="checkoutTitle">Paiement Code4U</strong>
+                    <p>Recu et suivi disponibles depuis votre espace client Code4U apres validation du paiement.</p>
+                </div>
+            </aside>
+        </main>
+    </div>
     <noscript>JavaScript doit etre active pour payer en ligne.</noscript>
     <script>
         (function () {
@@ -293,6 +468,7 @@
             var clientSecret = null;
             var submit = document.getElementById('submit');
             var message = document.getElementById('message');
+            var checkoutError = document.getElementById('checkoutError');
 
             function money(amount) {
                 return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(Number(amount || 0));
@@ -326,9 +502,10 @@
                 document.querySelector('.foot').hidden = true;
                 document.getElementById('checkoutTitle').textContent = 'Paiement indisponible';
                 document.getElementById('amount').textContent = '--';
+                document.getElementById('summaryAmount').textContent = '--';
                 document.getElementById('email').textContent = 'Erreur';
-                message.hidden = false;
-                message.textContent = text || 'Paiement indisponible.';
+                checkoutError.hidden = false;
+                checkoutError.textContent = text || 'Paiement indisponible.';
             }
 
             function loadStripeJs() {
@@ -394,15 +571,20 @@
                     return;
                 }
                 try {
+                    checkoutError.hidden = true;
+                    checkoutError.textContent = '';
                     var details = await api(config.detailsPath);
                     var item = details[config.itemKey];
                     if (!item || !details.publishableKey) {
                         throw new Error('Reponse de paiement incomplete. Le backend ERP doit etre redeploye.');
                     }
-                    document.getElementById('checkoutTitle').textContent = config.titlePrefix + ' ' + item.number + ' - Code4U';
+                    var itemTitle = config.titlePrefix + ' ' + item.number + ' - Code4U';
+                    document.getElementById('checkoutTitle').textContent = itemTitle;
+                    document.getElementById('summaryItem').textContent = itemTitle;
                     document.getElementById('amount').textContent = money(item.amount);
+                    document.getElementById('summaryAmount').textContent = money(item.amount);
                     document.getElementById('email').textContent = item.email || 'Client Code4U';
-                    submit.textContent = 'Payer ' + money(item.amount);
+                    submit.innerHTML = '<i class="fas fa-lock"></i> Payer ' + money(item.amount);
 
                     var intent = await api(config.intentPath, { method: 'POST' });
                     clientSecret = intent.clientSecret;
