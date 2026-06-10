@@ -558,7 +558,8 @@ section { padding-block: var(--section-pad); }
 .client-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 @media (max-width: 560px) { .client-form__row { grid-template-columns: 1fr; } }
 .field { display: grid; gap: 0.35rem; }
-.field label { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.field label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.field label small { font-weight: 400; color: var(--text-secondary); }
 .field input, .field select, .field textarea {
     width: 100%;
     padding: 0.68rem 0.8rem;
@@ -574,6 +575,8 @@ section { padding-block: var(--section-pad); }
 .field input:focus, .field select:focus, .field textarea:focus { outline: none; border-color: var(--accent-color); box-shadow: var(--ring); }
 .client-form .btn-block { margin-top: 0.2rem; }
 .client-form__msg { margin: 0; font-size: 0.85rem; color: var(--accent-color); }
+.client-form__msg:empty { display: none; }
+.client-form__msg.visible { color: #c0392b; }
 .client-form__link { font-size: 0.85rem; color: var(--text-secondary); text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
 .client-form__link:hover { color: var(--accent-color); }
 .client-card__foot { margin-top: 1.2rem; padding-top: 1.2rem; border-top: 1px solid var(--border-color); }

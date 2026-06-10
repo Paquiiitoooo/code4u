@@ -1883,10 +1883,15 @@
                         await api('change-password', { current_password: current, new_password: nw });
                         forcePwdForm.reset();
                         if (wm) { wm.textContent = ''; wm.className = 'client-form__msg'; }
-                        render(await api('me'));
+                        /* Débloquer l'UI immédiatement sans attendre api('me') */
+                        if (state && state.security) state.security.password_change_required = false;
+                        var fpOverlay = document.getElementById('forcePwdOverlay');
+                        if (fpOverlay) fpOverlay.hidden = true;
                         activateTab('overview');
                         notify('Mot de passe défini. Bienvenue dans votre espace.', 'success');
                         window.scrollTo(0, 0);
+                        /* Rafraîchir les données en arrière-plan */
+                        api('me').then(render).catch(function () {});
                     } catch (error) {
                         if (wm) { wm.textContent = error.message || 'Impossible de changer le mot de passe.'; wm.className = 'client-form__msg visible'; }
                     }

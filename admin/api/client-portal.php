@@ -301,11 +301,32 @@ function portalFinishLogin(PDO $db, array $account) {
     $upd->execute([':ip' => portalClientIp(), ':id' => (int)$account['account_id']]);
     portalSendLoginMail($account);
     unset($account['password_hash'], $account['two_factor_code_hash']);
+
+    /* Relire les champs de sécurité depuis la DB pour garantir des valeurs fraîches
+       (la session est maintenant établie, portalCurrentClient peut être appelé). */
+    $secStmt = $db->prepare("
+        SELECT force_password_change, password_expires_at, two_factor_enabled, last_login_at, last_login_ip
+        FROM client_portal_accounts
+        WHERE client_id = :id AND status = 'active'
+        LIMIT 1
+    ");
+    $secStmt->execute([':id' => (int)$account['client_id']]);
+    $secRow = $secStmt->fetch(PDO::FETCH_ASSOC);
+    if ($secRow) {
+        $account['force_password_change'] = $secRow['force_password_change'];
+        $account['password_expires_at']   = $secRow['password_expires_at'];
+        $account['two_factor_enabled']    = $secRow['two_factor_enabled'];
+        $account['last_login_at']         = $secRow['last_login_at'];
+        $account['last_login_ip']         = $secRow['last_login_ip'];
+    }
+
     $data = portalBuildDashboard($db, $account);
     $data['security'] = [
-        'two_factor_enabled' => true,
+        'two_factor_enabled'      => !empty($account['two_factor_enabled']),
         'password_change_required' => portalPasswordChangeRequired($account),
-        'password_expires_at' => $account['password_expires_at'] ?? null,
+        'password_expires_at'     => $account['password_expires_at'] ?? null,
+        'last_login_at'           => $account['last_login_at'] ?? null,
+        'last_login_ip'           => $account['last_login_ip'] ?? null,
     ];
     return $data;
 }
