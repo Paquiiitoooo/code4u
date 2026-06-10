@@ -247,7 +247,7 @@ function portalPasswordChangeRequired(array $account) {
     if (empty($account['password_expires_at'])) {
         return true;
     }
-    return strtotime((string)$account['password_expires_at']) <= time();
+    return strtotime((string)$account['password_expires_at'] . ' UTC') <= time();
 }
 
 function portalGenerate2faCode() {
@@ -1582,8 +1582,8 @@ function portalChangePassword(PDO $db, array $client, array $input) {
     $upd = $db->prepare("
         UPDATE client_portal_accounts
         SET password_hash = :h,
-            password_changed_at = NOW(),
-            password_expires_at = DATE_ADD(NOW(), INTERVAL 90 DAY),
+            password_changed_at = UTC_TIMESTAMP(),
+            password_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 90 DAY),
             force_password_change = 0,
             failed_login_attempts = 0,
             locked_until = NULL
@@ -1711,13 +1711,13 @@ try {
         ");
         $stmt->execute([':email' => $email]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($account && !empty($account['locked_until']) && strtotime((string)$account['locked_until']) > time()) {
+        if ($account && !empty($account['locked_until']) && strtotime((string)$account['locked_until'] . ' UTC') > time()) {
             portalRespond(['success' => false, 'message' => 'Compte temporairement verrouille. Reessayez plus tard.'], 423);
         }
         if (!$account || !password_verify($password, $account['password_hash'])) {
             if ($account) {
                 $fails = (int)($account['failed_login_attempts'] ?? 0) + 1;
-                $lockedSql = $fails >= 5 ? ', locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE)' : '';
+                $lockedSql = $fails >= 5 ? ', locked_until = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)' : '';
                 $failStmt = $db->prepare("UPDATE client_portal_accounts SET failed_login_attempts = :fails{$lockedSql} WHERE id = :id");
                 $failStmt->execute([':fails' => $fails, ':id' => (int)$account['account_id']]);
             }
@@ -1734,7 +1734,7 @@ try {
         $twoFa = $db->prepare("
             UPDATE client_portal_accounts
             SET two_factor_code_hash = :hash,
-                two_factor_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE),
+                two_factor_expires_at = DATE_ADD(UTC_TIMESTAMP(), INTERVAL 15 MINUTE),
                 two_factor_attempts = 0,
                 failed_login_attempts = 0,
                 locked_until = NULL
@@ -1791,7 +1791,7 @@ try {
         ");
         $stmt->execute([':id' => $accountId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$account || empty($account['two_factor_code_hash']) || strtotime((string)$account['two_factor_expires_at']) < time()) {
+        if (!$account || empty($account['two_factor_code_hash']) || strtotime((string)$account['two_factor_expires_at'] . ' UTC') < time()) {
             portalRespond(['success' => false, 'message' => 'Code expire. Reconnectez-vous.'], 401);
         }
         if ((int)$account['two_factor_attempts'] >= 5) {
