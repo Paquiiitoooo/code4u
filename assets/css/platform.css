@@ -1557,3 +1557,62 @@ section { padding-block: var(--section-pad); }
     margin: 0 0 1.5rem;
     line-height: 1.55;
 }
+
+/* ===========================================================================
+   Login — étape 2FA
+   =========================================================================== */
+
+.login-2fa {
+    padding: 0.25rem 0 0.5rem;
+    text-align: center;
+}
+.login-2fa__icon {
+    font-size: 2.25rem;
+    color: var(--accent-color);
+    margin-bottom: 0.9rem;
+}
+.login-2fa__hint {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+.login-2fa__hint strong { color: var(--text-primary); font-weight: 600; }
+
+.login-2fa__field input {
+    text-align: center;
+    font-size: 1.75rem;
+    letter-spacing: 0.4em;
+    font-weight: 700;
+    font-family: var(--font-display);
+    padding: 0.65rem 0.5rem;
+    border-radius: var(--radius-md);
+    width: 100%;
+}
+.login-2fa__field input::placeholder { letter-spacing: 0.3em; color: var(--border-light, #ccc); }
+
+.login-2fa__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light, #e7e2d8);
+}
+.login-2fa__link {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 0.84rem;
+    font-family: inherit;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s;
+}
+.login-2fa__link:hover { color: var(--text-primary); }
+.login-2fa__link:disabled { opacity: 0.45; cursor: default; }

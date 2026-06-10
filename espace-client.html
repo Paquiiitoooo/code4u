@@ -39,27 +39,53 @@
                 <div class="client-login__panel">
                     <div class="client-panel__head">
                         <div>
-                            <span class="client-kicker">Connexion</span>
-                            <h2>Accès client</h2>
+                            <span class="client-kicker" id="loginPanelKicker">Connexion</span>
+                            <h2 id="loginPanelTitle">Accès client</h2>
                         </div>
-                        <i class="fas fa-lock" aria-hidden="true"></i>
+                        <i class="fas fa-lock" id="loginPanelIcon" aria-hidden="true"></i>
                     </div>
-                    <form id="clientLoginForm" class="client-form" novalidate>
-                        <div class="field">
-                            <label for="client-login-email">Adresse e-mail</label>
-                            <input type="email" id="client-login-email" name="email" autocomplete="email" placeholder="client@exemple.fr" required>
+
+                    <!-- Étape 1 : identifiants -->
+                    <div id="loginStep1">
+                        <form id="clientLoginForm" class="client-form" novalidate>
+                            <div class="field">
+                                <label for="client-login-email">Adresse e-mail</label>
+                                <input type="email" id="client-login-email" name="email" autocomplete="email" placeholder="client@exemple.fr" required>
+                            </div>
+                            <div class="field">
+                                <label for="client-login-pass">Mot de passe</label>
+                                <input type="password" id="client-login-pass" name="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                            <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
+                        </form>
+                    </div>
+
+                    <!-- Étape 2 : code 2FA -->
+                    <div id="loginStep2" hidden>
+                        <div class="login-2fa">
+                            <div class="login-2fa__icon">
+                                <i class="fas fa-envelope-circle-check" aria-hidden="true"></i>
+                            </div>
+                            <p class="login-2fa__hint">Code envoyé à<br><strong id="login-2fa-email"></strong></p>
+                            <form id="client2faForm" class="client-form" novalidate>
+                                <div class="field login-2fa__field">
+                                    <label for="client-login-code" class="sr-only">Code à 6 chiffres</label>
+                                    <input type="text" id="client-login-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Vérifier le code</button>
+                                <p class="client-form__msg" id="client2faMsg" role="status" aria-live="polite"></p>
+                            </form>
+                            <div class="login-2fa__footer">
+                                <button type="button" id="loginBackBtn" class="login-2fa__link">
+                                    <i class="fas fa-arrow-left" aria-hidden="true"></i> Retour
+                                </button>
+                                <button type="button" id="loginResendBtn" class="login-2fa__link">
+                                    Renvoyer le code
+                                </button>
+                            </div>
                         </div>
-                        <div class="field">
-                            <label for="client-login-pass">Mot de passe</label>
-                            <input type="password" id="client-login-pass" name="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
-                        </div>
-                        <div class="field" id="client-2fa-field" hidden>
-                            <label for="client-login-code">Code de verification email</label>
-                            <input type="text" id="client-login-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
-                        <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
-                    </form>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1638,49 +1664,111 @@
                 }
             }
 
+            var loginEmail = '';
+            var loginPassword = '';
+
+            function showLoginStep(step) {
+                var s1 = document.getElementById('loginStep1');
+                var s2 = document.getElementById('loginStep2');
+                var kicker = document.getElementById('loginPanelKicker');
+                var title = document.getElementById('loginPanelTitle');
+                var icon = document.getElementById('loginPanelIcon');
+                if (step === 2) {
+                    if (s1) s1.hidden = true;
+                    if (s2) s2.hidden = false;
+                    if (kicker) kicker.textContent = 'Vérification';
+                    if (title) title.textContent = 'Code reçu par email';
+                    if (icon) icon.className = 'fas fa-envelope-circle-check';
+                    var emailHint = document.getElementById('login-2fa-email');
+                    if (emailHint) emailHint.textContent = loginEmail;
+                    var codeInput = document.getElementById('client-login-code');
+                    if (codeInput) { codeInput.value = ''; setTimeout(function () { codeInput.focus(); }, 80); }
+                    var m2 = document.getElementById('client2faMsg');
+                    if (m2) { m2.textContent = ''; m2.className = 'client-form__msg'; }
+                } else {
+                    if (s1) s1.hidden = false;
+                    if (s2) s2.hidden = true;
+                    if (kicker) kicker.textContent = 'Connexion';
+                    if (title) title.textContent = 'Accès client';
+                    if (icon) icon.className = 'fas fa-lock';
+                    pending2fa = false;
+                    if (msg) { msg.textContent = ''; msg.className = 'client-form__msg'; }
+                }
+            }
+
+            /* ── Étape 1 : identifiants ──────────────────────────────── */
             if (form) {
                 form.addEventListener('submit', async function (event) {
                     event.preventDefault();
-                    if (msg) msg.textContent = pending2fa ? 'Verification du code...' : 'Connexion en cours...';
+                    var btn = form.querySelector('[type="submit"]');
+                    if (msg) { msg.textContent = 'Connexion en cours…'; msg.className = 'client-form__msg visible'; }
+                    if (btn) btn.disabled = true;
+                    loginEmail = (document.getElementById('client-login-email') || {}).value || '';
+                    loginPassword = (document.getElementById('client-login-pass') || {}).value || '';
                     try {
-                        var data = pending2fa
-                            ? await api('verify-2fa', {
-                                code: document.getElementById('client-login-code').value
-                            })
-                            : await api('login', {
-                                email: document.getElementById('client-login-email').value,
-                                password: document.getElementById('client-login-pass').value
-                            });
+                        var data = await api('login', { email: loginEmail, password: loginPassword });
                         if (data.requires_2fa) {
                             pending2fa = true;
-                            var field = document.getElementById('client-2fa-field');
-                            var codeInput = document.getElementById('client-login-code');
-                            if (field) field.hidden = false;
-                            if (codeInput) {
-                                codeInput.required = true;
-                                codeInput.focus();
-                            }
-                            if (msg) {
-                                msg.textContent = data.message || 'Code envoye par email.';
-                                msg.className = 'client-form__msg visible';
-                            }
+                            if (msg) msg.textContent = '';
+                            showLoginStep(2);
                             return;
                         }
-                        pending2fa = false;
-                        var twoFaField = document.getElementById('client-2fa-field');
-                        if (twoFaField) twoFaField.hidden = true;
                         if (msg) msg.textContent = '';
                         render(data);
-                        if (data.security && data.security.password_change_required) {
-                            notify('Votre mot de passe doit etre modifie pour respecter la rotation de securite de 90 jours.', 'warning');
-                            activateTab('account');
-                        }
                         window.scrollTo(0, 0);
                     } catch (error) {
-                        if (msg) {
-                            msg.textContent = error.message;
-                            msg.className = 'client-form__msg visible';
-                        }
+                        if (msg) { msg.textContent = error.message; msg.className = 'client-form__msg visible'; }
+                    } finally {
+                        if (btn) btn.disabled = false;
+                    }
+                });
+            }
+
+            /* ── Étape 2 : code 2FA ──────────────────────────────────── */
+            var twoFaForm = document.getElementById('client2faForm');
+            if (twoFaForm) {
+                twoFaForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var wm = document.getElementById('client2faMsg');
+                    var btn = twoFaForm.querySelector('[type="submit"]');
+                    if (wm) { wm.textContent = 'Vérification…'; wm.className = 'client-form__msg visible'; }
+                    if (btn) btn.disabled = true;
+                    try {
+                        var code = (document.getElementById('client-login-code') || {}).value || '';
+                        var data = await api('verify-2fa', { code: code });
+                        pending2fa = false;
+                        render(data);
+                        window.scrollTo(0, 0);
+                    } catch (error) {
+                        if (wm) { wm.textContent = error.message; wm.className = 'client-form__msg visible'; }
+                    } finally {
+                        if (btn) btn.disabled = false;
+                    }
+                });
+            }
+
+            /* ── Retour étape 1 ──────────────────────────────────────── */
+            var loginBackBtn = document.getElementById('loginBackBtn');
+            if (loginBackBtn) {
+                loginBackBtn.addEventListener('click', function () { showLoginStep(1); });
+            }
+
+            /* ── Renvoyer le code ────────────────────────────────────── */
+            var loginResendBtn = document.getElementById('loginResendBtn');
+            if (loginResendBtn) {
+                loginResendBtn.addEventListener('click', async function () {
+                    var wm = document.getElementById('client2faMsg');
+                    loginResendBtn.disabled = true;
+                    if (wm) { wm.textContent = 'Renvoi en cours…'; wm.className = 'client-form__msg visible'; }
+                    try {
+                        await api('login', { email: loginEmail, password: loginPassword });
+                        if (wm) { wm.textContent = 'Nouveau code envoyé.'; wm.className = 'client-form__msg visible'; }
+                        var codeInput = document.getElementById('client-login-code');
+                        if (codeInput) { codeInput.value = ''; codeInput.focus(); }
+                    } catch (error) {
+                        if (wm) { wm.textContent = error.message || 'Renvoi impossible.'; wm.className = 'client-form__msg visible'; }
+                    } finally {
+                        loginResendBtn.disabled = false;
                     }
                 });
             }
