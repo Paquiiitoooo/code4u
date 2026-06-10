@@ -125,20 +125,20 @@
                             <h2>Nouveau mot de passe requis</h2>
                             <p>Pour des raisons de sécurité, vous devez définir un nouveau mot de passe avant d'accéder à votre espace client.</p>
                             <form class="client-form" id="forcePwdForm" novalidate>
-                                <label class="account-field">
-                                    <span class="account-field__label"><i class="fas fa-lock" aria-hidden="true"></i> Mot de passe actuel (temporaire)</span>
+                                <div class="field">
+                                    <label for="force-pwd-current">Mot de passe actuel (temporaire)</label>
                                     <input type="password" id="force-pwd-current" autocomplete="current-password" placeholder="Mot de passe reçu par email" required>
-                                </label>
-                                <label class="account-field">
-                                    <span class="account-field__label"><i class="fas fa-lock-open" aria-hidden="true"></i> Nouveau mot de passe <small style="font-weight:400;text-transform:none;letter-spacing:0">(12 car. min., maj, chiffre, symbole)</small></span>
+                                </div>
+                                <div class="field">
+                                    <label for="force-pwd-new">Nouveau mot de passe <small style="font-weight:400">(12 car. min., maj, chiffre, symbole)</small></label>
                                     <input type="password" id="force-pwd-new" autocomplete="new-password" minlength="12" required>
                                     <div class="pwd-strength"><div id="force-pwd-bar" class="pwd-bar"></div></div>
                                     <span class="pwd-hint" id="force-pwd-hint"></span>
-                                </label>
-                                <label class="account-field">
-                                    <span class="account-field__label"><i class="fas fa-check-double" aria-hidden="true"></i> Confirmer</span>
+                                </div>
+                                <div class="field">
+                                    <label for="force-pwd-confirm">Confirmer le nouveau mot de passe</label>
                                     <input type="password" id="force-pwd-confirm" autocomplete="new-password" minlength="12" required>
-                                </label>
+                                </div>
                                 <p class="client-form__msg" id="forcePwdMsg" role="status" aria-live="polite"></p>
                                 <button class="btn btn-primary btn-block" type="submit">Définir mon mot de passe</button>
                             </form>
@@ -449,32 +449,34 @@
                                     <div><span class="client-kicker">Profil</span><h2>Mes informations</h2></div>
                                     <i class="fas fa-id-card" style="color:var(--text-secondary);font-size:1.1rem" aria-hidden="true"></i>
                                 </div>
-                                <form class="client-form" id="clientProfileForm" style="margin-top:0.1rem">
-                                    <div class="account-form-grid">
-                                        <label class="account-field">
-                                            <span class="account-field__label"><i class="fas fa-building" aria-hidden="true"></i> Société / nom</span>
+                                <form class="client-form" id="clientProfileForm">
+                                    <div class="client-form__row">
+                                        <div class="field">
+                                            <label for="account-company">Société / nom</label>
                                             <input type="text" id="account-company" disabled>
-                                        </label>
-                                        <label class="account-field">
-                                            <span class="account-field__label"><i class="fas fa-at" aria-hidden="true"></i> Email de connexion</span>
+                                        </div>
+                                        <div class="field">
+                                            <label for="account-email">Email de connexion</label>
                                             <input type="email" id="account-email" disabled>
-                                        </label>
-                                        <label class="account-field">
-                                            <span class="account-field__label"><i class="fas fa-phone" aria-hidden="true"></i> Téléphone</span>
-                                            <input type="tel" id="account-phone" autocomplete="tel" placeholder="+33 6 00 00 00 00">
-                                        </label>
-                                        <label class="account-field account-field--wide">
-                                            <span class="account-field__label"><i class="fas fa-location-dot" aria-hidden="true"></i> Adresse</span>
-                                            <input type="text" id="account-adresse" autocomplete="street-address" placeholder="123 rue de la Paix">
-                                        </label>
-                                        <label class="account-field">
-                                            <span class="account-field__label">Code postal</span>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label for="account-phone">Téléphone</label>
+                                        <input type="tel" id="account-phone" autocomplete="tel" placeholder="+33 6 00 00 00 00">
+                                    </div>
+                                    <div class="field">
+                                        <label for="account-adresse">Adresse</label>
+                                        <input type="text" id="account-adresse" autocomplete="street-address" placeholder="123 rue de la Paix">
+                                    </div>
+                                    <div class="client-form__row">
+                                        <div class="field">
+                                            <label for="account-cp">Code postal</label>
                                             <input type="text" id="account-cp" autocomplete="postal-code" placeholder="75001">
-                                        </label>
-                                        <label class="account-field">
-                                            <span class="account-field__label">Ville</span>
+                                        </div>
+                                        <div class="field">
+                                            <label for="account-ville">Ville</label>
                                             <input type="text" id="account-ville" autocomplete="address-level2" placeholder="Paris">
-                                        </label>
+                                        </div>
                                     </div>
                                     <p class="client-form__msg" id="clientProfileMsg" role="status" aria-live="polite"></p>
                                     <button class="btn btn-primary" type="submit">Enregistrer mes coordonnées</button>
@@ -491,21 +493,21 @@
                                     <i class="fas fa-circle-check" id="account-security-icon" aria-hidden="true"></i>
                                     <p id="account-security-note" style="margin:0;font-size:0.86rem"></p>
                                 </div>
-                                <form class="client-form" id="clientPasswordForm" style="margin-top:0.1rem">
-                                    <label class="account-field">
-                                        <span class="account-field__label"><i class="fas fa-lock" aria-hidden="true"></i> Mot de passe actuel</span>
+                                <form class="client-form" id="clientPasswordForm">
+                                    <div class="field">
+                                        <label for="pwd-current">Mot de passe actuel</label>
                                         <input type="password" id="pwd-current" autocomplete="current-password" required>
-                                    </label>
-                                    <label class="account-field">
-                                        <span class="account-field__label"><i class="fas fa-lock-open" aria-hidden="true"></i> Nouveau mot de passe <small style="font-weight:400;text-transform:none;letter-spacing:0">(12 car. min., maj, chiffre, symbole)</small></span>
+                                    </div>
+                                    <div class="field">
+                                        <label for="pwd-new">Nouveau mot de passe <small style="font-weight:400">(12 car. min., maj, chiffre, symbole)</small></label>
                                         <input type="password" id="pwd-new" autocomplete="new-password" minlength="12" required>
                                         <div class="pwd-strength"><div id="pwd-strength-bar" class="pwd-bar"></div></div>
                                         <span class="pwd-hint" id="pwd-strength-hint"></span>
-                                    </label>
-                                    <label class="account-field">
-                                        <span class="account-field__label"><i class="fas fa-check-double" aria-hidden="true"></i> Confirmer le nouveau mot de passe</span>
+                                    </div>
+                                    <div class="field">
+                                        <label for="pwd-confirm">Confirmer le nouveau mot de passe</label>
                                         <input type="password" id="pwd-confirm" autocomplete="new-password" minlength="12" required>
-                                    </label>
+                                    </div>
                                     <p class="client-form__msg" id="clientPasswordMsg" role="status" aria-live="polite"></p>
                                     <button class="btn btn-primary" type="submit">Changer mon mot de passe</button>
                                 </form>
@@ -1880,10 +1882,13 @@
                     try {
                         await api('change-password', { current_password: current, new_password: nw });
                         forcePwdForm.reset();
-                        notify('Mot de passe défini. Bienvenue dans votre espace.', 'success');
+                        if (wm) { wm.textContent = ''; wm.className = 'client-form__msg'; }
                         render(await api('me'));
+                        activateTab('overview');
+                        notify('Mot de passe défini. Bienvenue dans votre espace.', 'success');
+                        window.scrollTo(0, 0);
                     } catch (error) {
-                        if (wm) wm.textContent = error.message || 'Impossible de changer le mot de passe.';
+                        if (wm) { wm.textContent = error.message || 'Impossible de changer le mot de passe.'; wm.className = 'client-form__msg visible'; }
                     }
                 });
             }
