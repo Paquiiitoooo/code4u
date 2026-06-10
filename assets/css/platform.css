@@ -9,6 +9,10 @@
    pas de "cards partout", pas de faux témoignages.
    ========================================================================== */
 
+/* Garantit que l'attribut HTML [hidden] l'emporte sur tout display déclaré
+   dans les règles CSS auteur (Firefox ne met pas !important dans sa UA sheet). */
+[hidden] { display: none !important; }
+
 /* ---- Tokens additionnels ------------------------------------------------- */
 :root {
     --font-display: 'Bricolage Grotesque', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
