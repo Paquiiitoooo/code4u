@@ -255,14 +255,21 @@ function portalGenerate2faCode() {
 }
 
 function portalSend2faMail(array $account, $code) {
-    return portalSendClientMail(
-        ['email' => $account['email']],
+    /* Utilise l'email du compte portail (a.email AS account_email),
+       pas l'email CRM (c.email), pour être sûr d'envoyer au bon destinataire. */
+    $target = $account['account_email'] ?? $account['email'] ?? '';
+    $sent = portalSendClientMail(
+        ['email' => $target],
         'Code de verification espace client Code4U',
         'Code de verification',
         '<p>Bonjour,</p><p>Voici votre code de connexion a votre espace client Code4U :</p>'
         . '<p style="font-size:28px;font-weight:800;letter-spacing:8px;color:#1d6fe6;margin:18px 0">' . htmlspecialchars($code, ENT_QUOTES, 'UTF-8') . '</p>'
         . '<p>Ce code expire dans 10 minutes. Si vous n etes pas a l origine de cette connexion, ignorez cet email et contactez Code4U.</p>'
     );
+    if (!$sent) {
+        error_log('[portail-2fa] Echec envoi code vers ' . $target);
+    }
+    return $sent;
 }
 
 function portalSendLoginMail(array $account) {
@@ -1641,6 +1648,12 @@ try {
             portalRespond(['success' => false, 'message' => 'Identifiants incorrects'], 401);
         }
 
+        /* Si la 2FA est désactivée pour ce compte, connexion directe */
+        if (empty($account['two_factor_enabled'])) {
+            $data = portalFinishLogin($db, $account);
+            portalRespond(array_merge(['success' => true], $data));
+        }
+
         $code = portalGenerate2faCode();
         $twoFa = $db->prepare("
             UPDATE client_portal_accounts
@@ -1662,7 +1675,7 @@ try {
             'success' => true,
             'requires_2fa' => true,
             'message' => 'Code de verification envoye par email.',
-            'email' => $email,
+            'email' => $account['account_email'] ?? $email,
         ]);
     }
 
