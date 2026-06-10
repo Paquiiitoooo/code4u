@@ -208,7 +208,8 @@ function portalCurrentClient(PDO $db) {
             a.password_changed_at,
             a.password_expires_at,
             a.force_password_change,
-            a.last_login_at
+            a.last_login_at,
+            a.last_login_ip
         FROM clients c
         INNER JOIN client_portal_accounts a ON a.client_id = c.id
         WHERE c.id = :id AND a.status = 'active' AND c.actif = 1
@@ -1569,6 +1570,7 @@ function portalBuildDashboard(PDO $db, array $client) {
             'password_change_required' => portalPasswordChangeRequired($client),
             'password_expires_at' => $client['password_expires_at'] ?? null,
             'last_login_at' => $client['last_login_at'] ?? null,
+            'last_login_ip' => $client['last_login_ip'] ?? null,
         ],
     ];
 }

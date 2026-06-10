@@ -1400,3 +1400,160 @@ section { padding-block: var(--section-pad); }
     .sub-active__stats   { grid-template-columns: 1fr; }
     .sub-cfg__price-main strong { font-size: 2.4rem; }
 }
+
+/* ===========================================================================
+   Page Mon compte — profil & sécurité
+   =========================================================================== */
+
+.account-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light, #e7e2d8);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.account-avatar {
+    width: 3.25rem;
+    height: 3.25rem;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+    user-select: none;
+}
+.account-hero__info { flex: 1; min-width: 160px; }
+.account-hero__info h2 { margin: 0 0 0.18rem; font-size: 1.1rem; }
+.account-display-email { font-size: 0.84rem; color: var(--text-secondary); margin: 0 0 0.35rem; }
+.account-hero__meta {
+    text-align: right;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+.account-hero__meta strong { display: block; font-size: 0.83rem; color: var(--text-primary); font-weight: 600; }
+
+.account-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1rem;
+    margin-bottom: 1.25rem;
+}
+.account-field { display: flex; flex-direction: column; }
+.account-field--wide { grid-column: 1 / -1; }
+.account-field__label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    margin-bottom: 0.28rem;
+}
+.account-field__label i { font-size: 0.72rem; }
+.account-field input { width: 100%; }
+
+.account-security-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    font-size: 0.86rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+.account-security-badge.is-warn {
+    background: rgba(245, 158, 11, 0.08);
+    color: #92400e;
+    border-color: rgba(245, 158, 11, 0.3);
+}
+.account-security-badge.is-ok {
+    background: rgba(34, 197, 94, 0.08);
+    color: #166534;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+.account-security-badge i { font-size: 0.95rem; flex-shrink: 0; }
+
+.pwd-strength {
+    height: 3px;
+    background: var(--border-light, #e7e2d8);
+    border-radius: 2px;
+    margin-top: 0.42rem;
+    overflow: hidden;
+}
+.pwd-bar {
+    height: 100%;
+    width: 0%;
+    border-radius: 2px;
+    transition: width 0.22s ease, background-color 0.22s ease;
+}
+.pwd-hint {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+    margin-top: 0.18rem;
+    min-height: 1.1em;
+}
+
+@media (max-width: 560px) {
+    .account-form-grid { grid-template-columns: 1fr; }
+    .account-field--wide { grid-column: auto; }
+    .account-hero__meta { text-align: left; }
+}
+
+/* ===========================================================================
+   Écran de forçage — nouveau mot de passe obligatoire
+   =========================================================================== */
+
+.client-main { position: relative; }
+
+.force-pwd-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 300;
+    background: var(--bg-primary);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 3.5rem 1rem 2rem;
+    overflow-y: auto;
+    min-height: 100%;
+}
+.force-pwd-card {
+    width: 100%;
+    max-width: 460px;
+    padding: 2.25rem 2rem 1.75rem;
+    border: 1px solid var(--border-light, #e7e2d8);
+    border-radius: var(--radius-lg);
+    background: var(--bg-primary);
+    box-shadow: 0 8px 48px -8px rgba(0, 0, 0, 0.12);
+}
+.force-pwd-icon {
+    font-size: 1.85rem;
+    color: #d97706;
+    margin-bottom: 0.75rem;
+    display: block;
+}
+.force-pwd-card h2 { font-size: 1.2rem; margin: 0 0 0.35rem; }
+.force-pwd-card > p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    line-height: 1.55;
+}

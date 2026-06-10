@@ -92,6 +92,38 @@
                 </aside>
 
                 <div class="client-main">
+                    <!-- ══ Écran forçage mot de passe ═══════════════════════ -->
+                    <div id="forcePwdOverlay" class="force-pwd-overlay" hidden>
+                        <div class="force-pwd-card">
+                            <i class="force-pwd-icon fas fa-shield-exclamation" aria-hidden="true"></i>
+                            <h2>Nouveau mot de passe requis</h2>
+                            <p>Pour des raisons de sécurité, vous devez définir un nouveau mot de passe avant d'accéder à votre espace client.</p>
+                            <form class="client-form" id="forcePwdForm" novalidate>
+                                <label class="account-field">
+                                    <span class="account-field__label"><i class="fas fa-lock" aria-hidden="true"></i> Mot de passe actuel (temporaire)</span>
+                                    <input type="password" id="force-pwd-current" autocomplete="current-password" placeholder="Mot de passe reçu par email" required>
+                                </label>
+                                <label class="account-field">
+                                    <span class="account-field__label"><i class="fas fa-lock-open" aria-hidden="true"></i> Nouveau mot de passe <small style="font-weight:400;text-transform:none;letter-spacing:0">(12 car. min., maj, chiffre, symbole)</small></span>
+                                    <input type="password" id="force-pwd-new" autocomplete="new-password" minlength="12" required>
+                                    <div class="pwd-strength"><div id="force-pwd-bar" class="pwd-bar"></div></div>
+                                    <span class="pwd-hint" id="force-pwd-hint"></span>
+                                </label>
+                                <label class="account-field">
+                                    <span class="account-field__label"><i class="fas fa-check-double" aria-hidden="true"></i> Confirmer</span>
+                                    <input type="password" id="force-pwd-confirm" autocomplete="new-password" minlength="12" required>
+                                </label>
+                                <p class="client-form__msg" id="forcePwdMsg" role="status" aria-live="polite"></p>
+                                <button class="btn btn-primary btn-block" type="submit">Définir mon mot de passe</button>
+                            </form>
+                            <p style="text-align:center;margin-top:1.1rem;font-size:0.84rem">
+                                <button type="button" id="forcePwdLogoutBtn" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;text-decoration:underline;font-size:0.84rem;font-family:inherit;padding:0">
+                                    Se déconnecter
+                                </button>
+                            </p>
+                        </div>
+                    </div>
+
                     <header class="client-topbar">
                         <div>
                             <span class="section-tag">Espace client</span>
@@ -369,30 +401,53 @@
                     </section>
 
                     <section class="client-view" data-view="account">
+
+                        <!-- Hero identité -->
+                        <div class="account-hero">
+                            <div class="account-avatar" id="account-avatar">?</div>
+                            <div class="account-hero__info">
+                                <h2 id="account-display-name">Chargement…</h2>
+                                <p class="account-display-email" id="account-display-email"></p>
+                                <span class="client-status client-status--ok" style="font-size:0.76rem;padding:0.18rem 0.55rem">Compte actif</span>
+                            </div>
+                            <div class="account-hero__meta" id="account-hero-meta">
+                                <span>Dernière connexion</span>
+                                <strong id="account-last-login">—</strong>
+                            </div>
+                        </div>
+
                         <div class="client-layout">
+                            <!-- Profil -->
                             <article class="client-panel">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Profil</span><h2>Mes informations</h2></div>
+                                    <i class="fas fa-id-card" style="color:var(--text-secondary);font-size:1.1rem" aria-hidden="true"></i>
                                 </div>
-                                <form class="client-form" id="clientProfileForm">
-                                    <label>Société / nom
-                                        <input type="text" id="account-company" disabled>
-                                    </label>
-                                    <label>Email de connexion
-                                        <input type="email" id="account-email" disabled>
-                                    </label>
-                                    <label>Téléphone
-                                        <input type="tel" id="account-phone" autocomplete="tel">
-                                    </label>
-                                    <label>Adresse
-                                        <input type="text" id="account-adresse" autocomplete="street-address">
-                                    </label>
-                                    <div class="client-form__row">
-                                        <label>Code postal
-                                            <input type="text" id="account-cp" autocomplete="postal-code">
+                                <form class="client-form" id="clientProfileForm" style="margin-top:0.1rem">
+                                    <div class="account-form-grid">
+                                        <label class="account-field">
+                                            <span class="account-field__label"><i class="fas fa-building" aria-hidden="true"></i> Société / nom</span>
+                                            <input type="text" id="account-company" disabled>
                                         </label>
-                                        <label>Ville
-                                            <input type="text" id="account-ville" autocomplete="address-level2">
+                                        <label class="account-field">
+                                            <span class="account-field__label"><i class="fas fa-at" aria-hidden="true"></i> Email de connexion</span>
+                                            <input type="email" id="account-email" disabled>
+                                        </label>
+                                        <label class="account-field">
+                                            <span class="account-field__label"><i class="fas fa-phone" aria-hidden="true"></i> Téléphone</span>
+                                            <input type="tel" id="account-phone" autocomplete="tel" placeholder="+33 6 00 00 00 00">
+                                        </label>
+                                        <label class="account-field account-field--wide">
+                                            <span class="account-field__label"><i class="fas fa-location-dot" aria-hidden="true"></i> Adresse</span>
+                                            <input type="text" id="account-adresse" autocomplete="street-address" placeholder="123 rue de la Paix">
+                                        </label>
+                                        <label class="account-field">
+                                            <span class="account-field__label">Code postal</span>
+                                            <input type="text" id="account-cp" autocomplete="postal-code" placeholder="75001">
+                                        </label>
+                                        <label class="account-field">
+                                            <span class="account-field__label">Ville</span>
+                                            <input type="text" id="account-ville" autocomplete="address-level2" placeholder="Paris">
                                         </label>
                                     </div>
                                     <p class="client-form__msg" id="clientProfileMsg" role="status" aria-live="polite"></p>
@@ -400,23 +455,33 @@
                                 </form>
                             </article>
 
+                            <!-- Sécurité -->
                             <article class="client-panel">
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Sécurité</span><h2>Mot de passe</h2></div>
+                                    <i class="fas fa-shield-halved" style="color:var(--text-secondary);font-size:1.1rem" aria-hidden="true"></i>
                                 </div>
-                                <p class="client-form__msg visible" id="account-security-note"></p>
-                                <form class="client-form" id="clientPasswordForm">
-                                    <label>Mot de passe actuel
+                                <div class="account-security-badge is-ok" id="account-security-badge">
+                                    <i class="fas fa-circle-check" id="account-security-icon" aria-hidden="true"></i>
+                                    <p id="account-security-note" style="margin:0;font-size:0.86rem"></p>
+                                </div>
+                                <form class="client-form" id="clientPasswordForm" style="margin-top:0.1rem">
+                                    <label class="account-field">
+                                        <span class="account-field__label"><i class="fas fa-lock" aria-hidden="true"></i> Mot de passe actuel</span>
                                         <input type="password" id="pwd-current" autocomplete="current-password" required>
                                     </label>
-                                    <label>Nouveau mot de passe (12 caractères min., majuscule, minuscule, chiffre, symbole)
+                                    <label class="account-field">
+                                        <span class="account-field__label"><i class="fas fa-lock-open" aria-hidden="true"></i> Nouveau mot de passe <small style="font-weight:400;text-transform:none;letter-spacing:0">(12 car. min., maj, chiffre, symbole)</small></span>
                                         <input type="password" id="pwd-new" autocomplete="new-password" minlength="12" required>
+                                        <div class="pwd-strength"><div id="pwd-strength-bar" class="pwd-bar"></div></div>
+                                        <span class="pwd-hint" id="pwd-strength-hint"></span>
                                     </label>
-                                    <label>Confirmer le nouveau mot de passe
+                                    <label class="account-field">
+                                        <span class="account-field__label"><i class="fas fa-check-double" aria-hidden="true"></i> Confirmer le nouveau mot de passe</span>
                                         <input type="password" id="pwd-confirm" autocomplete="new-password" minlength="12" required>
                                     </label>
                                     <p class="client-form__msg" id="clientPasswordMsg" role="status" aria-live="polite"></p>
-                                    <button class="btn btn-secondary" type="submit">Changer mon mot de passe</button>
+                                    <button class="btn btn-primary" type="submit">Changer mon mot de passe</button>
                                 </form>
                             </article>
                         </div>
@@ -485,6 +550,38 @@
                 if (tone === 'ok') return 'client-status client-status--ok';
                 if (tone === 'wait') return 'client-status client-status--wait';
                 return 'client-status';
+            }
+
+            function dateTimeFr(value) {
+                if (!value) return '—';
+                var d = new Date(value);
+                if (Number.isNaN(d.getTime())) return value;
+                return d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function pwdStrength(pass) {
+                var s = 0;
+                if (pass.length >= 12) s++;
+                if (/[A-Z]/.test(pass)) s++;
+                if (/[a-z]/.test(pass)) s++;
+                if (/\d/.test(pass)) s++;
+                if (/[^A-Za-z0-9]/.test(pass)) s++;
+                return s;
+            }
+
+            function initStrengthBar(inputId, barId, hintId) {
+                var input = document.getElementById(inputId);
+                var bar = document.getElementById(barId);
+                var hint = document.getElementById(hintId);
+                if (!input || !bar) return;
+                input.addEventListener('input', function () {
+                    var s = pwdStrength(input.value);
+                    var colors = ['transparent', '#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+                    var labels = ['', 'Trop faible', 'Faible', 'Moyen', 'Fort', 'Très fort'];
+                    bar.style.width = (s * 20) + '%';
+                    bar.style.backgroundColor = colors[s] || 'transparent';
+                    if (hint) hint.textContent = labels[s] || '';
+                });
             }
 
             /* ── Toast global ──────────────────────────────────────────── */
@@ -783,6 +880,9 @@
             }
 
             function activateTab(name) {
+                if (state && state.security && state.security.password_change_required) {
+                    return; /* bloqué tant que le mdp n'est pas changé */
+                }
                 document.querySelectorAll('.client-tab').forEach(function (tab) {
                     tab.classList.toggle('is-active', tab.dataset.tab === name);
                 });
@@ -1229,21 +1329,40 @@
 
             function renderAccount(data) {
                 var client = data.client || {};
+                var security = data.security || {};
+
                 function setVal(id, value) { var el = document.getElementById(id); if (el) el.value = value || ''; }
+                function setText(id, value) { var el = document.getElementById(id); if (el) el.textContent = value || ''; }
+
                 setVal('account-company', client.company_name);
                 setVal('account-email', client.email);
                 setVal('account-phone', client.phone);
                 setVal('account-adresse', client.adresse);
                 setVal('account-cp', client.code_postal);
                 setVal('account-ville', client.ville);
+
+                /* Hero */
+                var name = client.company_name || client.email || '?';
+                var initials = name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
+                setText('account-avatar', initials);
+                setText('account-display-name', client.company_name || client.email || '—');
+                setText('account-display-email', client.email || '');
+                setText('account-last-login', security.last_login_at ? dateTimeFr(security.last_login_at) : '—');
+
+                /* Badge sécurité */
+                var badge = document.getElementById('account-security-badge');
+                var icon = document.getElementById('account-security-icon');
                 var note = document.getElementById('account-security-note');
-                if (note) {
-                    var security = data.security || {};
+                if (badge) {
                     if (security.password_change_required) {
-                        note.textContent = 'Changement de mot de passe obligatoire avant toute action sensible.';
+                        badge.className = 'account-security-badge is-warn';
+                        if (icon) icon.className = 'fas fa-triangle-exclamation';
+                        if (note) note.textContent = 'Changement de mot de passe obligatoire.';
                     } else {
-                        note.textContent = security.password_expires_at
-                            ? 'Mot de passe à jour. Expiration prévue le ' + dateFr(security.password_expires_at) + '.'
+                        badge.className = 'account-security-badge is-ok';
+                        if (icon) icon.className = 'fas fa-circle-check';
+                        if (note) note.textContent = security.password_expires_at
+                            ? 'Mot de passe à jour. Expiration le ' + dateFr(security.password_expires_at) + '.'
                             : 'Mot de passe à jour.';
                     }
                 }
@@ -1265,6 +1384,13 @@
                 renderDocuments(data);
                 renderAccount(data);
                 show(true);
+
+                /* Overlay forçage mot de passe */
+                var overlay = document.getElementById('forcePwdOverlay');
+                if (overlay) {
+                    var needsPwdChange = state && state.security && state.security.password_change_required;
+                    overlay.hidden = !needsPwdChange;
+                }
             }
 
             async function handleAction(button) {
@@ -1644,8 +1770,48 @@
                 });
             }
 
+            /* ── Force-password form ───────────────────────────────────── */
+            initStrengthBar('force-pwd-new', 'force-pwd-bar', 'force-pwd-hint');
+            var forcePwdForm = document.getElementById('forcePwdForm');
+            if (forcePwdForm) {
+                forcePwdForm.addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    var wm = document.getElementById('forcePwdMsg');
+                    var current = (document.getElementById('force-pwd-current') || {}).value || '';
+                    var nw = (document.getElementById('force-pwd-new') || {}).value || '';
+                    var confirm = (document.getElementById('force-pwd-confirm') || {}).value || '';
+                    if (nw !== confirm) {
+                        if (wm) wm.textContent = 'Les deux mots de passe ne correspondent pas.';
+                        return;
+                    }
+                    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/.test(nw)) {
+                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.';
+                        return;
+                    }
+                    if (wm) wm.textContent = 'Modification en cours…';
+                    try {
+                        await api('change-password', { current_password: current, new_password: nw });
+                        forcePwdForm.reset();
+                        notify('Mot de passe défini. Bienvenue dans votre espace.', 'success');
+                        render(await api('me'));
+                    } catch (error) {
+                        if (wm) wm.textContent = error.message || 'Impossible de changer le mot de passe.';
+                    }
+                });
+            }
+            var forcePwdLogoutBtn = document.getElementById('forcePwdLogoutBtn');
+            if (forcePwdLogoutBtn) {
+                forcePwdLogoutBtn.addEventListener('click', async function () {
+                    try { await api('logout'); } catch (e) {}
+                    show(false);
+                    window.scrollTo(0, 0);
+                });
+            }
+
+            /* ── Mot de passe (page Mon compte) ────────────────────────── */
             var passwordForm = document.getElementById('clientPasswordForm');
             if (passwordForm) {
+                initStrengthBar('pwd-new', 'pwd-strength-bar', 'pwd-strength-hint');
                 passwordForm.addEventListener('submit', async function (event) {
                     event.preventDefault();
                     var wm = document.getElementById('clientPasswordMsg');
