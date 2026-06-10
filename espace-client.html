@@ -103,23 +103,23 @@
                         <div class="client-metrics">
                             <article class="client-metric">
                                 <span>Solde à régler</span>
-                                <strong>480 €</strong>
-                                <small>Échéance le 12/06/2026</small>
+                                <strong>--</strong>
+                                <small>Chargement</small>
                             </article>
                             <article class="client-metric">
                                 <span>Support</span>
-                                <strong>Premium</strong>
-                                <small>7 h 30 restantes ce mois-ci</small>
+                                <strong>--</strong>
+                                <small>Chargement</small>
                             </article>
                             <article class="client-metric">
                                 <span>Projet actif</span>
-                                <strong>76 %</strong>
-                                <small>Refonte tunnel commande</small>
+                                <strong>--</strong>
+                                <small>Chargement</small>
                             </article>
                             <article class="client-metric">
                                 <span>Tickets ouverts</span>
-                                <strong>2</strong>
-                                <small>1 réponse attendue</small>
+                                <strong>--</strong>
+                                <small>Chargement</small>
                             </article>
                         </div>
 
@@ -133,21 +133,7 @@
                                     <button class="client-icon-btn" type="button" aria-label="Actualiser" data-action="refresh"><i class="fas fa-rotate" aria-hidden="true"></i></button>
                                 </div>
                                 <div class="client-action-list">
-                                    <div class="client-action">
-                                        <i class="fas fa-file-signature" aria-hidden="true"></i>
-                                        <div><strong>Signer le devis DEV-000006</strong><span>Ajout module fidélité + QR code menu.</span></div>
-                                        <button type="button">Signer</button>
-                                    </div>
-                                    <div class="client-action">
-                                        <i class="fas fa-credit-card" aria-hidden="true"></i>
-                                        <div><strong>Payer la facture FAC-000010</strong><span>Maintenance mensuelle et correctifs.</span></div>
-                                        <button type="button">Payer</button>
-                                    </div>
-                                    <div class="client-action">
-                                        <i class="fas fa-message" aria-hidden="true"></i>
-                                        <div><strong>Répondre au ticket #SUP-103</strong><span>Validation demandée sur le nouveau formulaire.</span></div>
-                                        <button type="button">Ouvrir</button>
-                                    </div>
+                                    <p class="client-empty">Chargement des actions...</p>
                                 </div>
                             </article>
 
@@ -173,16 +159,13 @@
                         </div>
 
                         <div class="client-layout">
-                            <article class="client-panel">
+                            <article class="client-panel" data-overview-project>
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Projet</span><h2>Avancement</h2></div>
-                                    <span class="client-status">Semaine 3/4</span>
+                                    <div><span class="client-kicker">Projet</span><h2>Aucun projet actif</h2></div>
+                                    <span class="client-status">A jour</span>
                                 </div>
                                 <div class="client-timeline">
-                                    <div class="is-done"><span></span><strong>Audit tunnel commande</strong><small>Terminé le 30/05</small></div>
-                                    <div class="is-done"><span></span><strong>Maquettes responsive</strong><small>Validées le 03/06</small></div>
-                                    <div class="is-current"><span></span><strong>Intégration + paiement</strong><small>En cours</small></div>
-                                    <div><span></span><strong>Recette client</strong><small>Prévue le 13/06</small></div>
+                                    <div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s'afficheront ici.</small></div>
                                 </div>
                             </article>
 
@@ -192,9 +175,7 @@
                                     <button class="client-link-btn" type="button" data-tab-jump="documents">Tout voir</button>
                                 </div>
                                 <div class="client-doc-list">
-                                    <a href="#"><i class="fas fa-file-pdf" aria-hidden="true"></i><span>Facture FAC-000010.pdf</span><small>480 €</small></a>
-                                    <a href="#"><i class="fas fa-file-lines" aria-hidden="true"></i><span>Compte rendu sprint 03</span><small>Projet</small></a>
-                                    <a href="#"><i class="fas fa-file-contract" aria-hidden="true"></i><span>Contrat support Premium</span><small>Actif</small></a>
+                                    <p class="client-empty">Chargement des documents...</p>
                                 </div>
                             </article>
                         </div>
@@ -891,6 +872,55 @@
                 }).join('');
             }
 
+            function renderOverviewProject(data) {
+                var panel = document.querySelector('[data-overview-project]');
+                if (!panel) return;
+                var projects = data.projects || [];
+                var project = projects[0] || null;
+                var title = panel.querySelector('.client-panel__head h2');
+                var badge = panel.querySelector('.client-status');
+                var timeline = panel.querySelector('.client-timeline');
+
+                var statusLabelFr = function (s) {
+                    return { planned: 'Planifié', in_progress: 'En cours', review: 'Recette', completed: 'Terminé', paused: 'En pause' }[s] || s || 'A jour';
+                };
+                var statusBadgeClass = function (s) {
+                    if (s === 'completed') return 'client-status--ok';
+                    if (s === 'paused') return '';
+                    return 'client-status--wait';
+                };
+                var milestoneHtml = function (milestones) {
+                    var sorted = (milestones || []).slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); }).slice(0, 4);
+                    if (!sorted.length) {
+                        return '<div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s\'afficheront ici.</small></div>';
+                    }
+                    return sorted.map(function (step) {
+                        var cls = step.status === 'done' ? 'is-done' : (step.status === 'current' ? 'is-current' : '');
+                        var sub = step.description || (step.due_date ? dateFr(step.due_date) : '');
+                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title || 'Étape') + '</strong>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+                    }).join('');
+                };
+
+                if (!project) {
+                    if (title) title.textContent = 'Aucun projet actif';
+                    if (badge) {
+                        badge.className = 'client-status';
+                        badge.textContent = 'A jour';
+                    }
+                    if (timeline) {
+                        timeline.innerHTML = '<div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s\'afficheront ici.</small></div>';
+                    }
+                    return;
+                }
+
+                if (title) title.textContent = project.name || 'Projet';
+                if (badge) {
+                    badge.className = 'client-status ' + statusBadgeClass(project.status);
+                    badge.textContent = statusLabelFr(project.status);
+                }
+                if (timeline) timeline.innerHTML = milestoneHtml(project.milestones);
+            }
+
             function renderActions(data) {
                 var actions = [];
                 var quoteStatuses = ['pending', 'quote_sent', 'brouillon', 'envoye'];
@@ -1206,6 +1236,7 @@
                 state = data;
                 renderHeader(data);
                 renderMetrics(data);
+                renderOverviewProject(data);
                 renderActions(data);
                 renderSubscription(data);
                 renderSupportUsage(data);
