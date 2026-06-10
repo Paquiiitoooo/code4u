@@ -85,7 +85,7 @@ function portalSendAccessMail(array $client, $password) {
     if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
-    $from = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'contact@code4u.fr';
+    $from = 'noreply@code4u.fr';
     $label = htmlspecialchars(portalClientLabel($client), ENT_QUOTES, 'UTF-8');
     $email = htmlspecialchars($to, ENT_QUOTES, 'UTF-8');
     $passwordHtml = htmlspecialchars($password, ENT_QUOTES, 'UTF-8');
@@ -111,7 +111,7 @@ function portalSendAccessMail(array $client, $password) {
         'MIME-Version: 1.0',
         'Content-Type: text/html; charset=UTF-8',
         'From: Code4U <' . $from . '>',
-        'Reply-To: ' . $from,
+        'Reply-To: contact@code4u.fr',
     ];
     return @mail($to, '=?UTF-8?B?' . base64_encode('Votre acces espace client Code4U') . '?=', $html, implode("\r\n", $headers));
 }

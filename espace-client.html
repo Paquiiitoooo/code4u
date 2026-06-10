@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Espace client — Code4U</title>
     <meta name="description" content="Espace client Code4U : suivez vos abonnements support, devis, factures, paiements, tickets et projets.">
-    <meta name="robots" content="noindex, follow">
+    <meta name="robots" content="noindex, nofollow, noarchive">
     <link rel="icon" type="image/png" href="assets/images/logo-carre.png">
     <meta name="theme-color" content="#14131a">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,6 +52,10 @@
                         <div class="field">
                             <label for="client-login-pass">Mot de passe</label>
                             <input type="password" id="client-login-pass" name="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
+                        </div>
+                        <div class="field" id="client-2fa-field" hidden>
+                            <label for="client-login-code">Code de verification email</label>
+                            <input type="text" id="client-login-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456">
                         </div>
                         <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
                         <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
@@ -400,15 +404,16 @@
                                 <div class="client-panel__head">
                                     <div><span class="client-kicker">Sécurité</span><h2>Mot de passe</h2></div>
                                 </div>
+                                <p class="client-form__msg visible" id="account-security-note"></p>
                                 <form class="client-form" id="clientPasswordForm">
                                     <label>Mot de passe actuel
                                         <input type="password" id="pwd-current" autocomplete="current-password" required>
                                     </label>
-                                    <label>Nouveau mot de passe (8 caractères min.)
-                                        <input type="password" id="pwd-new" autocomplete="new-password" minlength="8" required>
+                                    <label>Nouveau mot de passe (12 caractères min., majuscule, minuscule, chiffre, symbole)
+                                        <input type="password" id="pwd-new" autocomplete="new-password" minlength="12" required>
                                     </label>
                                     <label>Confirmer le nouveau mot de passe
-                                        <input type="password" id="pwd-confirm" autocomplete="new-password" minlength="8" required>
+                                        <input type="password" id="pwd-confirm" autocomplete="new-password" minlength="12" required>
                                     </label>
                                     <p class="client-form__msg" id="clientPasswordMsg" role="status" aria-live="polite"></p>
                                     <button class="btn btn-secondary" type="submit">Changer mon mot de passe</button>
@@ -450,6 +455,7 @@
             var dashboard = document.getElementById('clientDashboard');
             var msg = document.getElementById('clientLoginMsg');
             var state = null;
+            var pending2fa = false;
 
             function esc(value) {
                 return String(value === null || value === undefined ? '' : value)
@@ -927,12 +933,12 @@
                 var invoiceStatuses = ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'];
                 (data.quotes || []).filter(function (quote) {
                     return quote.can_sign || quoteStatuses.indexOf(quote.status) !== -1;
-                }).slice(0, 1).forEach(function (quote) {
+                }).slice(0, 2).forEach(function (quote) {
                     actions.push({ icon: 'fa-file-signature', title: 'Signer le devis ' + quote.number, text: quote.title || 'Devis en attente', label: 'Signer', action: 'sign-quote', id: quote.id });
                 });
                 (data.invoices || []).filter(function (invoice) {
                     return invoice.can_pay_online || invoiceStatuses.indexOf(invoice.status) !== -1;
-                }).slice(0, 1).forEach(function (invoice) {
+                }).slice(0, 4).forEach(function (invoice) {
                     actions.push({ icon: 'fa-credit-card', title: 'Payer la facture ' + invoice.number, text: money(invoice.remaining_amount || invoice.amount, invoice.currency) + ' TTC via Stripe', label: 'Payer via Stripe', action: 'pay-invoice-online', id: invoice.id });
                 });
                 (data.tickets || []).filter(function (ticket) {
@@ -1230,6 +1236,17 @@
                 setVal('account-adresse', client.adresse);
                 setVal('account-cp', client.code_postal);
                 setVal('account-ville', client.ville);
+                var note = document.getElementById('account-security-note');
+                if (note) {
+                    var security = data.security || {};
+                    if (security.password_change_required) {
+                        note.textContent = 'Changement de mot de passe obligatoire avant toute action sensible.';
+                    } else {
+                        note.textContent = security.password_expires_at
+                            ? 'Mot de passe à jour. Expiration prévue le ' + dateFr(security.password_expires_at) + '.'
+                            : 'Mot de passe à jour.';
+                    }
+                }
             }
 
             function render(data) {
@@ -1498,14 +1515,40 @@
             if (form) {
                 form.addEventListener('submit', async function (event) {
                     event.preventDefault();
-                    if (msg) msg.textContent = 'Connexion en cours...';
+                    if (msg) msg.textContent = pending2fa ? 'Verification du code...' : 'Connexion en cours...';
                     try {
-                        var data = await api('login', {
-                            email: document.getElementById('client-login-email').value,
-                            password: document.getElementById('client-login-pass').value
-                        });
+                        var data = pending2fa
+                            ? await api('verify-2fa', {
+                                code: document.getElementById('client-login-code').value
+                            })
+                            : await api('login', {
+                                email: document.getElementById('client-login-email').value,
+                                password: document.getElementById('client-login-pass').value
+                            });
+                        if (data.requires_2fa) {
+                            pending2fa = true;
+                            var field = document.getElementById('client-2fa-field');
+                            var codeInput = document.getElementById('client-login-code');
+                            if (field) field.hidden = false;
+                            if (codeInput) {
+                                codeInput.required = true;
+                                codeInput.focus();
+                            }
+                            if (msg) {
+                                msg.textContent = data.message || 'Code envoye par email.';
+                                msg.className = 'client-form__msg visible';
+                            }
+                            return;
+                        }
+                        pending2fa = false;
+                        var twoFaField = document.getElementById('client-2fa-field');
+                        if (twoFaField) twoFaField.hidden = true;
                         if (msg) msg.textContent = '';
                         render(data);
+                        if (data.security && data.security.password_change_required) {
+                            notify('Votre mot de passe doit etre modifie pour respecter la rotation de securite de 90 jours.', 'warning');
+                            activateTab('account');
+                        }
                         window.scrollTo(0, 0);
                     } catch (error) {
                         if (msg) {
@@ -1613,11 +1656,16 @@
                         if (wm) wm.textContent = 'Les deux mots de passe ne correspondent pas.';
                         return;
                     }
+                    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/.test(nw)) {
+                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.';
+                        return;
+                    }
                     if (wm) wm.textContent = 'Modification...';
                     try {
                         await api('change-password', { current_password: current, new_password: nw });
                         passwordForm.reset();
                         if (wm) wm.textContent = 'Mot de passe modifié. Un email de confirmation vous a été envoyé.';
+                        render(await api('me'));
                     } catch (error) {
                         if (wm) wm.textContent = error.message || 'Impossible de changer le mot de passe.';
                     }

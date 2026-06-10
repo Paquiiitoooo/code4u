@@ -358,14 +358,14 @@ function sendEmailNotification($to, $subject, $body, $isHTML = false) {
     }
     
     // Mode production: envoyer l'email normalement avec headers anti-spam
-    $fromEmail = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'contact@code4u.fr';
+    $fromEmail = 'noreply@code4u.fr';
     $fromName = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Code4U Support';
     
     // Headers pour forcer l'affichage de contact@code4u.fr
     $headers = [];
     $headers[] = "From: " . $fromName . " <" . $fromEmail . ">";
     $headers[] = "Sender: " . $fromEmail;
-    $headers[] = "Reply-To: " . $fromEmail;
+    $headers[] = "Reply-To: contact@code4u.fr";
     $headers[] = "Return-Path: " . $fromEmail;
     $headers[] = "X-Mailer: Code4U Ticket System";
     $headers[] = "X-Priority: 3";
@@ -504,4 +504,3 @@ function hasIsReadColumn($db) {
         return false;
     }
 }
-

@@ -2,6 +2,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+header('X-Robots-Tag: noindex, nofollow, noarchive');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -62,6 +63,58 @@ function portalColumnExists(PDO $db, $table, $column) {
     ");
     $stmt->execute([':table' => $table, ':column' => $column]);
     return (int)$stmt->fetchColumn() > 0;
+}
+
+function portalEnsureColumn(PDO $db, $table, $column, $definition) {
+    if (portalTableExists($db, $table) && !portalColumnExists($db, $table, $column)) {
+        $db->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
+    }
+}
+
+function portalEnsureClientAccountsTable(PDO $db) {
+    $db->exec("
+        CREATE TABLE IF NOT EXISTS client_portal_accounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            client_id INT NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            status ENUM('active','disabled') NOT NULL DEFAULT 'active',
+            two_factor_enabled TINYINT(1) NOT NULL DEFAULT 1,
+            two_factor_code_hash VARCHAR(255) DEFAULT NULL,
+            two_factor_expires_at DATETIME DEFAULT NULL,
+            two_factor_attempts INT NOT NULL DEFAULT 0,
+            failed_login_attempts INT NOT NULL DEFAULT 0,
+            locked_until DATETIME DEFAULT NULL,
+            last_login_at DATETIME DEFAULT NULL,
+            last_login_ip VARCHAR(64) DEFAULT NULL,
+            password_changed_at DATETIME DEFAULT NULL,
+            password_expires_at DATETIME DEFAULT NULL,
+            force_password_change TINYINT(1) NOT NULL DEFAULT 1,
+            credentials_sent_at DATETIME DEFAULT NULL,
+            created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+            updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+            KEY idx_client_portal_accounts_client (client_id),
+            KEY idx_client_portal_accounts_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+    portalEnsureColumn($db, 'client_portal_accounts', 'two_factor_enabled', "TINYINT(1) NOT NULL DEFAULT 1");
+    portalEnsureColumn($db, 'client_portal_accounts', 'two_factor_code_hash', "VARCHAR(255) DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'two_factor_expires_at', "DATETIME DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'two_factor_attempts', "INT NOT NULL DEFAULT 0");
+    portalEnsureColumn($db, 'client_portal_accounts', 'failed_login_attempts', "INT NOT NULL DEFAULT 0");
+    portalEnsureColumn($db, 'client_portal_accounts', 'locked_until', "DATETIME DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'last_login_at', "DATETIME DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'last_login_ip', "VARCHAR(64) DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'password_changed_at', "DATETIME DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'password_expires_at', "DATETIME DEFAULT NULL");
+    portalEnsureColumn($db, 'client_portal_accounts', 'force_password_change', "TINYINT(1) NOT NULL DEFAULT 1");
+    portalEnsureColumn($db, 'client_portal_accounts', 'credentials_sent_at', "DATETIME DEFAULT NULL");
+    $db->exec("
+        UPDATE client_portal_accounts
+        SET two_factor_enabled = 1,
+            password_changed_at = COALESCE(password_changed_at, created_at, NOW()),
+            password_expires_at = COALESCE(password_expires_at, DATE_ADD(COALESCE(password_changed_at, created_at, NOW()), INTERVAL 90 DAY))
+    ");
 }
 
 function portalEnsureTicketAccessCode(PDO $db) {
@@ -136,6 +189,7 @@ function portalCurrentClient(PDO $db) {
     if (!$clientId || !portalHasTables($db, ['clients', 'client_portal_accounts'])) {
         return null;
     }
+    portalEnsureClientAccountsTable($db);
 
     $stmt = $db->prepare("
         SELECT
@@ -148,7 +202,13 @@ function portalCurrentClient(PDO $db) {
             c.adresse,
             c.code_postal,
             c.ville,
-            a.status
+            a.status,
+            a.email AS account_email,
+            a.two_factor_enabled,
+            a.password_changed_at,
+            a.password_expires_at,
+            a.force_password_change,
+            a.last_login_at
         FROM clients c
         INNER JOIN client_portal_accounts a ON a.client_id = c.id
         WHERE c.id = :id AND a.status = 'active' AND c.actif = 1
@@ -167,6 +227,81 @@ function portalRequireClient(PDO $db) {
     return $client;
 }
 
+function portalClientIp() {
+    return substr((string)($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''), 0, 64);
+}
+
+function portalStrongPassword($password) {
+    return strlen($password) >= 12
+        && preg_match('/[A-Z]/', $password)
+        && preg_match('/[a-z]/', $password)
+        && preg_match('/[0-9]/', $password)
+        && preg_match('/[^A-Za-z0-9]/', $password);
+}
+
+function portalPasswordChangeRequired(array $account) {
+    if (!empty($account['force_password_change'])) {
+        return true;
+    }
+    if (empty($account['password_expires_at'])) {
+        return true;
+    }
+    return strtotime((string)$account['password_expires_at']) <= time();
+}
+
+function portalGenerate2faCode() {
+    return (string)random_int(100000, 999999);
+}
+
+function portalSend2faMail(array $account, $code) {
+    return portalSendClientMail(
+        ['email' => $account['email']],
+        'Code de verification espace client Code4U',
+        'Code de verification',
+        '<p>Bonjour,</p><p>Voici votre code de connexion a votre espace client Code4U :</p>'
+        . '<p style="font-size:28px;font-weight:800;letter-spacing:8px;color:#1d6fe6;margin:18px 0">' . htmlspecialchars($code, ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p>Ce code expire dans 10 minutes. Si vous n etes pas a l origine de cette connexion, ignorez cet email et contactez Code4U.</p>'
+    );
+}
+
+function portalSendLoginMail(array $account) {
+    return portalSendClientMail(
+        ['email' => $account['email']],
+        'Nouvelle connexion a votre espace client Code4U',
+        'Connexion detectee',
+        '<p>Bonjour,</p><p>Une connexion a votre espace client Code4U vient d etre validee.</p>'
+        . '<p><strong>Date :</strong> ' . date('d/m/Y H:i') . '<br><strong>IP :</strong> ' . htmlspecialchars(portalClientIp(), ENT_QUOTES, 'UTF-8') . '</p>'
+        . '<p>Si ce n etait pas vous, contactez immediatement Code4U.</p>'
+    );
+}
+
+function portalFinishLogin(PDO $db, array $account) {
+    session_regenerate_id(true);
+    $_SESSION['client_id'] = (int)$account['client_id'];
+    unset($_SESSION['pending_client_account_id'], $_SESSION['pending_client_email']);
+    $upd = $db->prepare("
+        UPDATE client_portal_accounts
+        SET last_login_at = NOW(),
+            last_login_ip = :ip,
+            failed_login_attempts = 0,
+            locked_until = NULL,
+            two_factor_code_hash = NULL,
+            two_factor_expires_at = NULL,
+            two_factor_attempts = 0
+        WHERE id = :id
+    ");
+    $upd->execute([':ip' => portalClientIp(), ':id' => (int)$account['account_id']]);
+    portalSendLoginMail($account);
+    unset($account['password_hash'], $account['two_factor_code_hash']);
+    $data = portalBuildDashboard($db, $account);
+    $data['security'] = [
+        'two_factor_enabled' => true,
+        'password_change_required' => portalPasswordChangeRequired($account),
+        'password_expires_at' => $account['password_expires_at'] ?? null,
+    ];
+    return $data;
+}
+
 function portalMoney($amount, $currency = 'EUR') {
     return number_format((float)$amount, 2, '.', '') . ' ' . $currency;
 }
@@ -180,7 +315,7 @@ function portalSendClientMail($client, $subject, $title, $bodyHtml) {
     if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
-    $from = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'contact@code4u.fr';
+    $from = 'noreply@code4u.fr';
     $html = '<!doctype html><html><head><meta charset="utf-8"></head>'
         . '<body style="margin:0;background:#f4f1eb;font-family:Inter,Arial,sans-serif;color:#14131a">'
         . '<div style="max-width:560px;margin:0 auto;padding:24px">'
@@ -199,7 +334,7 @@ function portalSendClientMail($client, $subject, $title, $bodyHtml) {
         'MIME-Version: 1.0',
         'Content-Type: text/html; charset=UTF-8',
         'From: Code4U <' . $from . '>',
-        'Reply-To: ' . $from,
+        'Reply-To: contact@code4u.fr',
     ];
     $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
     return @mail($to, $encodedSubject, $html, implode("\r\n", $headers));
@@ -400,10 +535,10 @@ function portalFetchInvoices(PDO $db, $clientId) {
 
     $remiseSelect = portalColumnExists($db, 'factures', 'remise') ? ', remise' : '';
     $stmt = $db->prepare("
-        SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_ttc, montant_paye, notes, conditions{$remiseSelect}
+        SELECT id, numero, date_facture, date_echeance, statut, montant_ht, montant_tva, montant_paye, montant_ttc, notes, conditions{$remiseSelect}
         FROM factures
         WHERE client_id = :client_id
-          AND statut IN ('envoyee', 'payee')
+          AND statut IN ('envoyee', 'emise', 'impayee', 'partielle', 'payee')
         ORDER BY date_facture DESC, id DESC
         LIMIT 20
     ");
@@ -1350,8 +1485,8 @@ function portalUpdateProfile(PDO $db, array $client, array $input) {
 function portalChangePassword(PDO $db, array $client, array $input) {
     $current = (string)($input['current_password'] ?? '');
     $new = (string)($input['new_password'] ?? '');
-    if (strlen($new) < 8) {
-        portalRespond(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 8 caractères.'], 422);
+    if (!portalStrongPassword($new)) {
+        portalRespond(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 12 caracteres avec majuscule, minuscule, chiffre et symbole.'], 422);
     }
     $stmt = $db->prepare("SELECT password_hash FROM client_portal_accounts WHERE client_id = :id AND status = 'active' LIMIT 1");
     $stmt->execute([':id' => (int)$client['id']]);
@@ -1360,7 +1495,16 @@ function portalChangePassword(PDO $db, array $client, array $input) {
         portalRespond(['success' => false, 'message' => 'Mot de passe actuel incorrect.'], 401);
     }
     $hash = password_hash($new, PASSWORD_BCRYPT);
-    $upd = $db->prepare("UPDATE client_portal_accounts SET password_hash = :h WHERE client_id = :id");
+    $upd = $db->prepare("
+        UPDATE client_portal_accounts
+        SET password_hash = :h,
+            password_changed_at = NOW(),
+            password_expires_at = DATE_ADD(NOW(), INTERVAL 90 DAY),
+            force_password_change = 0,
+            failed_login_attempts = 0,
+            locked_until = NULL
+        WHERE client_id = :id
+    ");
     $upd->execute([':h' => $hash, ':id' => (int)$client['id']]);
     portalSendClientMail(
         $client,
@@ -1420,6 +1564,12 @@ function portalBuildDashboard(PDO $db, array $client) {
         'projects' => $projects,
         'tickets' => $tickets,
         'documents' => $documents,
+        'security' => [
+            'two_factor_enabled' => !empty($client['two_factor_enabled']),
+            'password_change_required' => portalPasswordChangeRequired($client),
+            'password_expires_at' => $client['password_expires_at'] ?? null,
+            'last_login_at' => $client['last_login_at'] ?? null,
+        ],
     ];
 }
 
@@ -1431,6 +1581,7 @@ if (!$action) {
 
 try {
     $db = getDB();
+    portalEnsureClientAccountsTable($db);
 
     if ($action === 'login') {
         if (!portalHasTables($db, ['clients', 'client_portal_accounts'])) {
@@ -1448,9 +1599,17 @@ try {
 
         $stmt = $db->prepare("
             SELECT
+                a.id AS account_id,
                 a.client_id,
+                a.email AS account_email,
                 a.password_hash,
                 a.status,
+                a.two_factor_enabled,
+                a.failed_login_attempts,
+                a.locked_until,
+                a.password_changed_at,
+                a.password_expires_at,
+                a.force_password_change,
                 c.id,
                 COALESCE(NULLIF(c.raison_sociale, ''), NULLIF(CONCAT_WS(' ', c.prenom, c.nom), ''), c.email) AS company_name,
                 c.prenom AS contact_firstname,
@@ -1467,21 +1626,108 @@ try {
         ");
         $stmt->execute([':email' => $email]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($account && !empty($account['locked_until']) && strtotime((string)$account['locked_until']) > time()) {
+            portalRespond(['success' => false, 'message' => 'Compte temporairement verrouille. Reessayez plus tard.'], 423);
+        }
         if (!$account || !password_verify($password, $account['password_hash'])) {
+            if ($account) {
+                $fails = (int)($account['failed_login_attempts'] ?? 0) + 1;
+                $lockedSql = $fails >= 5 ? ', locked_until = DATE_ADD(NOW(), INTERVAL 15 MINUTE)' : '';
+                $failStmt = $db->prepare("UPDATE client_portal_accounts SET failed_login_attempts = :fails{$lockedSql} WHERE id = :id");
+                $failStmt->execute([':fails' => $fails, ':id' => (int)$account['account_id']]);
+            }
             portalRespond(['success' => false, 'message' => 'Identifiants incorrects'], 401);
         }
 
-        $_SESSION['client_id'] = (int)$account['client_id'];
-        unset($account['password_hash']);
-        portalRespond(portalBuildDashboard($db, $account));
+        $code = portalGenerate2faCode();
+        $twoFa = $db->prepare("
+            UPDATE client_portal_accounts
+            SET two_factor_code_hash = :hash,
+                two_factor_expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE),
+                two_factor_attempts = 0,
+                failed_login_attempts = 0,
+                locked_until = NULL
+            WHERE id = :id
+        ");
+        $twoFa->execute([
+            ':hash' => password_hash($code, PASSWORD_BCRYPT),
+            ':id' => (int)$account['account_id'],
+        ]);
+        $_SESSION['pending_client_account_id'] = (int)$account['account_id'];
+        $_SESSION['pending_client_email'] = $email;
+        portalSend2faMail($account, $code);
+        portalRespond([
+            'success' => true,
+            'requires_2fa' => true,
+            'message' => 'Code de verification envoye par email.',
+            'email' => $email,
+        ]);
+    }
+
+    if ($action === 'verify-2fa') {
+        $accountId = (int)($_SESSION['pending_client_account_id'] ?? 0);
+        $code = trim((string)($input['code'] ?? ''));
+        if (!$accountId || !preg_match('/^[0-9]{6}$/', $code)) {
+            portalRespond(['success' => false, 'message' => 'Code de verification invalide.'], 422);
+        }
+        $stmt = $db->prepare("
+            SELECT
+                a.id AS account_id,
+                a.client_id,
+                a.email AS account_email,
+                a.email,
+                a.password_hash,
+                a.status,
+                a.two_factor_code_hash,
+                a.two_factor_expires_at,
+                a.two_factor_attempts,
+                a.password_changed_at,
+                a.password_expires_at,
+                a.force_password_change,
+                c.id,
+                COALESCE(NULLIF(c.raison_sociale, ''), NULLIF(CONCAT_WS(' ', c.prenom, c.nom), ''), c.email) AS company_name,
+                c.prenom AS contact_firstname,
+                c.nom AS contact_lastname,
+                c.email,
+                c.telephone AS phone,
+                c.adresse,
+                c.code_postal,
+                c.ville
+            FROM client_portal_accounts a
+            INNER JOIN clients c ON c.id = a.client_id
+            WHERE a.id = :id AND a.status = 'active' AND c.actif = 1
+            LIMIT 1
+        ");
+        $stmt->execute([':id' => $accountId]);
+        $account = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$account || empty($account['two_factor_code_hash']) || strtotime((string)$account['two_factor_expires_at']) < time()) {
+            portalRespond(['success' => false, 'message' => 'Code expire. Reconnectez-vous.'], 401);
+        }
+        if ((int)$account['two_factor_attempts'] >= 5) {
+            portalRespond(['success' => false, 'message' => 'Trop de tentatives. Reconnectez-vous.'], 423);
+        }
+        if (!password_verify($code, $account['two_factor_code_hash'])) {
+            $db->prepare("UPDATE client_portal_accounts SET two_factor_attempts = two_factor_attempts + 1 WHERE id = :id")
+                ->execute([':id' => $accountId]);
+            portalRespond(['success' => false, 'message' => 'Code incorrect.'], 401);
+        }
+        portalRespond(portalFinishLogin($db, $account));
     }
 
     if ($action === 'logout') {
-        unset($_SESSION['client_id']);
+        unset($_SESSION['client_id'], $_SESSION['pending_client_account_id'], $_SESSION['pending_client_email']);
         portalRespond(['success' => true, 'authenticated' => false]);
     }
 
     $client = portalRequireClient($db);
+
+    if (portalPasswordChangeRequired($client) && !in_array($action, ['me', 'change-password', 'logout'], true)) {
+        portalRespond([
+            'success' => false,
+            'message' => 'Vous devez modifier votre mot de passe avant de continuer.',
+            'password_change_required' => true,
+        ], 428);
+    }
 
     if ($action === 'create-ticket') {
         portalRespond(portalCreateTicket($db, $client, $input), 201);

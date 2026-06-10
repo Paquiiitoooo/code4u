@@ -154,7 +154,7 @@ function triggerWorkflow($pdo, $orderId, $workflowType, $recipientEmail, $data =
 // ── sendEmail ─────────────────────────────────────────────────
 
 function sendEmail($to, $subject, $html) {
-    $from     = 'Code4U <contact@code4u.fr>';
+    $from     = 'Code4U <noreply@code4u.fr>';
     $boundary = 'CODE4U_' . md5(microtime(true) . $to);
 
     // Auto-generate plain-text version

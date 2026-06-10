@@ -88,10 +88,10 @@ if (IS_LOCAL) {
     define('EMAIL_DEV_MODE', false);
     define('SMTP_HOST', 'smtp.ionos.fr');
     define('SMTP_PORT', 587);
-    // Utilisation de contact@code4u.fr qui est déjà configuré
+    // Auth SMTP possible avec contact@code4u.fr, expéditeur automatique noreply.
     define('SMTP_USER', 'contact@code4u.fr');
     define('SMTP_PASS', ''); // À configurer avec le mot de passe du compte contact@code4u.fr si SMTP est utilisé
-    define('SMTP_FROM_EMAIL', 'contact@code4u.fr');
+    define('SMTP_FROM_EMAIL', 'noreply@code4u.fr');
     define('SMTP_FROM_NAME', 'Code4U Support');
 }
 

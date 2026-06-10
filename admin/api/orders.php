@@ -228,9 +228,146 @@ function erpFindOrCreateClient($pdo, $client, $input) {
     return (int)$pdo->lastInsertId();
 }
 
+function erpEnsureColumn(PDO $pdo, $table, $column, $definition) {
+    if (!dbTableExists($pdo, $table)) return;
+    $stmt = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = :table AND column_name = :column
+    ");
+    $stmt->execute([':table' => $table, ':column' => $column]);
+    if ((int)$stmt->fetchColumn() === 0) {
+        $pdo->exec("ALTER TABLE {$table} ADD COLUMN {$column} {$definition}");
+    }
+}
+
+function erpEnsurePortalAccountsTable(PDO $pdo) {
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS client_portal_accounts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            client_id INT NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password_hash VARCHAR(255) NOT NULL,
+            status ENUM('active','disabled') NOT NULL DEFAULT 'active',
+            two_factor_enabled TINYINT(1) NOT NULL DEFAULT 1,
+            two_factor_code_hash VARCHAR(255) DEFAULT NULL,
+            two_factor_expires_at DATETIME DEFAULT NULL,
+            two_factor_attempts INT NOT NULL DEFAULT 0,
+            failed_login_attempts INT NOT NULL DEFAULT 0,
+            locked_until DATETIME DEFAULT NULL,
+            last_login_at DATETIME DEFAULT NULL,
+            last_login_ip VARCHAR(64) DEFAULT NULL,
+            password_changed_at DATETIME DEFAULT NULL,
+            password_expires_at DATETIME DEFAULT NULL,
+            force_password_change TINYINT(1) NOT NULL DEFAULT 1,
+            credentials_sent_at DATETIME DEFAULT NULL,
+            created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+            updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+            KEY idx_client_portal_accounts_client (client_id),
+            KEY idx_client_portal_accounts_email (email)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    ");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'two_factor_enabled', "TINYINT(1) NOT NULL DEFAULT 1");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'failed_login_attempts', "INT NOT NULL DEFAULT 0");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'locked_until', "DATETIME DEFAULT NULL");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'password_changed_at', "DATETIME DEFAULT NULL");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'password_expires_at', "DATETIME DEFAULT NULL");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'force_password_change', "TINYINT(1) NOT NULL DEFAULT 1");
+    erpEnsureColumn($pdo, 'client_portal_accounts', 'credentials_sent_at', "DATETIME DEFAULT NULL");
+}
+
+function erpGeneratePortalPassword($length = 16) {
+    $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#%+=';
+    $password = '';
+    $max = strlen($alphabet) - 1;
+    for ($i = 0; $i < $length; $i++) {
+        $password .= $alphabet[random_int(0, $max)];
+    }
+    return $password;
+}
+
+function erpClientLabel(array $client, $email) {
+    $company = trim((string)($client['company'] ?? ''));
+    $name = trim((string)($client['firstname'] ?? '') . ' ' . (string)($client['lastname'] ?? ''));
+    return $company ?: ($name ?: $email);
+}
+
+function erpSendPortalCredentials(array $client, $email, $password) {
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return false;
+    $label = htmlspecialchars(erpClientLabel($client, $email), ENT_QUOTES, 'UTF-8');
+    $safeEmail = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+    $safePassword = htmlspecialchars($password, ENT_QUOTES, 'UTF-8');
+    $loginUrl = 'https://code4u.fr/espace-client.html';
+    $html = '<!doctype html><html><head><meta charset="utf-8"></head>'
+        . '<body style="margin:0;background:#f4f1eb;font-family:Arial,sans-serif;color:#15151d">'
+        . '<div style="max-width:600px;margin:0 auto;padding:24px">'
+        . '<div style="background:#14131a;color:#fff;padding:18px 22px;border-radius:10px 10px 0 0;font-size:20px;font-weight:800">Code4U</div>'
+        . '<div style="background:#fff;border:1px solid #e1e4ea;border-top:0;border-radius:0 0 10px 10px;padding:24px">'
+        . '<h1 style="margin:0 0 14px;font-size:20px;color:#1d6fe6">Votre estimation est enregistrée</h1>'
+        . '<p>Bonjour ' . $label . ',</p>'
+        . '<p>Votre estimation Code4U a bien été créée. Un espace client sécurisé vient d’être ouvert pour suivre vos devis, factures, projets et tickets.</p>'
+        . '<div style="background:#f6f8fb;border:1px solid #dde3ee;border-radius:8px;padding:16px;margin:18px 0">'
+        . '<p style="margin:0 0 8px"><strong>Lien :</strong> <a href="' . $loginUrl . '">' . $loginUrl . '</a></p>'
+        . '<p style="margin:0 0 8px"><strong>Email :</strong> ' . $safeEmail . '</p>'
+        . '<p style="margin:0"><strong>Mot de passe temporaire :</strong> <code style="font-size:15px">' . $safePassword . '</code></p>'
+        . '</div>'
+        . '<p><strong>Important :</strong> ce mot de passe devra obligatoirement être changé lors de votre première connexion.</p>'
+        . '<p style="margin-top:22px;color:#606775;font-size:13px">Si vous n’êtes pas à l’origine de cette demande, contactez Code4U.</p>'
+        . '</div></div></body></html>';
+
+    $headers = [
+        'MIME-Version: 1.0',
+        'Content-Type: text/html; charset=UTF-8',
+        'From: Code4U <noreply@code4u.fr>',
+        'Reply-To: contact@code4u.fr',
+    ];
+    return @mail($email, '=?UTF-8?B?' . base64_encode('Vos accès espace client Code4U') . '?=', $html, implode("\r\n", $headers), '-fnoreply@code4u.fr');
+}
+
+function erpProvisionPortalAccount(PDO $pdo, $clientId, array $clientData, $email) {
+    $email = strtolower(trim((string)$email));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return null;
+    erpEnsurePortalAccountsTable($pdo);
+
+    $existing = $pdo->prepare("SELECT id, credentials_sent_at FROM client_portal_accounts WHERE email = :email LIMIT 1");
+    $existing->execute([':email' => $email]);
+    $account = $existing->fetch(PDO::FETCH_ASSOC);
+    if ($account && !empty($account['credentials_sent_at'])) {
+        return null;
+    }
+
+    $password = erpGeneratePortalPassword();
+    $hash = password_hash($password, PASSWORD_BCRYPT);
+    $stmt = $pdo->prepare("
+        INSERT INTO client_portal_accounts (
+            client_id, email, password_hash, status, two_factor_enabled,
+            force_password_change, password_expires_at, credentials_sent_at
+        ) VALUES (
+            :client_id, :email, :password_hash, 'active', 1,
+            1, DATE_ADD(NOW(), INTERVAL 7 DAY), NULL
+        )
+        ON DUPLICATE KEY UPDATE
+            client_id = VALUES(client_id),
+            password_hash = VALUES(password_hash),
+            status = 'active',
+            two_factor_enabled = 1,
+            force_password_change = 1,
+            password_expires_at = DATE_ADD(NOW(), INTERVAL 7 DAY),
+            locked_until = NULL,
+            failed_login_attempts = 0
+    ");
+    $stmt->execute([
+        ':client_id' => (int)$clientId,
+        ':email' => $email,
+        ':password_hash' => $hash,
+    ]);
+    return ['email' => $email, 'password' => $password, 'client' => $clientData];
+}
+
 function erpCreateEstimate($pdo, $input, $quote, $clientData) {
     if (!$pdo || !erpTablesReady($pdo)) return null;
 
+    erpEnsurePortalAccountsTable($pdo);
     $pdo->beginTransaction();
     try {
         $clientId = erpFindOrCreateClient($pdo, $clientData, $input);
@@ -328,7 +465,18 @@ function erpCreateEstimate($pdo, $input, $quote, $clientData) {
             }
         }
 
+        $portalCredentials = erpProvisionPortalAccount($pdo, $clientId, $clientData, $clientData['email'] ?? $input['client_email'] ?? '');
+
         $pdo->commit();
+        if ($portalCredentials) {
+            $sent = erpSendPortalCredentials($portalCredentials['client'], $portalCredentials['email'], $portalCredentials['password']);
+            if ($sent) {
+                $sentStmt = $pdo->prepare("UPDATE client_portal_accounts SET credentials_sent_at = NOW() WHERE email = :email");
+                $sentStmt->execute([':email' => $portalCredentials['email']]);
+            } else {
+                error_log('[orders.php] portal credentials mail failed for ' . $portalCredentials['email']);
+            }
+        }
         return ['client_id' => $clientId, 'devis_id' => $devisId, 'numero' => $numero];
     } catch (Throwable $e) {
         if ($pdo->inTransaction()) $pdo->rollBack();
