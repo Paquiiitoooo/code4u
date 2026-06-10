@@ -315,15 +315,97 @@ function portalMoney($amount, $currency = 'EUR') {
 }
 
 /**
+ * Envoi SMTP authentifié (STARTTLS) via IONOS.
+ * Pas de dépendance externe — utilise stream_socket_client PHP.
+ */
+function portalSmtpSend($to, $subject, $htmlBody) {
+    $host = defined('SMTP_HOST') ? SMTP_HOST : 'smtp.ionos.fr';
+    $port = defined('SMTP_PORT') ? (int)SMTP_PORT : 587;
+    $user = defined('SMTP_USER') ? SMTP_USER : '';
+    $pass = defined('SMTP_PASS') ? SMTP_PASS : '';
+    $from = defined('SMTP_FROM_EMAIL') ? SMTP_FROM_EMAIL : 'contact@code4u.fr';
+    $name = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Code4U';
+
+    if (!$user || !$pass) {
+        error_log('[portail-smtp] SMTP_USER ou SMTP_PASS non configuré.');
+        return false;
+    }
+
+    $ctx = stream_context_create(['ssl' => [
+        'verify_peer' => false,
+        'verify_peer_name' => false,
+    ]]);
+    $socket = @stream_socket_client('tcp://' . $host . ':' . $port, $errno, $errstr, 15, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$socket) {
+        error_log('[portail-smtp] Connexion échouée : ' . $errstr . ' (' . $errno . ')');
+        return false;
+    }
+    stream_set_timeout($socket, 15);
+
+    $read = function () use ($socket) {
+        $out = '';
+        while ($line = fgets($socket, 512)) {
+            $out .= $line;
+            if (isset($line[3]) && $line[3] === ' ') break;
+        }
+        return $out;
+    };
+    $cmd = function ($line) use ($socket) { fwrite($socket, $line . "\r\n"); };
+
+    $banner = $read();
+    if (substr($banner, 0, 3) !== '220') { fclose($socket); error_log('[portail-smtp] Bannière invalide: ' . $banner); return false; }
+
+    $cmd('EHLO code4u.fr'); $read();
+
+    $cmd('STARTTLS');
+    $tls = $read();
+    if (substr($tls, 0, 3) !== '220') { fclose($socket); error_log('[portail-smtp] STARTTLS refusé: ' . $tls); return false; }
+
+    stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT);
+
+    $cmd('EHLO code4u.fr'); $read();
+
+    $cmd('AUTH LOGIN');        $read();
+    $cmd(base64_encode($user)); $read();
+    $cmd(base64_encode($pass));
+    $auth = $read();
+    if (substr($auth, 0, 3) !== '235') { $cmd('QUIT'); fclose($socket); error_log('[portail-smtp] AUTH échoué: ' . $auth); return false; }
+
+    $cmd('MAIL FROM:<' . $from . '>'); $read();
+    $cmd('RCPT TO:<' . $to . '>');
+    $rcpt = $read();
+    if (substr($rcpt, 0, 1) !== '2') { $cmd('QUIT'); fclose($socket); error_log('[portail-smtp] RCPT refusé: ' . $rcpt); return false; }
+
+    $cmd('DATA'); $read();
+
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $msg  = 'From: ' . $name . ' <' . $from . ">\r\n";
+    $msg .= 'To: <' . $to . ">\r\n";
+    $msg .= 'Subject: ' . $encodedSubject . "\r\n";
+    $msg .= 'MIME-Version: 1.0' . "\r\n";
+    $msg .= 'Content-Type: text/html; charset=UTF-8' . "\r\n";
+    $msg .= 'Date: ' . date('r') . "\r\n";
+    $msg .= "\r\n" . $htmlBody . "\r\n.";
+    $cmd($msg);
+    $data = $read();
+
+    $cmd('QUIT'); fclose($socket);
+
+    $ok = substr($data, 0, 3) === '250';
+    if (!$ok) error_log('[portail-smtp] DATA refusé: ' . $data);
+    return $ok;
+}
+
+/**
  * Envoie un email de notification au client (charte Code4U).
- * Utilise mail() PHP (comme contact.php). En local, on logue seulement.
+ * Utilise SMTP authentifié en production, log en local.
  */
 function portalSendClientMail($client, $subject, $title, $bodyHtml) {
     $to = is_array($client) ? ($client['email'] ?? '') : (string)$client;
     if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
         return false;
     }
-    $from = 'noreply@code4u.fr';
+
     $html = '<!doctype html><html><head><meta charset="utf-8"></head>'
         . '<body style="margin:0;background:#f4f1eb;font-family:Inter,Arial,sans-serif;color:#14131a">'
         . '<div style="max-width:560px;margin:0 auto;padding:24px">'
@@ -338,14 +420,8 @@ function portalSendClientMail($client, $subject, $title, $bodyHtml) {
         error_log('[portal-mail DEV] to=' . $to . ' | ' . $subject);
         return true;
     }
-    $headers = [
-        'MIME-Version: 1.0',
-        'Content-Type: text/html; charset=UTF-8',
-        'From: Code4U <' . $from . '>',
-        'Reply-To: contact@code4u.fr',
-    ];
-    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-    return @mail($to, $encodedSubject, $html, implode("\r\n", $headers));
+
+    return portalSmtpSend($to, $subject, $html);
 }
 
 function portalStatusLabel($status) {
