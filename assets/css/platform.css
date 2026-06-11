@@ -1623,3 +1623,140 @@ section { padding-block: var(--section-pad); }
 }
 .login-2fa__link:hover { color: var(--text-primary); }
 .login-2fa__link:disabled { opacity: 0.45; cursor: default; }
+
+/* ============================================================================
+   DARK THEME — Surcharges platform.css
+   (style.css gère les tokens ; ici on corrige les couleurs hardcodées)
+   ============================================================================ */
+
+/* -- Token accent-tint recalculé pour fond sombre ----------------------- */
+[data-theme="dark"] {
+    --accent-tint: rgba(91, 102, 240, 0.12);
+}
+
+/* -- Navigation --------------------------------------------------------- */
+[data-theme="dark"] .navbar {
+    background: rgba(12, 11, 18, 0.96);
+    border-bottom-color: var(--border-color);
+    box-shadow: 0 1px 12px -6px rgba(0, 0, 0, 0.50);
+}
+[data-theme="dark"] .nav-icon-btn {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .mega-menu {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.60);
+}
+[data-theme="dark"] .mega-menu-item:hover { background: var(--bg-tertiary); }
+
+/* -- Hero-X : fond sombre avec aurores cobalt intenses ------------------ */
+[data-theme="dark"] .hero.hero-x {
+    background: linear-gradient(160deg, #0c0b12 0%, #100e1d 50%, #0c0b12 100%);
+    border-bottom-color: var(--border-color);
+}
+
+/* Aurores plus visibles sur noir */
+[data-theme="dark"] .hero-x__aurora--1 {
+    background: radial-gradient(circle, rgba(91, 102, 240, 0.9), transparent 70%);
+    opacity: 0.24;
+}
+[data-theme="dark"] .hero-x__aurora--2 {
+    background: radial-gradient(circle, rgba(74, 120, 255, 0.8), transparent 70%);
+    opacity: 0.18;
+}
+
+/* Grille : traits cobalt subtils sur fond sombre */
+[data-theme="dark"] .hero-x__grid {
+    background-image:
+        linear-gradient(rgba(91, 102, 240, 0.11) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(91, 102, 240, 0.11) 1px, transparent 1px);
+}
+
+/* Badge eyebrow */
+[data-theme="dark"] .hero-x__eyebrow {
+    background: rgba(91, 102, 240, 0.13);
+    border-color: rgba(91, 102, 240, 0.30);
+    color: #aab8ff;
+}
+
+/* Bouton ghost (déjà clair → OK sombre par construction) */
+[data-theme="dark"] .btn-ghost-light {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.18);
+    color: #e2e8f8;
+}
+[data-theme="dark"] .btn-ghost-light:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: rgba(255, 255, 255, 0.30);
+}
+
+/* Logos clients */
+[data-theme="dark"] .logo-chip {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+[data-theme="dark"] .logo-chip img { filter: brightness(0.88) contrast(1.05); }
+
+/* Chips flottants */
+[data-theme="dark"] .hero-x__chip {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    box-shadow: 0 16px 38px -10px rgba(0, 0, 0, 0.60);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .hero-x__chip small { color: var(--text-secondary); }
+
+/* Maquette navigateur — on garde le blanc (représente le site en mode clair) */
+/* On renforce juste l'ombre pour le détacher du fond sombre */
+[data-theme="dark"] .browser {
+    box-shadow: 0 44px 90px -28px rgba(0, 0, 0, 0.90), 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+
+/* -- Surfaces avec fond blanc/clair hardcodé ----------------------------- */
+[data-theme="dark"] .tech-badge {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+/* -- Sections ------------------------------------------------------------ */
+[data-theme="dark"] .about-section,
+[data-theme="dark"] .process-section { background: var(--bg-secondary); }
+
+/* Icônes de process */
+[data-theme="dark"] .step-icon {
+    background: rgba(91, 102, 240, 0.14);
+    color: var(--accent-color);
+}
+
+/* Tarifs */
+[data-theme="dark"] .tarif-card {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+[data-theme="dark"] .tarif-card.is-featured {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+}
+
+/* Formulaire de contact */
+[data-theme="dark"] .contact-form input,
+[data-theme="dark"] .contact-form textarea,
+[data-theme="dark"] .contact-form select {
+    background: var(--bg-tertiary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+[data-theme="dark"] .contact-form input:focus,
+[data-theme="dark"] .contact-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(91, 102, 240, 0.18);
+}
+
+/* Sélection de texte */
+[data-theme="dark"] ::selection {
+    background: rgba(91, 102, 240, 0.35);
+    color: #fff;
+}
