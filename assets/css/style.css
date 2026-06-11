@@ -12654,17 +12654,63 @@ body.web-page .story-overlay {
 
 /* ── Hero & particules ───────────────────────────────────────── */
 [data-theme="dark"] .hero {
-    background: var(--bg-primary);
+    background: #0c0b12;
 }
 
+/* Hero background : gradient profond avec reflets cobalt */
+[data-theme="dark"] .hero-background {
+    background:
+        radial-gradient(ellipse 900px 700px at 75% 15%, rgba(91, 102, 240, 0.13) 0%, transparent 65%),
+        radial-gradient(ellipse 700px 500px at 15% 85%, rgba(46, 64, 229, 0.09) 0%, transparent 60%),
+        linear-gradient(160deg, #0c0b12 0%, #100f1c 55%, #0c0b12 100%);
+}
+
+/* Shapes : plus visibles sur fond sombre */
+[data-theme="dark"] .hero-shape {
+    opacity: 0.07;
+}
+
+[data-theme="dark"] .hero-shape-1 {
+    background: var(--primary-color);
+    opacity: 0.09;
+}
+
+[data-theme="dark"] .hero-shape-2 {
+    background: var(--accent-color);
+    opacity: 0.07;
+}
+
+[data-theme="dark"] .hero-shape-3 {
+    background: var(--secondary-color);
+    opacity: 0.05;
+}
+
+/* Title highlight : blanc → cobalt (plus lisible sur fond noir) */
+[data-theme="dark"] .hero-title-highlight {
+    background: linear-gradient(135deg, #ffffff 0%, #b0bcff 55%, var(--primary-color) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+}
+
+/* Bouton secondaire : transparent + contour cobalt (pas noir sur noir) */
+[data-theme="dark"] .btn-hero.btn-secondary {
+    background: rgba(91, 102, 240, 0.10);
+    border-color: rgba(91, 102, 240, 0.40);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .btn-hero.btn-secondary:hover {
+    background: rgba(91, 102, 240, 0.20);
+    border-color: var(--primary-color);
+}
+
+/* Particules */
 [data-theme="dark"] .particle {
     background: var(--primary-color);
-    box-shadow: 0 0 12px rgba(91, 102, 240, 0.25);
-    opacity: 0.18;
-}
-
-[data-theme="dark"] .hero::before {
-    opacity: 0.04;
+    box-shadow: 0 0 12px rgba(91, 102, 240, 0.22);
+    opacity: 0.20;
 }
 
 /* ── Loading screen ──────────────────────────────────────────── */
