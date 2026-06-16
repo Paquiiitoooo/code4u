@@ -1712,6 +1712,302 @@ section { padding-block: var(--section-pad); }
 }
 [data-theme="dark"] .hero-x__chip small { color: var(--text-secondary); }
 
+/* ==========================================================================
+   Mobile-first refinements: navigation, home hero and client portal
+   ========================================================================== */
+
+/* The client shortcut is part of the burger only; desktop keeps the header CTA. */
+.mobile-client-item { display: none; }
+
+@media (max-width: 768px) {
+    html,
+    body {
+        max-width: 100%;
+        overflow-x: clip;
+    }
+
+    .navbar,
+    .nav-container,
+    .nav-wrapper {
+        max-width: 100vw;
+    }
+
+    .mobile-client-item {
+        display: block;
+        order: -1;
+        padding: 0.35rem 1rem 0.8rem;
+    }
+
+    .mobile-client-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 48px;
+        padding: 0.75rem 1rem;
+        border: 1px solid color-mix(in srgb, var(--accent-color) 28%, var(--border-color));
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-primary));
+        color: var(--text-primary);
+        font-weight: 750;
+        text-decoration: none;
+    }
+
+    .mobile-client-link i {
+        width: 1.25rem;
+        color: var(--accent-color);
+        text-align: center;
+    }
+
+    /* Undo the legacy fixed-height mobile hero. Content defines its height. */
+    .hero.hero-x {
+        display: block;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        overflow: clip;
+        padding: 5.75rem 0 2.5rem;
+    }
+
+    .hero.hero-x .hero-x__inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        padding-inline: 1rem;
+        align-items: start;
+        justify-content: stretch;
+        gap: 2rem;
+    }
+
+    .hero-x__copy,
+    .hero-x__visual { min-width: 0; }
+    .hero-x__eyebrow {
+        max-width: 100%;
+        font-size: 0.7rem;
+        line-height: 1.35;
+    }
+    .hero-x__title {
+        margin: 0.85rem 0 0.75rem;
+        font-size: clamp(2rem, 10.5vw, 2.8rem);
+        line-height: 1.02;
+        overflow-wrap: anywhere;
+    }
+    .hero-x__sub {
+        margin-bottom: 1.25rem;
+        font-size: 0.98rem;
+        line-height: 1.55;
+    }
+    .hero-x__cta {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+    }
+    .hero-x__cta .btn {
+        width: 100%;
+        min-height: 48px;
+        justify-content: center;
+    }
+    .hero-x__trust { margin-top: 1.5rem; }
+    .hero-x__logos {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+    .logo-chip {
+        width: 100%;
+        height: 42px;
+        padding-inline: 0.55rem;
+    }
+    .logo-chip img { max-width: 100%; }
+    .hero-x__visual {
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+    .browser {
+        width: 100%;
+        max-width: none;
+        margin: 0;
+        animation: none;
+    }
+    .browser__screen {
+        min-height: 190px;
+        padding: 12px;
+    }
+    .hero-x__chip { display: none; }
+}
+
+@media (max-width: 480px) {
+    .hero.hero-x {
+        padding-bottom: 2rem;
+    }
+
+    .hero-x__title {
+        font-size: clamp(1.85rem, 9.4vw, 2.45rem);
+    }
+
+    .hero-x__visual {
+        display: none;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 939px) {
+    .hero.hero-x {
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        padding-bottom: 3.5rem;
+    }
+}
+
+/* Client portal: phone layout is the baseline. */
+@media (max-width: 919px) {
+    .client-login {
+        min-height: 0;
+        padding: 5.5rem 0 2rem;
+    }
+    .client-login__grid {
+        grid-template-columns: minmax(0, 1fr);
+        width: 100%;
+        max-width: 100%;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .client-login__copy,
+    .client-login__panel {
+        min-width: 0;
+        max-width: 100%;
+    }
+    .client-login__copy h1 {
+        margin: 0.55rem 0 0.8rem;
+        font-size: clamp(2rem, 9vw, 3rem);
+        line-height: 1.05;
+    }
+    .client-login__copy p {
+        font-size: 0.96rem;
+        line-height: 1.6;
+    }
+    .client-login__features {
+        grid-template-columns: 1fr;
+        gap: 0.55rem;
+        margin-top: 1.25rem;
+    }
+    .client-login__features span {
+        min-height: 46px;
+        padding: 0.7rem 0.8rem;
+        font-size: 0.88rem;
+    }
+    .client-login__panel { padding: 1rem; }
+
+    .client-app {
+        padding: 4.9rem 0.75rem 1.5rem;
+    }
+    .client-app__shell {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+    }
+    .client-sidebar {
+        position: sticky;
+        top: 4.4rem;
+        z-index: 40;
+        padding: 0.45rem;
+        border-radius: 10px;
+    }
+    .client-sidebar__brand,
+    .client-sidebar__support {
+        display: none;
+    }
+    .client-tabs {
+        display: flex;
+        gap: 0.35rem;
+        margin: 0;
+        padding: 0 0 0.2rem;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+    }
+    .client-tabs::-webkit-scrollbar { display: none; }
+    .client-tab {
+        flex: 0 0 auto;
+        width: auto;
+        min-height: 44px;
+        padding: 0.65rem 0.75rem;
+        white-space: nowrap;
+        font-size: 0.82rem;
+    }
+    .client-main { min-width: 0; }
+    .client-topbar {
+        gap: 0.85rem;
+        margin-bottom: 0.75rem;
+        padding: 0.9rem;
+    }
+    .client-topbar h1 { font-size: 1.45rem; }
+    .client-topbar p {
+        font-size: 0.88rem;
+        line-height: 1.45;
+    }
+    .client-topbar__actions .btn { width: 100%; justify-content: center; }
+    .client-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+    }
+    .client-metric { padding: 0.8rem; }
+    .client-metric strong { font-size: 1.35rem; }
+    .client-layout,
+    .client-layout--wide,
+    .document-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.75rem;
+    }
+    .client-view.is-active { gap: 0.75rem; }
+    .client-panel { padding: 0.85rem; }
+    .client-panel__head {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+    }
+    .client-panel__head .btn,
+    .client-panel__head .client-ghost-btn {
+        min-height: 44px;
+    }
+    .force-pwd-overlay { padding: 1rem 0; }
+    .force-pwd-card { padding: 1.25rem 1rem; }
+}
+
+@media (max-width: 480px) {
+    .client-login .container { padding-inline: 1rem; }
+    .client-login__copy h1 { font-size: clamp(1.85rem, 9vw, 2.35rem); }
+    .client-metrics { grid-template-columns: 1fr 1fr; }
+    .client-metric span,
+    .client-metric small { font-size: 0.75rem; }
+    .client-panel__head > .btn,
+    .client-panel__head > .client-ghost-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .account-hero {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.85rem;
+        padding: 1rem;
+    }
+    .account-hero__meta {
+        grid-column: 1 / -1;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--border-color);
+    }
+    .client-modal { padding: 0.5rem; }
+    .client-modal__box { padding: 1.25rem 1rem; }
+    .client-modal__actions { flex-direction: column-reverse; }
+}
+
+@media (min-width: 920px) {
+    .client-login__panel { padding: 1.9rem; }
+}
+
 /* Maquette navigateur — on garde le blanc (représente le site en mode clair) */
 /* On renforce juste l'ombre pour le détacher du fond sombre */
 [data-theme="dark"] .browser {
