@@ -161,9 +161,9 @@ function getStatusLabel(status) {
     const labels = {
         'open': 'Ouvert',
         'in_progress': 'En cours',
-        'waiting': 'En attente',
+        'waiting': 'En attente client',
         'resolved': 'Résolu',
-        'closed': 'Fermé'
+        'closed': 'Clôturé'
     };
     return labels[status] || status;
 }
@@ -263,9 +263,9 @@ function displayTicketModal(ticket) {
                     <select id="ticketStatusSelect" class="form-select" style="min-width: 150px;">
                         <option value="open" ${ticket.status === 'open' ? 'selected' : ''}>Ouvert</option>
                         <option value="in_progress" ${ticket.status === 'in_progress' ? 'selected' : ''}>En cours</option>
-                        <option value="waiting" ${ticket.status === 'waiting' ? 'selected' : ''}>En attente</option>
-                        <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Résolu</option>
-                        <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Fermé</option>
+                        <option value="waiting" ${ticket.status === 'waiting' ? 'selected' : ''}>En attente client</option>
+                        <option value="resolved" ${ticket.status === 'resolved' ? 'selected' : ''}>Résolu - à valider client</option>
+                        <option value="closed" ${ticket.status === 'closed' ? 'selected' : ''}>Clôturé</option>
                     </select>
                 </div>
             </div>
@@ -459,8 +459,73 @@ function debounce(func, wait) {
 }
 
 function openNewTicketModal() {
-    adminUtils.showNotification('Fonctionnalité à venir', 'info');
-    // TODO: Implement new ticket modal
+    const modalBody = document.getElementById('ticketModalBody');
+    const modalTitle = document.getElementById('modalTitle');
+    if (!modalBody || !modalTitle) return;
+
+    modalTitle.innerHTML = '<i class="fas fa-plus"></i> Nouveau ticket';
+    modalBody.innerHTML = `
+        <form id="adminNewTicketForm" class="ticket-details" style="display:grid;gap:1rem">
+            <div class="form-group">
+                <label>Nom du client</label>
+                <input class="form-input" id="adminTicketCustomer" required placeholder="Nom ou société">
+            </div>
+            <div class="form-group">
+                <label>Email du client</label>
+                <input class="form-input" id="adminTicketEmail" type="email" required placeholder="client@exemple.fr">
+            </div>
+            <div class="form-group">
+                <label>Sujet</label>
+                <input class="form-input" id="adminTicketSubject" required placeholder="Objet de la demande">
+            </div>
+            <div class="form-group">
+                <label>Priorité</label>
+                <select class="form-select" id="adminTicketPriority">
+                    <option value="medium">Normale</option>
+                    <option value="high">Haute</option>
+                    <option value="urgent">Urgente</option>
+                    <option value="low">Basse</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea class="form-textarea" id="adminTicketDescription" rows="5" required placeholder="Décrivez la demande, ajoutez les liens utiles si besoin..."></textarea>
+            </div>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end">
+                <button class="btn btn-secondary" type="button" onclick="adminUtils.closeModal('ticketModal')">Annuler</button>
+                <button class="btn btn-primary" type="submit"><i class="fas fa-save"></i> Créer le ticket</button>
+            </div>
+        </form>
+    `;
+    document.getElementById('adminNewTicketForm')?.addEventListener('submit', createAdminTicket);
+    adminUtils.openModal('ticketModal');
+}
+
+async function createAdminTicket(event) {
+    event.preventDefault();
+    const payload = {
+        customer_name: document.getElementById('adminTicketCustomer')?.value.trim(),
+        customer_email: document.getElementById('adminTicketEmail')?.value.trim(),
+        subject: document.getElementById('adminTicketSubject')?.value.trim(),
+        priority: document.getElementById('adminTicketPriority')?.value || 'medium',
+        description: document.getElementById('adminTicketDescription')?.value.trim(),
+        source: 'admin'
+    };
+    if (!payload.customer_name || !payload.customer_email || !payload.subject || !payload.description) {
+        adminUtils.showNotification('Complétez les champs obligatoires', 'warning');
+        return;
+    }
+    try {
+        await adminUtils.apiRequest('api/tickets.php?action=create', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+        adminUtils.closeModal('ticketModal');
+        adminUtils.showNotification('Ticket créé avec succès', 'success');
+        loadTickets();
+    } catch (error) {
+        adminUtils.showNotification(error.message || 'Erreur lors de la création du ticket', 'error');
+    }
 }
 
 async function deleteTicket(ticketId, ticketNumber) {
@@ -499,4 +564,3 @@ window.editTicket = viewTicket; // For now, same as view
 window.changePage = changePage;
 window.sendMessage = sendMessage;
 window.deleteTicket = deleteTicket;
-

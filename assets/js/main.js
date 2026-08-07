@@ -631,17 +631,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     // COOKIE BANNER (RGPD)
     // ========================================
-    const cookieBanner = document.getElementById('cookieBanner');
-    const cookieModal = document.getElementById('cookieModal');
-    const cookieAccept = document.getElementById('cookieAccept');
-    const cookiePreferencesBtn = document.getElementById('cookiePreferences');
-    const cookieModalClose = document.getElementById('cookieModalClose');
-    const cookieSavePreferences = document.getElementById('cookieSavePreferences');
-    const cookieRejectAll = document.getElementById('cookieRejectAll');
-    const cookieAnalyticsCheckbox = document.getElementById('cookieAnalytics');
+    function initCookieControls() {
+        const cookieBanner = document.getElementById('cookieBanner');
+        const cookieModal = document.getElementById('cookieModal');
+        const cookieAccept = document.getElementById('cookieAccept');
+        const cookiePreferencesBtn = document.getElementById('cookiePreferences');
+        const cookieModalClose = document.getElementById('cookieModalClose');
+        const cookieSavePreferences = document.getElementById('cookieSavePreferences');
+        const cookieRejectAll = document.getElementById('cookieRejectAll');
+        const cookieAnalyticsCheckbox = document.getElementById('cookieAnalytics');
+        const cookieSettingsFooter = document.getElementById('cookieSettingsFooter');
 
-    if (cookieBanner) {
+        if (!cookieBanner || cookieBanner.dataset.initialized === 'true') return;
+        cookieBanner.dataset.initialized = 'true';
+
         const cookieConsent = localStorage.getItem('cookieConsent');
+        const openCookieModal = () => {
+            if (!cookieModal) return;
+            if (cookieAnalyticsCheckbox) {
+                cookieAnalyticsCheckbox.checked = localStorage.getItem('cookieAnalytics') === 'true';
+            }
+            cookieModal.classList.add('active');
+        };
 
         if (!cookieConsent) {
             cookieBanner.classList.add('visible');
@@ -656,14 +667,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (cookiePreferencesBtn && cookieModal) {
-            cookiePreferencesBtn.addEventListener('click', () => cookieModal.classList.add('active'));
+            cookiePreferencesBtn.addEventListener('click', openCookieModal);
         }
 
-        const cookieSettingsFooter = document.getElementById('cookieSettingsFooter');
         if (cookieSettingsFooter && cookieModal) {
             cookieSettingsFooter.addEventListener('click', e => {
                 e.preventDefault();
-                cookieModal.classList.add('active');
+                openCookieModal();
             });
         }
 
@@ -696,6 +706,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+    initCookieControls();
+    document.addEventListener('templateLoaded', function(e) {
+        if (e.detail && e.detail.placeholder === 'footer-placeholder') {
+            initCookieControls();
+        }
+    });
 
     const contactForm = document.getElementById('contactForm');
     const formMessage = document.getElementById('formMessage');

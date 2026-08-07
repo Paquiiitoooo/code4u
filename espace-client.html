@@ -57,6 +57,7 @@
                                 <input type="password" id="client-login-pass" name="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
+                            <button type="button" class="client-link-btn" id="forgotPasswordBtn" style="justify-self:center;border:0;background:transparent;padding:0.35rem 0">Mot de passe oublié ?</button>
                             <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
                         </form>
                     </div>
@@ -407,6 +408,15 @@
                                     <div class="field">
                                         <label for="ticket-description">Description</label>
                                         <textarea id="ticket-description" rows="4" placeholder="Décrivez votre demande"></textarea>
+                                    </div>
+                                    <div class="field">
+                                        <label for="ticket-links">Liens utiles, photos ou documents</label>
+                                        <textarea id="ticket-links" rows="3" placeholder="Collez ici vos liens : page concernée, capture écran, Google Drive, WeTransfer, document partagé..."></textarea>
+                                    </div>
+                                    <div class="field">
+                                        <label for="ticket-files">Fichiers à signaler</label>
+                                        <input id="ticket-files" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">
+                                        <small style="color:var(--text-secondary)">Les noms des fichiers sont ajoutés au ticket. Pour un envoi volumineux, ajoutez aussi un lien de partage ci-dessus.</small>
                                     </div>
                                     <button class="btn btn-secondary" type="submit">Créer le ticket</button>
                                     <p class="client-form__msg" id="clientTicketMsg" role="status" aria-live="polite"></p>
@@ -1339,11 +1349,22 @@
             function renderTicketThread(thread) {
                 var ticket = thread.ticket || {};
                 var messages = thread.messages || [];
+                var attachments = thread.attachments || [];
                 var header = '<div class="ticket-thread__meta">'
                     + '<span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label || ticket.status) + '</span>'
                     + '<span>Priorité ' + esc(ticket.priority || 'normale') + '</span>'
                     + '</div>'
                     + '<p class="ticket-thread__description">' + esc(ticket.description || 'Aucune description initiale.').replace(/\n/g, '<br>') + '</p>';
+                var attachmentRows = attachments.map(function (item) {
+                    var label = item.label || item.name || item.url || 'Pièce jointe';
+                    if (item.url) {
+                        return '<li><a href="' + esc(item.url) + '" target="_blank" rel="noopener">' + esc(label) + '</a></li>';
+                    }
+                    return '<li>' + esc(label) + '</li>';
+                }).join('');
+                var attachmentBlock = attachmentRows
+                    ? '<div class="ticket-thread__attachments"><strong>Liens et pièces</strong><ul>' + attachmentRows + '</ul></div>'
+                    : '';
                 var rows = messages.map(function (msg) {
                     var mine = msg.sender_type === 'customer';
                     return '<div class="ticket-message ' + (mine ? 'is-client' : 'is-team') + '">'
@@ -1352,7 +1373,7 @@
                         + '<small>' + dateFr(msg.created_at) + '</small>'
                         + '</div>';
                 }).join('');
-                return '<div class="ticket-thread">' + header + '<div class="ticket-thread__messages">' + (rows || '<p class="ticket-thread__empty">Aucun échange pour le moment.</p>') + '</div></div>';
+                return '<div class="ticket-thread">' + header + attachmentBlock + '<div class="ticket-thread__messages">' + (rows || '<p class="ticket-thread__empty">Aucun échange pour le moment.</p>') + '</div></div>';
             }
 
             function renderAccount(data) {
@@ -1600,6 +1621,39 @@
                     var ticket = findById(state && state.tickets, id);
                     if (!ticket) return;
                     var thread = await api('get-ticket', { ticket_id: ticket.id });
+                    var resolved = thread.ticket && thread.ticket.status === 'resolved';
+                    var closed = thread.ticket && thread.ticket.status === 'closed';
+                    if (resolved) {
+                        var resolvedChoice = await openForm(
+                            'Ticket #' + ticket.number,
+                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est marqué résolu. Validez la résolution ou indiquez pourquoi la demande doit être rouverte.</p>',
+                            [
+                                { name: 'decision', label: 'Votre validation', tag: 'select', value: 'accepted', options: [
+                                    { value: 'accepted', label: 'Oui, la demande est traitée' },
+                                    { value: 'rejected', label: 'Non, je veux rouvrir le ticket' }
+                                ] },
+                                { name: 'reason', label: 'Motif si non', tag: 'textarea', rows: 3, placeholder: 'Expliquez ce qui reste à corriger...' }
+                            ],
+                            { icon: '🎫', confirmLabel: 'Envoyer ma validation', cancelLabel: 'Fermer' }
+                        );
+                        if (resolvedChoice) {
+                            await api('resolve-ticket-feedback', {
+                                ticket_id: ticket.id,
+                                accepted: resolvedChoice.decision !== 'rejected',
+                                reason: resolvedChoice.reason || ''
+                            });
+                            await refresh(resolvedChoice.decision === 'rejected' ? 'Ticket rouvert.' : 'Ticket clôturé. Merci pour votre validation.', 'success');
+                        }
+                        return;
+                    }
+                    if (closed) {
+                        await openInfo(
+                            'Ticket #' + ticket.number,
+                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est clôturé. Aucune nouvelle réponse ne peut être ajoutée.</p>',
+                            { icon: '🎫' }
+                        );
+                        return;
+                    }
                     var reply = await openForm(
                         'Ticket #' + ticket.number,
                         '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread),
@@ -1727,6 +1781,28 @@
             }
 
             /* ── Étape 2 : code 2FA ──────────────────────────────────── */
+            var forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
+            if (forgotPasswordBtn) {
+                forgotPasswordBtn.addEventListener('click', async function () {
+                    var currentEmail = (document.getElementById('client-login-email') || {}).value || loginEmail || '';
+                    var values = await openForm(
+                        'Mot de passe oublié',
+                        'Saisissez votre e-mail de connexion. Si le compte existe, un mot de passe temporaire vous sera envoyé.',
+                        [
+                            { name: 'email', label: 'Adresse e-mail', type: 'email', value: currentEmail, placeholder: 'client@exemple.fr', required: true }
+                        ],
+                        { icon: '🔐', confirmLabel: 'Recevoir un accès temporaire' }
+                    );
+                    if (!values || !values.email) return;
+                    try {
+                        await api('forgot-password', { email: values.email });
+                        if (msg) { msg.textContent = 'Si ce compte existe, un e-mail de réinitialisation vient d’être envoyé.'; msg.className = 'client-form__msg visible'; }
+                    } catch (error) {
+                        if (msg) { msg.textContent = error.message || 'Impossible de traiter la demande.'; msg.className = 'client-form__msg visible'; }
+                    }
+                });
+            }
+
             var twoFaForm = document.getElementById('client2faForm');
             if (twoFaForm) {
                 twoFaForm.addEventListener('submit', async function (event) {
@@ -1821,15 +1897,24 @@
                     var subject = document.getElementById('ticket-subject');
                     var priority = document.getElementById('ticket-priority');
                     var description = document.getElementById('ticket-description');
+                    var links = document.getElementById('ticket-links');
+                    var files = document.getElementById('ticket-files');
+                    var fileRefs = files && files.files ? Array.from(files.files).map(function (file) {
+                        return { name: file.name, size: file.size, type: file.type || 'document' };
+                    }) : [];
                     if (ticketMsg) ticketMsg.textContent = 'Création du ticket...';
                     try {
                         await api('create-ticket', {
                             subject: subject ? subject.value : '',
                             priority: priority ? priority.value : 'medium',
-                            description: description ? description.value : ''
+                            description: description ? description.value : '',
+                            links: links ? links.value : '',
+                            files: fileRefs
                         });
                         if (subject) subject.value = '';
                         if (description) description.value = '';
+                        if (links) links.value = '';
+                        if (files) files.value = '';
                         if (ticketMsg) ticketMsg.textContent = 'Ticket créé. Il apparait dans votre suivi support.';
                         var data = await api('me');
                         render(data);

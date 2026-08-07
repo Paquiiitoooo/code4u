@@ -1117,6 +1117,9 @@ section { padding-block: var(--section-pad); }
 .ticket-message strong { color: var(--text-primary); font-size: 0.86rem; }
 .ticket-message p { margin: 0; color: var(--text-primary); line-height: 1.45; }
 .ticket-message small, .ticket-thread__empty { color: var(--text-secondary); }
+.ticket-thread__attachments { padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); }
+.ticket-thread__attachments ul { margin: 0.5rem 0 0; padding-left: 1.1rem; display: grid; gap: 0.35rem; }
+.ticket-thread__attachments a { color: var(--accent-color); word-break: break-word; }
 .payment-card { grid-template-columns: auto minmax(0, 1fr) auto; margin-bottom: 1rem; }
 .payment-card > i { font-size: 2rem; color: #1d4ed8; }
 .payment-method-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 0.75rem; align-items: center; }

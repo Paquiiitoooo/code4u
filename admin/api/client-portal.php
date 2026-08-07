@@ -124,6 +124,12 @@ function portalEnsureTicketAccessCode(PDO $db) {
     }
 }
 
+function portalEnsureTicketMessageAttachments(PDO $db) {
+    if (portalTableExists($db, 'ticket_messages') && !portalColumnExists($db, 'ticket_messages', 'attachments')) {
+        $db->exec("ALTER TABLE ticket_messages ADD COLUMN attachments JSON DEFAULT NULL AFTER is_internal");
+    }
+}
+
 /**
  * Crée les tables tickets / ticket_messages si elles n'existent pas dans la
  * base ERP (le portail support en a besoin). Volontairement SANS clé étrangère
@@ -173,6 +179,7 @@ function portalEnsureTicketTables(PDO $db) {
         ");
     }
     portalEnsureTicketAccessCode($db);
+    portalEnsureTicketMessageAttachments($db);
 }
 
 function portalHasTables(PDO $db, array $tables) {
@@ -475,9 +482,9 @@ function portalStatusLabel($status) {
         'planned' => 'Planifié',
         'billed' => 'Facturé',
         'open' => 'Ouvert',
-        'waiting' => 'En attente',
+        'waiting' => 'En attente client',
         'resolved' => 'Résolu',
-        'closed' => 'Fermé',
+        'closed' => 'Clôturé',
     ];
     return $labels[$status] ?? ucfirst((string)$status);
 }
@@ -519,13 +526,15 @@ function portalFetchSubscription(PDO $db, $clientId) {
     $included = (float)$row['included_hours'];
     $used = (float)$row['used_hours'];
     $hasStripeSubscription = !empty($row['stripe_subscription_id']) && $row['status'] === 'active';
-    $hasPaymentToken = !empty($row['payment_token'] ?? null);
-    $paymentStatus = $hasStripeSubscription ? 'active' : ($hasPaymentToken && $row['status'] !== 'cancelled' ? 'pending_payment' : 'manual');
+    $paymentStatus = $hasStripeSubscription ? 'active' : ($row['status'] !== 'cancelled' ? 'pending_payment' : 'cancelled');
+    $statusLabel = $paymentStatus === 'pending_payment'
+        ? 'Paiement à finaliser'
+        : portalStatusLabel($row['status']);
     return [
         'id' => (int)$row['id'],
         'plan_name' => $row['plan_name'],
         'status' => $row['status'],
-        'status_label' => portalStatusLabel($row['status']),
+        'status_label' => $statusLabel,
         'payment_status' => $paymentStatus,
         'has_pending_payment' => $paymentStatus === 'pending_payment',
         'monthly_price' => (float)$row['monthly_price'],
@@ -807,6 +816,7 @@ function portalFetchTickets(PDO $db, $clientEmail) {
         return [];
     }
     portalEnsureTicketAccessCode($db);
+    portalCloseExpiredResolvedTickets($db);
 
     $stmt = $db->prepare("
         SELECT id, ticket_number, access_code, subject, status, priority, updated_at, created_at
@@ -831,6 +841,44 @@ function portalFetchTickets(PDO $db, $clientEmail) {
     }, $stmt->fetchAll(PDO::FETCH_ASSOC));
 }
 
+function portalCloseExpiredResolvedTickets(PDO $db) {
+    if (!portalTableExists($db, 'tickets') || !portalColumnExists($db, 'tickets', 'resolved_at')) {
+        return;
+    }
+    $db->exec("
+        UPDATE tickets
+        SET status = 'closed', updated_at = NOW()
+        WHERE status = 'resolved'
+          AND resolved_at IS NOT NULL
+          AND resolved_at <= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+    ");
+}
+
+function portalNormalizeTicketAttachments(array $input) {
+    $items = [];
+    $links = preg_split('/\R+/', trim((string)($input['links'] ?? '')));
+    foreach ($links ?: [] as $line) {
+        $line = trim($line);
+        if ($line === '') continue;
+        $url = filter_var($line, FILTER_VALIDATE_URL) ? $line : null;
+        $items[] = [
+            'type' => $url ? 'link' : 'note',
+            'label' => substr($line, 0, 180),
+            'url' => $url,
+        ];
+    }
+    foreach (($input['files'] ?? []) as $file) {
+        if (!is_array($file) || empty($file['name'])) continue;
+        $items[] = [
+            'type' => 'file_ref',
+            'name' => substr(strip_tags((string)$file['name']), 0, 180),
+            'size' => max(0, (int)($file['size'] ?? 0)),
+            'mime' => substr(strip_tags((string)($file['type'] ?? '')), 0, 120),
+        ];
+    }
+    return array_slice($items, 0, 20);
+}
+
 function portalFetchTicketThread(PDO $db, array $client, array $input) {
     portalEnsureTicketTables($db);
     $ticketId = (int)($input['ticket_id'] ?? 0);
@@ -846,12 +894,13 @@ function portalFetchTicketThread(PDO $db, array $client, array $input) {
         portalRespond(['success' => false, 'message' => 'Ticket introuvable.'], 404);
     }
     $msg = $db->prepare("
-        SELECT sender_type, message, created_at
+        SELECT sender_type, message, attachments, created_at
         FROM ticket_messages
         WHERE ticket_id = :id AND is_internal = 0
         ORDER BY created_at ASC, id ASC
     ");
     $msg->execute([':id' => $ticketId]);
+    $messageRows = $msg->fetchAll(PDO::FETCH_ASSOC);
     return [
         'success' => true,
         'ticket' => [
@@ -871,8 +920,36 @@ function portalFetchTicketThread(PDO $db, array $client, array $input) {
                 'message' => $row['message'],
                 'created_at' => $row['created_at'],
             ];
-        }, $msg->fetchAll(PDO::FETCH_ASSOC)),
+        }, $messageRows),
+        'attachments' => array_values(array_reduce($messageRows, function ($carry, $row) {
+            if (!empty($row['attachments'])) {
+                $decoded = json_decode($row['attachments'], true);
+                if (is_array($decoded)) {
+                    foreach ($decoded as $item) {
+                        if (is_array($item)) $carry[] = $item;
+                    }
+                }
+            }
+            return $carry;
+        }, [])),
     ];
+}
+
+function portalFetchTicketMessages(PDO $db, $ticketId) {
+    $msg = $db->prepare("
+        SELECT sender_type, message, attachments, created_at
+        FROM ticket_messages
+        WHERE ticket_id = :id AND is_internal = 0
+        ORDER BY created_at ASC, id ASC
+    ");
+    $msg->execute([':id' => $ticketId]);
+    return array_map(function ($row) {
+            return [
+                'sender_type' => $row['sender_type'],
+                'message' => $row['message'],
+                'created_at' => $row['created_at'],
+            ];
+        }, $msg->fetchAll(PDO::FETCH_ASSOC));
 }
 
 function portalReplyTicket(PDO $db, array $client, array $input) {
@@ -882,10 +959,17 @@ function portalReplyTicket(PDO $db, array $client, array $input) {
     if ($message === '') {
         portalRespond(['success' => false, 'message' => 'Message requis.'], 422);
     }
-    $stmt = $db->prepare("SELECT id FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
+    $stmt = $db->prepare("SELECT id, status FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
     $stmt->execute([':id' => $ticketId, ':email' => $client['email']]);
-    if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+    $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$ticket) {
         portalRespond(['success' => false, 'message' => 'Ticket introuvable.'], 404);
+    }
+    if ($ticket['status'] === 'resolved') {
+        portalRespond(['success' => false, 'message' => 'Ce ticket est résolu. Validez la résolution ou indiquez un motif de réouverture.'], 409);
+    }
+    if ($ticket['status'] === 'closed') {
+        portalRespond(['success' => false, 'message' => 'Ce ticket est clôturé. Aucune nouvelle réponse ne peut être ajoutée.'], 409);
     }
     $insert = $db->prepare("
         INSERT INTO ticket_messages (ticket_id, sender_type, sender_id, message, is_internal)
@@ -894,6 +978,41 @@ function portalReplyTicket(PDO $db, array $client, array $input) {
     $insert->execute([':ticket_id' => $ticketId, ':message' => strip_tags($message)]);
     $upd = $db->prepare("UPDATE tickets SET status = 'waiting', updated_at = NOW() WHERE id = :id");
     $upd->execute([':id' => $ticketId]);
+    return portalFetchTicketThread($db, $client, ['ticket_id' => $ticketId]);
+}
+
+function portalResolveTicketFeedback(PDO $db, array $client, array $input) {
+    portalEnsureTicketTables($db);
+    $ticketId = (int)($input['ticket_id'] ?? 0);
+    $accepted = !empty($input['accepted']);
+    $reason = trim((string)($input['reason'] ?? ''));
+
+    $stmt = $db->prepare("SELECT id, status FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
+    $stmt->execute([':id' => $ticketId, ':email' => $client['email']]);
+    $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$ticket) {
+        portalRespond(['success' => false, 'message' => 'Ticket introuvable.'], 404);
+    }
+    if ($ticket['status'] !== 'resolved') {
+        portalRespond(['success' => false, 'message' => 'Ce ticket n’est pas en attente de validation.'], 409);
+    }
+
+    if ($accepted) {
+        $db->prepare("UPDATE tickets SET status = 'closed', updated_at = NOW() WHERE id = :id")->execute([':id' => $ticketId]);
+        $message = 'Le client a validé la résolution. Ticket clôturé.';
+    } else {
+        if ($reason === '') {
+            portalRespond(['success' => false, 'message' => 'Merci d’indiquer le motif de réouverture.'], 422);
+        }
+        $db->prepare("UPDATE tickets SET status = 'open', updated_at = NOW(), resolved_at = NULL WHERE id = :id")->execute([':id' => $ticketId]);
+        $message = 'Réouverture demandée par le client : ' . strip_tags($reason);
+    }
+
+    $insert = $db->prepare("
+        INSERT INTO ticket_messages (ticket_id, sender_type, sender_id, message, is_internal)
+        VALUES (:ticket_id, 'customer', NULL, :message, 0)
+    ");
+    $insert->execute([':ticket_id' => $ticketId, ':message' => $message]);
     return portalFetchTicketThread($db, $client, ['ticket_id' => $ticketId]);
 }
 
@@ -964,6 +1083,14 @@ function portalCreateTicket(PDO $db, array $client, array $input, $notify = true
     if ($category === '') {
         $category = 'support';
     }
+    $attachments = portalNormalizeTicketAttachments($input);
+    $attachmentText = '';
+    if ($attachments) {
+        $attachmentText = "\n\nLiens et pièces transmis :\n";
+        foreach ($attachments as $item) {
+            $attachmentText .= '- ' . (($item['url'] ?? null) ?: ($item['name'] ?? $item['label'] ?? 'Pièce jointe')) . "\n";
+        }
+    }
 
     $ticketNumber = portalGenerateTicketNumber($db);
     $accessCode = portalGenerateAccessCode($db);
@@ -992,14 +1119,19 @@ function portalCreateTicket(PDO $db, array $client, array $input, $notify = true
     ]);
 
     $ticketId = (int)$db->lastInsertId();
-    $messageStmt = $db->prepare("
-        INSERT INTO ticket_messages (ticket_id, sender_type, message, is_internal)
-        VALUES (:ticket_id, 'customer', :message, 0)
-    ");
-    $messageStmt->execute([
+    $hasAttachments = portalColumnExists($db, 'ticket_messages', 'attachments');
+    $messageStmt = $db->prepare($hasAttachments
+        ? "INSERT INTO ticket_messages (ticket_id, sender_type, message, is_internal, attachments) VALUES (:ticket_id, 'customer', :message, 0, :attachments)"
+        : "INSERT INTO ticket_messages (ticket_id, sender_type, message, is_internal) VALUES (:ticket_id, 'customer', :message, 0)"
+    );
+    $messageParams = [
         ':ticket_id' => $ticketId,
-        ':message' => strip_tags($description),
-    ]);
+        ':message' => strip_tags($description . $attachmentText),
+    ];
+    if ($hasAttachments) {
+        $messageParams[':attachments'] = $attachments ? json_encode($attachments, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null;
+    }
+    $messageStmt->execute($messageParams);
 
     if ($notify) {
         portalSendClientMail(
@@ -1008,7 +1140,7 @@ function portalCreateTicket(PDO $db, array $client, array $input, $notify = true
             'Votre demande a bien été reçue',
             '<p style="margin:0 0 12px">Bonjour,</p>'
             . '<p style="margin:0 0 12px">Nous avons bien reçu votre demande <strong>' . htmlspecialchars($ticketNumber) . '</strong> :</p>'
-            . '<div style="background:#f4f1eb;border-radius:10px;padding:14px;margin:12px 0"><strong>' . htmlspecialchars($subject) . '</strong><br>' . nl2br(htmlspecialchars($description)) . '</div>'
+            . '<div style="background:#f4f1eb;border-radius:10px;padding:14px;margin:12px 0"><strong>' . htmlspecialchars($subject) . '</strong><br>' . nl2br(htmlspecialchars($description . $attachmentText)) . '</div>'
             . '<p style="margin:0">Notre équipe vous répondra rapidement. Vous pouvez suivre son avancement depuis votre espace client.</p>'
         );
     }
@@ -1360,9 +1492,6 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
     ");
     $existingStmt->execute([':cid' => (int)$client['id']]);
     $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
-    if ($existing && $existing['status'] === 'active') {
-        portalRespond(['success' => false, 'message' => 'Vous avez deja un abonnement actif.'], 422);
-    }
     if ($existing && !empty($existing['stripe_subscription_id'])) {
         portalRespond(['success' => false, 'message' => 'Vous avez deja un abonnement support.'], 422);
     }
@@ -1430,7 +1559,7 @@ function portalUpdateSubscription(PDO $db, array $client, array $input, $status)
     if (!$current) {
         portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
     }
-    if ($status === 'active' && empty($current['stripe_subscription_id']) && !empty($current['payment_token'])) {
+    if ($status === 'active' && empty($current['stripe_subscription_id'])) {
         portalRespond(['success' => false, 'message' => 'Finalisez le paiement Stripe pour activer cet abonnement.'], 422);
     }
     if ($status === 'cancelled' && !empty($current['stripe_subscription_id'])) {
@@ -1618,6 +1747,63 @@ function portalChangePassword(PDO $db, array $client, array $input) {
         '<p>Bonjour,</p><p>Le mot de passe d’accès à votre espace client a bien été modifié. Si vous n’êtes pas à l’origine de cette action, contactez-nous immédiatement.</p>'
     );
     return ['success' => true, 'message' => 'Mot de passe modifié.'];
+}
+
+function portalTemporaryPassword() {
+    $alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
+    $password = '';
+    $max = strlen($alphabet) - 1;
+    for ($i = 0; $i < 16; $i++) {
+        $password .= $alphabet[random_int(0, $max)];
+    }
+    return $password;
+}
+
+function portalForgotPassword(PDO $db, array $input) {
+    $email = strtolower(trim((string)($input['email'] ?? '')));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        portalRespond(['success' => false, 'message' => 'Adresse e-mail invalide.'], 422);
+    }
+
+    $stmt = $db->prepare("
+        SELECT a.id AS account_id, a.client_id, a.email AS account_email,
+               c.email, COALESCE(NULLIF(c.raison_sociale, ''), NULLIF(CONCAT_WS(' ', c.prenom, c.nom), ''), c.email) AS company_name
+        FROM client_portal_accounts a
+        INNER JOIN clients c ON c.id = a.client_id
+        WHERE a.email = :email AND a.status = 'active' AND c.actif = 1
+        LIMIT 1
+    ");
+    $stmt->execute([':email' => $email]);
+    $account = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($account) {
+        $temp = portalTemporaryPassword();
+        $upd = $db->prepare("
+            UPDATE client_portal_accounts
+            SET password_hash = :hash,
+                force_password_change = 1,
+                password_changed_at = NULL,
+                password_expires_at = UTC_TIMESTAMP(),
+                failed_login_attempts = 0,
+                locked_until = NULL,
+                two_factor_code_hash = NULL,
+                two_factor_expires_at = NULL,
+                two_factor_attempts = 0
+            WHERE id = :id
+        ");
+        $upd->execute([':hash' => password_hash($temp, PASSWORD_BCRYPT), ':id' => (int)$account['account_id']]);
+        portalSendClientMail(
+            ['email' => $account['account_email'] ?: $email],
+            'Réinitialisation de votre accès Code4U',
+            'Accès temporaire à votre espace client',
+            '<p>Bonjour,</p>'
+            . '<p>Un mot de passe temporaire vient d’être généré pour votre espace client Code4U.</p>'
+            . '<p style="font-size:18px"><strong>Mot de passe temporaire :</strong> <code>' . htmlspecialchars($temp, ENT_QUOTES, 'UTF-8') . '</code></p>'
+            . '<p>Connectez-vous avec ce mot de passe, puis définissez immédiatement un nouveau mot de passe sécurisé.</p>'
+            . '<p>Si vous n’êtes pas à l’origine de cette demande, contactez Code4U.</p>'
+        );
+    }
+
+    return ['success' => true, 'message' => 'Si ce compte existe, un email de réinitialisation a été envoyé.'];
 }
 
 function portalBuildDashboard(PDO $db, array $client) {
@@ -1831,6 +2017,10 @@ try {
         portalRespond(['success' => true, 'authenticated' => false]);
     }
 
+    if ($action === 'forgot-password') {
+        portalRespond(portalForgotPassword($db, $input));
+    }
+
     $client = portalRequireClient($db);
 
     if (portalPasswordChangeRequired($client) && !in_array($action, ['me', 'change-password', 'logout'], true)) {
@@ -1851,6 +2041,10 @@ try {
 
     if ($action === 'reply-ticket') {
         portalRespond(portalReplyTicket($db, $client, $input));
+    }
+
+    if ($action === 'resolve-ticket-feedback') {
+        portalRespond(portalResolveTicketFeedback($db, $client, $input));
     }
 
     if ($action === 'sign-quote') {

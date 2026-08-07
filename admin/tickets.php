@@ -48,9 +48,9 @@ $db = getDB();
                             <option value="">Tous</option>
                             <option value="open">Ouvert</option>
                             <option value="in_progress">En cours</option>
-                            <option value="waiting">En attente</option>
-                            <option value="resolved">Résolu</option>
-                            <option value="closed">Fermé</option>
+                            <option value="waiting">En attente client</option>
+                            <option value="resolved">Résolu - à valider client</option>
+                            <option value="closed">Clôturé</option>
                         </select>
                     </div>
                     

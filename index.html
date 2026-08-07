@@ -23,7 +23,7 @@
     <meta property="og:url" content="https://code4u.fr/">
     <meta property="og:title" content="Code4U - Développeur Informatique à Metz | Web & Logiciel">
     <meta property="og:description" content="Développeur informatique Metz : sites web 599€, logiciels sur mesure. Informaticien freelance Lorraine. Devis gratuit 24h.">
-    <meta property="og:image" content="https://code4u.fr/assets/images/og-image.jpg">
+    <meta property="og:image" content="https://code4u.fr/assets/images/logo-carre.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     <meta property="og:locale" content="fr_FR">
@@ -35,7 +35,7 @@
     <meta property="twitter:url" content="https://code4u.fr/">
     <meta property="twitter:title" content="Développeur Informatique Metz | Code4U">
     <meta property="twitter:description" content="Développeur informatique à Metz : sites web, logiciels. Devis gratuit 24h.">
-    <meta property="twitter:image" content="https://code4u.fr/assets/images/og-image.jpg">
+    <meta property="twitter:image" content="https://code4u.fr/assets/images/logo-carre.png">
     <meta name="twitter:label1" content="Tarif site vitrine">
     <meta name="twitter:data1" content="Dès 599€">
     
@@ -43,9 +43,10 @@
     <link rel="canonical" href="https://code4u.fr/">
     
     <!-- Favicons : Google utilise de préférence une icône 48x48. Pour mettre à jour le logo dans les résultats de recherche : déposez un favicon.ico (48×48) à la racine du site puis demandez une réindexation dans Google Search Console. -->
-    <link rel="icon" type="image/png" href="assets/images/logo-carre.png" sizes="48x48">
-    <link rel="icon" type="image/png" href="assets/images/logo-carre.png" sizes="32x32">
-    <link rel="apple-touch-icon" href="assets/images/logo-carre.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" href="/assets/images/logo-carre.png" sizes="48x48">
+    <link rel="icon" type="image/png" href="/assets/images/favicon-512x512.png" sizes="512x512">
+    <link rel="apple-touch-icon" href="/assets/images/logo-carre.png">
     
     <!-- Performance : préchargement LCP / polices -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -294,7 +295,7 @@
             
             <!-- Services Grid -->
             <div class="services-grid">
-                <a href="/web" class="service-card service-card--web">
+                <a href="/web" class="service-card service-card--web" id="sites-web">
                     <div class="service-card__icon">
                         <i class="fas fa-laptop-code"></i>
                     </div>
@@ -318,7 +319,7 @@
                     </span>
                 </a>
 
-                <a href="/web" class="service-card service-card--app">
+                <a href="/#applications-web" class="service-card service-card--app" id="applications-web">
                     <div class="service-card__icon">
                         <i class="fas fa-window-restore"></i>
                     </div>
@@ -338,6 +339,30 @@
                     </div>
                     <span class="service-card__cta">
                         Découvrir
+                        <i class="fas fa-arrow-right"></i>
+                    </span>
+                </a>
+
+                <a href="/#applications-mobiles" class="service-card service-card--mobile" id="applications-mobiles">
+                    <div class="service-card__icon">
+                        <i class="fas fa-mobile-screen-button"></i>
+                    </div>
+                    <h3 class="service-card__title">Applications mobiles</h3>
+                    <p class="service-card__description">
+                        Applications iOS et Android pour vos clients ou vos équipes, connectées à votre site et à votre gestion.
+                    </p>
+                    <ul class="service-card__features">
+                        <li><i class="fas fa-check"></i>Parcours mobile rapide et clair</li>
+                        <li><i class="fas fa-check"></i>Notifications et comptes clients</li>
+                        <li><i class="fas fa-check"></i>API, paiements et espace admin</li>
+                        <li><i class="fas fa-check"></i>Publication accompagnée</li>
+                    </ul>
+                    <div class="service-card__price">
+                        <span class="price-from">À partir de</span>
+                        <span class="price-amount">1 990€</span>
+                    </div>
+                    <span class="service-card__cta">
+                        En parler
                         <i class="fas fa-arrow-right"></i>
                     </span>
                 </a>
@@ -661,7 +686,13 @@
       "@type": "LocalBusiness",
       "@id": "https://code4u.fr/#localbusiness",
       "name": "Code4U",
-      "image": "https://code4u.fr/assets/images/logo.png",
+      "image": "https://code4u.fr/assets/images/logo-carre.png",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://code4u.fr/assets/images/logo-carre.png",
+        "width": 512,
+        "height": 512
+      },
       "description": "Développeur informatique à Metz : développement web et logiciel sur mesure. Informaticien freelance Lorraine et Grand Est.",
       "address": {
         "@type": "PostalAddress",
@@ -694,7 +725,7 @@
         }
       ],
       "sameAs": [
-        "https://www.linkedin.com/company/code4u",
+        "https://fr.linkedin.com/in/pac%C3%B4me-vantini-8a428423b",
         "https://github.com/code4u",
         "https://twitter.com/code4u"
       ],

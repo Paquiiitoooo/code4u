@@ -112,7 +112,7 @@ function handlePostMessage($db) {
     }
     
     // Get ticket by access_code
-    $sql = "SELECT id, status FROM tickets WHERE access_code = :access_code LIMIT 1";
+    $sql = "SELECT id, status, resolved_at FROM tickets WHERE access_code = :access_code LIMIT 1";
     $stmt = $db->prepare($sql);
     $stmt->execute(['access_code' => $accessCode]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -125,10 +125,21 @@ function handlePostMessage($db) {
     
     if ($ticket['status'] === 'closed') {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Cannot send message to closed ticket'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Ce ticket est clôturé. Aucune nouvelle réponse ne peut être ajoutée.'], JSON_UNESCAPED_UNICODE);
         return;
     }
-    
+
+    if ($ticket['status'] === 'resolved') {
+        $resolvedAt = !empty($ticket['resolved_at']) ? strtotime((string)$ticket['resolved_at']) : 0;
+        if (!$resolvedAt || $resolvedAt < time() - 86400) {
+            $updateSql = "UPDATE tickets SET status = 'closed', updated_at = NOW() WHERE id = :ticket_id";
+            $updateStmt = $db->prepare($updateSql);
+            $updateStmt->execute(['ticket_id' => $ticket['id']]);
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Ce ticket est désormais clôturé.'], JSON_UNESCAPED_UNICODE);
+            return;
+        }
+    }
     // Ensure is_read column exists
     if (function_exists('ensureIsReadColumn')) {
         ensureIsReadColumn($db);
@@ -164,8 +175,8 @@ function handlePostMessage($db) {
         'message' => sanitize($message)
     ]);
     
-    // Update ticket status if it was closed/resolved
-    if (in_array($ticket['status'], ['closed', 'resolved'])) {
+    // A resolved ticket can be reopened by the customer only during the 24h validation window.
+    if ($ticket['status'] === 'resolved') {
         $updateSql = "UPDATE tickets SET status = 'open', updated_at = NOW() WHERE id = :ticket_id";
         $updateStmt = $db->prepare($updateSql);
         $updateStmt->execute(['ticket_id' => $ticket['id']]);
