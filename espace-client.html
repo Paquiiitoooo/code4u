@@ -252,8 +252,14 @@
 
                                 <div class="sub-cfg__left">
                                     <span class="client-kicker">Abonnement support</span>
-                                    <h2 style="margin:0.25rem 0 0.6rem;font-size:clamp(1.3rem,3vw,1.7rem)">Choisissez votre formule</h2>
-                                    <p style="margin:0 0 1.5rem;color:var(--text-secondary);line-height:1.55;font-size:0.93rem">Heures de développement, maintenance et support incluses chaque mois. Tarif dégressif selon le volume.</p>
+                                    <h2 style="margin:0.25rem 0 0.6rem;font-size:clamp(1.45rem,3vw,1.95rem)">Un support mensuel clair, sans ticket perdu</h2>
+                                    <p style="margin:0 0 1.25rem;color:var(--text-secondary);line-height:1.55;font-size:0.93rem">Choisissez un volume d'heures, payez via Stripe, puis pilotez vos demandes, pauses et résiliations depuis cet espace.</p>
+
+                                    <div class="sub-cfg__steps" aria-label="Fonctionnement de l'abonnement">
+                                        <div><i class="fas fa-sliders" aria-hidden="true"></i><span>1. Choix du volume</span></div>
+                                        <div><i class="fas fa-credit-card" aria-hidden="true"></i><span>2. Paiement Stripe</span></div>
+                                        <div><i class="fas fa-life-ring" aria-hidden="true"></i><span>3. Support suivi ici</span></div>
+                                    </div>
 
                                     <div class="sub-cfg__commitment" role="radiogroup" aria-label="Type d'engagement">
                                         <label class="sub-cfg__option is-active">
@@ -285,6 +291,12 @@
                                             <label for="sub-hours" style="font-weight:700;font-size:0.82rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-secondary)">Heures / mois</label>
                                             <output id="sub-hours-out" class="sub-cfg__hours-chip">10 h</output>
                                         </div>
+                                        <div class="sub-cfg__quick-hours" aria-label="Volumes rapides">
+                                            <button type="button" data-sub-hours-preset="5">5 h</button>
+                                            <button type="button" data-sub-hours-preset="10" class="is-active">10 h</button>
+                                            <button type="button" data-sub-hours-preset="20">20 h</button>
+                                            <button type="button" data-sub-hours-preset="40">40 h</button>
+                                        </div>
                                         <input type="range" id="sub-hours" min="2" max="40" step="1" value="10" class="sub-cfg__range">
                                         <div class="sub-cfg__range-labels"><span>2 h</span><span>40 h</span></div>
                                     </div>
@@ -297,7 +309,10 @@
                                         <div class="sub-cfg__price-sub">
                                             <div><span>Tarif horaire</span><strong id="sub-rate">—</strong></div>
                                             <div><span>Économie vs 30€/h</span><strong id="sub-discount">—</strong></div>
+                                            <div><span>Engagement</span><strong id="sub-commitment-summary">—</strong></div>
+                                            <div><span>Budget annuel</span><strong id="sub-yearly">—</strong></div>
                                         </div>
+                                        <p class="sub-cfg__safe-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Le prélèvement mensuel démarre uniquement après validation Stripe.</p>
                                     </div>
                                 </div>
                             </div>
@@ -1201,6 +1216,8 @@
                     var rateEl = document.getElementById('sub-rate');
                     var discEl = document.getElementById('sub-discount');
                     var monthEl = document.getElementById('sub-monthly');
+                    var yearlyEl = document.getElementById('sub-yearly');
+                    var commitmentEl = document.getElementById('sub-commitment-summary');
                     var min = parseInt(slider.min || '2', 10);
                     var max = parseInt(slider.max || '40', 10);
                     var progress = ((p.hours - min) / (max - min)) * 100;
@@ -1209,9 +1226,20 @@
                     if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' €/h TTC';
                     if (discEl) discEl.textContent = '−' + p.discount + ' % · économie ' + p.savings + ' €/mois';
                     if (monthEl) monthEl.textContent = p.monthly;
+                    if (yearlyEl) yearlyEl.textContent = (p.monthly * 12) + ' € TTC';
+                    if (commitmentEl) commitmentEl.textContent = p.commitmentLabel;
+                    document.querySelectorAll('[data-sub-hours-preset]').forEach(function (btn) {
+                        btn.classList.toggle('is-active', parseInt(btn.dataset.subHoursPreset || '0', 10) === p.hours);
+                    });
                 }
                 if (!subConfiguratorReady) {
                     slider.addEventListener('input', update);
+                    document.querySelectorAll('[data-sub-hours-preset]').forEach(function (button) {
+                        button.addEventListener('click', function () {
+                            slider.value = button.dataset.subHoursPreset || slider.value;
+                            update();
+                        });
+                    });
                     document.querySelectorAll('input[name="sub-commitment"]').forEach(function (radio) {
                         radio.addEventListener('change', function () {
                             document.querySelectorAll('.sub-cfg__option').forEach(function (label) {
@@ -1294,6 +1322,13 @@
                 }
 
                 var renewalLabel = sub.renewal_date ? dateFr(sub.renewal_date) : '—';
+                var paymentLabel = sub.stripe_subscription_id ? 'Paiement automatique actif'
+                                 : (pendingPayment ? 'Paiement Stripe à finaliser' : 'Paiement manuel ou non configuré');
+                var helperText = pendingPayment
+                    ? 'Votre abonnement est préparé. Finalisez Stripe pour activer le support mensuel.'
+                    : (isPaused
+                        ? 'Votre support est en pause. Réactivez-le pour reprendre les heures incluses.'
+                        : 'Votre support est prêt : suivez vos heures et ouvrez vos tickets depuis cet espace.');
 
                 activeBlock.innerHTML =
                     '<article class="client-panel sub-active-card">' +
@@ -1301,13 +1336,17 @@
                             '<div>' +
                                 '<span class="client-kicker">Plan actuel</span>' +
                                 '<h2 style="margin:0.2rem 0 0;font-size:clamp(1.2rem,3vw,1.55rem)">' + esc(sub.plan_name) + '</h2>' +
+                                '<p class="sub-active__hint">' + esc(helperText) + '</p>' +
                             '</div>' +
                             '<span class="client-status ' + badgeCls + '">' + esc(badgeTxt) + '</span>' +
                         '</div>' +
 
-                        '<div class="sub-active__price">' +
-                            '<strong class="sub-active__price-num">' + money(sub.monthly_price, sub.currency) + '</strong>' +
-                            '<span class="sub-active__price-period">TTC / mois</span>' +
+                        '<div class="sub-active__hero">' +
+                            '<div class="sub-active__price">' +
+                                '<strong class="sub-active__price-num">' + money(sub.monthly_price, sub.currency) + '</strong>' +
+                                '<span class="sub-active__price-period">TTC / mois</span>' +
+                            '</div>' +
+                            '<div class="sub-active__payment"><i class="fas fa-credit-card" aria-hidden="true"></i><span>' + esc(paymentLabel) + '</span></div>' +
                         '</div>' +
 
                         '<div class="sub-active__stats">' +
@@ -1325,7 +1364,7 @@
                             '<div class="sub-progress-bar"><div class="sub-progress-fill' + fillClass + '" style="width:' + useFill + '%"></div></div>' +
                         '</div>' +
 
-                        '<div class="client-inline-actions">' + actions + '</div>' +
+                        '<div class="sub-active__actions"><span>Gestion</span><div class="client-inline-actions">' + actions + '</div></div>' +
                     '</article>';
             }
 
@@ -1676,7 +1715,9 @@
                     var labels = {
                         'pause-subscription':  ['Mettre en pause', 'Votre abonnement sera suspendu. Vous pouvez le réactiver à tout moment.', '⏸️'],
                         'resume-subscription': ['Réactiver l\'abonnement', 'Votre abonnement reprendra normalement.', '▶️'],
-                        'cancel-subscription': ['Résilier l\'abonnement', 'Cette action est définitive. Vous perdrez l\'accès au support inclus à la prochaine échéance.', '🛑']
+                        'cancel-subscription': sub2.payment_status === 'pending_payment'
+                            ? ['Annuler la souscription en attente', 'Le paiement Stripe en attente sera abandonné et aucun prélèvement ne sera lancé.', '🛑']
+                            : ['Résilier l\'abonnement', (sub2.stripe_subscription_id ? 'Vous serez redirigé vers Stripe pour confirmer la résiliation. Le support inclus s’arrêtera selon les règles de l’abonnement.' : 'Cette action arrête l’abonnement côté espace client.'), '🛑']
                     };
                     var lconf = labels[action];
                     var danger = action === 'cancel-subscription';
