@@ -293,8 +293,12 @@
                 <p class="section-subtitle">En tant que <strong>développeur informatique à Metz</strong> et en Lorraine, je propose des prestations adaptées aux entreprises et aux particuliers : création de sites web, logiciels sur mesure, automatisation.</p>
             </div>
             
-            <!-- Services Grid -->
-            <div class="services-grid">
+            <!-- Services Carousel -->
+            <div class="services-carousel" aria-label="Services Code4U">
+                <button class="services-carousel__control services-carousel__control--prev" type="button" data-services-prev aria-label="Service précédent">
+                    <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                </button>
+                <div class="services-grid" data-services-track tabindex="0" aria-label="Liste des services">
                 <a href="/web" class="service-card service-card--web" id="sites-web">
                     <div class="service-card__icon">
                         <i class="fas fa-laptop-code"></i>
@@ -413,6 +417,10 @@
                         <i class="fas fa-arrow-right"></i>
                     </span>
                 </a>
+                </div>
+                <button class="services-carousel__control services-carousel__control--next" type="button" data-services-next aria-label="Service suivant">
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
             </div>
         </div>
     </section>
