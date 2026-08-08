@@ -359,10 +359,38 @@ section { padding-block: var(--section-pad); }
 .price-from, .price-period { color: var(--text-secondary); }
 
 /* ---- Process : timeline sobre ------------------------------------------- */
-.step-number { font-family: var(--font-display); color: color-mix(in srgb, var(--accent-color) 40%, transparent); }
-.step-icon { background: var(--accent-tint); color: var(--accent-color); border-radius: var(--radius-md); }
-.step-icon i { color: var(--accent-color); }
-.step-title { font-size: 1.2rem; }
+.process .process-step {
+    background: var(--bg-primary);
+}
+.process .process-step::before {
+    background: var(--accent-color);
+}
+.process .process-step:hover {
+    background: var(--bg-primary);
+    border-color: color-mix(in srgb, var(--accent-color) 38%, var(--border-color));
+    box-shadow: var(--shadow-lg);
+}
+.process .process-step:nth-child(n) .step-number {
+    font-family: var(--font-display);
+    color: var(--text-primary);
+    opacity: 0.12;
+}
+.process .process-step:nth-child(n) .step-icon {
+    background: color-mix(in srgb, var(--accent-color) 8%, var(--bg-primary));
+    color: var(--accent-color);
+    border-color: color-mix(in srgb, var(--accent-color) 18%, var(--border-color));
+    border-radius: var(--radius-md);
+}
+.process .process-step:nth-child(n) .step-icon i {
+    color: inherit;
+}
+.process .process-step:nth-child(n):hover .step-icon {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: var(--accent-color);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--accent-color) 22%, transparent);
+}
+.process .step-title { font-size: 1.2rem; }
 
 /* ---- Réalisations : nouvelle grille éditoriale --------------------------- */
 .work {
