@@ -108,6 +108,19 @@ function quoteCatalog() {
                 'export' => ['name' => 'Export donnees (PDF/Excel)', 'price' => 200.00],
             ],
         ],
+        'mobile_native' => [
+            'name' => 'Application Mobile Native',
+            'base_price' => 1990.00,
+            'options' => [
+                'dual_platform' => ['name' => 'Publication iOS + Android', 'price' => 700.00],
+                'push' => ['name' => 'Notifications push', 'price' => 300.00],
+                'mobile_auth' => ['name' => 'Comptes utilisateurs', 'price' => 350.00],
+                'api_backend' => ['name' => 'API et backend connecte', 'price' => 600.00],
+                'payments' => ['name' => 'Paiements integres', 'price' => 450.00],
+                'offline_sync' => ['name' => 'Mode hors ligne + synchronisation', 'price' => 500.00],
+                'store_release' => ['name' => 'Accompagnement stores', 'price' => 350.00],
+            ],
+        ],
         'logiciel' => [
             'name' => 'Logiciel / Automatisation',
             'base_price' => 499.00,

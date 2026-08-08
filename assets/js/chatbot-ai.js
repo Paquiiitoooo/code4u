@@ -69,7 +69,7 @@
 
         if (!hasWelcomed) {
             resetMessages();
-            addBotMessage("Bonjour, je suis l'assistant IA Code4U. Je peux répondre à vos questions sur les services, tarifs, projets, espace client et support. Vous pouvez aussi demander à parler à un humain.");
+            addBotMessage("Bonjour, je suis l'assistant IA Code4U. Mes réponses sont indicatives et peuvent être vérifiées par un humain. Ne partagez pas de données sensibles ici. Je peux vous renseigner sur les services, tarifs, projets, applications mobiles, espace client et support.");
             showQuickActions();
             hasWelcomed = true;
         }
@@ -122,7 +122,7 @@
         }
 
         if (wantsHuman(message)) {
-            addBotMessage("Je peux vous mettre en relation avec un humain. Pour créer la demande, j'ai besoin de votre nom.");
+            addBotMessage("Je peux vous mettre en relation avec un humain. Pour créer cette demande, j'ai besoin de votre nom et de votre email. Ces informations serviront uniquement au traitement du ticket.");
             mode = 'handoff_name';
             handoffDraft = { name: '', email: '', message: message };
             resetInput('Votre nom...');

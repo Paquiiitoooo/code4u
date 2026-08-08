@@ -3536,6 +3536,20 @@ body {
     gap: 1rem;
 }
 
+.chatbot-legal-notice {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    line-height: 1.45;
+}
+
+.chatbot-legal-notice a {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
 .chatbot-message {
     display: flex;
     gap: 0.75rem;

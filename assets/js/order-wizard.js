@@ -78,6 +78,20 @@
                 { id: 'export',        name: 'Export données (PDF/Excel)',      desc: 'Génération de rapports automatiques',              price: 200, icon: 'fa-file-export' }
             ]
         },
+        mobile_native: {
+            name: 'Application Mobile Native',
+            icon: 'fa-mobile-screen-button',
+            basePrice: 1990,
+            options: [
+                { id: 'dual_platform',  name: 'Publication iOS + Android',       desc: 'Version App Store et Google Play',                price: 700, icon: 'fa-mobile-screen' },
+                { id: 'push',           name: 'Notifications push',              desc: 'Alertes ciblées pour vos utilisateurs',           price: 300, icon: 'fa-bell' },
+                { id: 'mobile_auth',    name: 'Comptes utilisateurs',            desc: 'Connexion sécurisée et profils mobiles',          price: 350, icon: 'fa-user-lock' },
+                { id: 'api_backend',    name: 'API et backend connecté',         desc: 'Synchronisation avec site, ERP ou espace admin',   price: 600, icon: 'fa-plug' },
+                { id: 'payments',       name: 'Paiements intégrés',              desc: 'Stripe, achat de service ou paiement mobile',      price: 450, icon: 'fa-credit-card' },
+                { id: 'offline_sync',   name: 'Mode hors ligne + synchronisation', desc: 'Données disponibles même sans réseau',          price: 500, icon: 'fa-rotate' },
+                { id: 'store_release',  name: 'Accompagnement stores',           desc: 'Préparation des fiches et publication accompagnée', price: 350, icon: 'fa-store' }
+            ]
+        },
         logiciel: {
             name: 'Logiciel / Automatisation',
             icon: 'fa-robot',

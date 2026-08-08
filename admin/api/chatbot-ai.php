@@ -37,7 +37,7 @@ if (!is_array($input)) {
     respondJson(['success' => false, 'message' => 'JSON invalide.'], 400);
 }
 
-$message = trim((string)($input['message'] ?? ''));
+$message = sanitizeChatText($input['message'] ?? '', 1200);
 if ($message === '') {
     respondJson(['success' => false, 'message' => 'Message requis.'], 422);
 }
@@ -57,6 +57,7 @@ if ($apiKey === '') {
         'reply' => fallbackReply($message, $handoffRequested),
         'handoff' => ['suggest' => $handoffRequested],
         'source' => 'fallback',
+        'notice' => aiNotice(),
     ]);
 }
 
@@ -67,6 +68,7 @@ try {
         'reply' => $reply,
         'handoff' => ['suggest' => $handoffRequested],
         'source' => 'anthropic',
+        'notice' => aiNotice(),
     ]);
 } catch (Throwable $e) {
     error_log('[chatbot-ai] Anthropic error: ' . $e->getMessage());
@@ -75,6 +77,7 @@ try {
         'reply' => fallbackReply($message, $handoffRequested),
         'handoff' => ['suggest' => $handoffRequested],
         'source' => 'fallback',
+        'notice' => aiNotice(),
     ]);
 }
 
@@ -136,6 +139,16 @@ function readAnthropicKeyFromEnvFile(string $envPath): string {
     return '';
 }
 
+function sanitizeChatText($value, int $limit): string {
+    $text = trim(strip_tags((string)$value));
+    $text = preg_replace('/[^\P{C}\r\n\t]+/u', '', $text) ?? $text;
+    return mb_substr($text, 0, $limit);
+}
+
+function aiNotice(): string {
+    return "Réponse générée par un assistant IA, fournie à titre indicatif. Ne partagez pas de données sensibles ; demandez une mise en relation humaine pour une réponse contractuelle.";
+}
+
 function sanitizeHistory($history): array {
     if (!is_array($history)) {
         return [];
@@ -145,11 +158,11 @@ function sanitizeHistory($history): array {
     foreach (array_slice($history, -8) as $item) {
         if (!is_array($item)) continue;
         $role = ($item['role'] ?? '') === 'assistant' ? 'assistant' : 'user';
-        $content = trim((string)($item['content'] ?? ''));
+        $content = sanitizeChatText($item['content'] ?? '', 900);
         if ($content === '') continue;
         $clean[] = [
             'role' => $role,
-            'content' => mb_substr($content, 0, 900),
+            'content' => $content,
         ];
     }
     return $clean;
@@ -257,13 +270,15 @@ function chatbotSystemPrompt(bool $handoffRequested): string {
 Tu es le chatbot IA officiel de Code4U, développeur indépendant à Metz.
 
 Objectif :
-- Répondre aux visiteurs sur Code4U, les sites web, e-commerce, applications web, espaces clients, logiciels sur mesure, automatisations, maintenance, support, tarifs indicatifs et déroulement projet.
+- Répondre aux visiteurs sur Code4U, les sites web, e-commerce, applications web, applications mobiles natives iOS/Android, espaces clients, logiciels sur mesure, automatisations, maintenance, support, tarifs indicatifs et déroulement projet.
 - Être concis, professionnel, utile, en français.
+- Rappeler que tu es une IA si la réponse peut être confondue avec une réponse humaine ou contractuelle.
 
 Contexte autorisé :
 - Site vitrine à partir de 599 euros.
 - Site avec base de données à partir de 1 199 euros.
 - E-commerce à partir de 1 490 euros, selon besoin.
+- Application mobile native iOS/Android à partir de 1 990 euros.
 - Logiciel sur mesure : sur devis.
 - Maintenance/support : à partir de 79 euros par mois.
 - Contact : contact@code4u.fr, 06 52 37 26 36, Metz / Grand Est.
@@ -271,6 +286,8 @@ Contexte autorisé :
 
 Restrictions :
 - Ne promets jamais un prix final, un délai garanti ou une disponibilité humaine immédiate.
+- Ne présente jamais tes réponses comme une validation juridique, contractuelle ou humaine.
+- Demande à l'utilisateur de ne pas partager de données sensibles, secrets, mots de passe, données de santé ou informations bancaires complètes.
 - Ne collecte pas de données personnelles sauf si l'utilisateur demande explicitement une mise en relation humaine.
 - Ne donne pas de conseil juridique, médical, fiscal ou financier spécialisé.
 - Refuse les demandes illégales, dangereuses, d'intrusion, de phishing, de malware, de contournement de sécurité ou d'extraction de secrets.
@@ -291,10 +308,10 @@ function fallbackReply(string $message, bool $handoffRequested): string {
         return "Je peux vous orienter vers une mise en relation humaine. Indiquez votre nom, votre email et votre demande dans le formulaire du chatbot ; un ticket sera créé pour que Code4U vous réponde.";
     }
     if (str_contains($text, 'prix') || str_contains($text, 'tarif') || str_contains($text, 'budget')) {
-        return "Tarifs indicatifs : site vitrine à partir de 599 €, site avec base de données à partir de 1 199 €, e-commerce à partir de 1 490 €, logiciel sur mesure sur devis, support à partir de 79 €/mois. Un devis précis dépend du besoin.";
+        return "Tarifs indicatifs : site vitrine à partir de 599 €, site avec base de données à partir de 1 199 €, e-commerce à partir de 1 490 €, application mobile native à partir de 1 990 €, logiciel sur mesure sur devis, support à partir de 79 €/mois. Un devis précis dépend du besoin.";
     }
     if (str_contains($text, 'contact') || str_contains($text, 'telephone') || str_contains($text, 'téléphone')) {
         return "Vous pouvez contacter Code4U par email à contact@code4u.fr ou par téléphone au 06 52 37 26 36.";
     }
-    return "Je suis le chatbot IA Code4U. Je peux vous renseigner sur les services, les tarifs indicatifs, l'espace client et le déroulement d'un projet. Si besoin, vous pouvez demander une mise en relation humaine.";
+    return "Je suis le chatbot IA Code4U. Mes réponses sont indicatives. Je peux vous renseigner sur les services, les applications mobiles, les tarifs indicatifs, l'espace client et le déroulement d'un projet. Si besoin, vous pouvez demander une mise en relation humaine.";
 }
