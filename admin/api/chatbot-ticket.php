@@ -14,7 +14,7 @@ try {
     require_once __DIR__ . '/../includes/functions.php';
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Configuration error: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'Erreur de configuration : ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
     error_log("Chatbot ticket API config error: " . $e->getMessage());
     exit;
 }
@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
-    echo json_encode(['success' => false, 'message' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'Méthode non autorisée'], JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -51,7 +51,7 @@ try {
     $data = json_decode($rawInput, true);
     
     if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new Exception('Invalid JSON: ' . json_last_error_msg());
+        throw new Exception('JSON invalide : ' . json_last_error_msg());
     }
     
     if (!is_array($data)) {
@@ -63,7 +63,7 @@ try {
     foreach ($required as $field) {
         if (empty($data[$field])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => "Field $field is required"], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => false, 'message' => "Champ requis manquant : $field"], JSON_UNESCAPED_UNICODE);
             exit;
         }
     }
@@ -71,7 +71,7 @@ try {
     // Validate email
     if (!function_exists('isValidEmail') || !isValidEmail($data['customer_email'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid email address'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Adresse email invalide'], JSON_UNESCAPED_UNICODE);
         exit;
     }
 
@@ -283,12 +283,12 @@ try {
 
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'Erreur base de données : ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
     error_log("Chatbot ticket API DB error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
     exit;
 } catch (Exception $e) {
     http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => false, 'message' => 'Erreur serveur : ' . $e->getMessage()], JSON_UNESCAPED_UNICODE);
     error_log("Chatbot ticket API error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
     exit;
 }

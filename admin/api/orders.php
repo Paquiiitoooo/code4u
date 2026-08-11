@@ -28,7 +28,7 @@ require_once $adminDir . '/config/config.php';
 // Reponses TOUJOURS en JSON : on coupe l'affichage des erreurs PHP (logguees seulement)
 @ini_set('display_errors', '0');
 
-// Connexion DB resiliente : ne casse jamais la reponse publique.
+// Connexion DB résiliente : ne casse jamais la réponse publique.
 // Si la base est indisponible, on bascule sur un fallback fichier (aucun lead perdu).
 $pdo = null;
 try {
@@ -146,7 +146,7 @@ function calculateQuote($input) {
     $deadline = $input['deadline'] ?? 'standard';
     $multipliers = ['standard' => 1.00, 'accelerated' => 1.30, 'urgent' => 1.50];
     if (!isset($multipliers[$deadline])) {
-        respond(['success' => false, 'error' => 'Delai invalide'], 422);
+        respond(['success' => false, 'error' => 'Délai invalide'], 422);
     }
 
     $selectedOptions = [];
@@ -560,7 +560,7 @@ function createOrder($pdo, $input) {
         saveOrderFallback($reference, $fallbackData);
         respond([
             'success' => true, 'order_id' => null, 'reference' => $reference,
-            'stored' => 'file', 'message' => 'Commande enregistree avec succes',
+            'stored' => 'file', 'message' => 'Commande enregistrée avec succès',
         ]);
     }
 
@@ -661,7 +661,7 @@ function createOrder($pdo, $input) {
         saveOrderFallback($reference, $fallbackData);
         respond([
             'success' => true, 'order_id' => null, 'reference' => $reference,
-            'stored' => 'file', 'message' => 'Commande enregistree avec succes',
+            'stored' => 'file', 'message' => 'Commande enregistrée avec succès',
         ]);
     }
 }
@@ -692,7 +692,7 @@ function saveOrderFallback($reference, $data) {
 
 function listOrders($pdo) {
     if (!isAdmin()) {
-        respond(['success' => false, 'error' => 'Non autorise'], 401);
+        respond(['success' => false, 'error' => 'Non autorisé'], 401);
     }
 
     $status  = $_GET['status'] ?? '';
@@ -760,7 +760,7 @@ function listOrders($pdo) {
 
 function getOrder($pdo, $id) {
     if (!isAdmin()) {
-        respond(['success' => false, 'error' => 'Non autorise'], 401);
+        respond(['success' => false, 'error' => 'Non autorisé'], 401);
     }
 
     if (!$id) {
@@ -875,7 +875,7 @@ function addNote($pdo, $input) {
 
 function getStats($pdo) {
     if (!isAdmin()) {
-        respond(['success' => false, 'error' => 'Non autorise'], 401);
+        respond(['success' => false, 'error' => 'Non autorisé'], 401);
     }
 
     $total      = (int)$pdo->query("SELECT COUNT(*) FROM orders")->fetchColumn();

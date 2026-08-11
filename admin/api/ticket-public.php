@@ -30,7 +30,7 @@ try {
             break;
         default:
             http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => false, 'message' => 'Méthode non autorisée'], JSON_UNESCAPED_UNICODE);
     }
 } catch (Exception $e) {
     http_response_code(500);
@@ -43,7 +43,7 @@ function handleGetTicket($db) {
     
     if (!$accessCode) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Access code required'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Code d’accès requis'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
@@ -65,7 +65,7 @@ function handleGetTicket($db) {
     
     if (!$ticket) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Ticket not found'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Ticket introuvable'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
@@ -93,7 +93,7 @@ function handlePostMessage($db) {
     
     if (!$data) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Invalid JSON'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'JSON invalide'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
@@ -102,7 +102,7 @@ function handlePostMessage($db) {
     
     if (!$accessCode || !$message) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Access code and message required'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Code d’accès et message requis'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
@@ -119,7 +119,7 @@ function handlePostMessage($db) {
     
     if (!$ticket) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Ticket not found'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Ticket introuvable'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
@@ -189,7 +189,7 @@ function handlePostMessage($db) {
     
     echo json_encode([
         'success' => true,
-        'message' => 'Message sent successfully'
+        'message' => 'Message envoyé avec succès'
     ], JSON_UNESCAPED_UNICODE);
 }
 

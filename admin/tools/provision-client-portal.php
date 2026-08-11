@@ -1,7 +1,7 @@
 <?php
 /**
  * CLI only.
- * Cree/reinitialise les acces espace client et envoie l'email d'invitation.
+ * Crée/réinitialise les accès espace client et envoie l'email d'invitation.
  *
  * Usage:
  *   php admin/tools/provision-client-portal.php
@@ -95,7 +95,7 @@ function portalSendAccessMail(array $client, $password) {
         . '<div style="max-width:600px;margin:0 auto;padding:24px">'
         . '<div style="background:#14131a;color:#fff;padding:18px 22px;border-radius:10px 10px 0 0;font-size:20px;font-weight:800">Code4U</div>'
         . '<div style="background:#fff;border:1px solid #e1e4ea;border-top:0;border-radius:0 0 10px 10px;padding:24px">'
-        . '<h1 style="margin:0 0 14px;font-size:20px">Votre espace client est pret</h1>'
+        . '<h1 style="margin:0 0 14px;font-size:20px">Votre espace client est prêt</h1>'
         . '<p>Bonjour ' . $label . ',</p>'
         . '<p>Votre espace client Code4U est disponible. Vous pouvez y consulter vos devis, factures, paiements, projets, tickets et votre abonnement support.</p>'
         . '<div style="background:#f6f8fb;border:1px solid #dde3ee;border-radius:8px;padding:16px;margin:18px 0">'
@@ -103,8 +103,8 @@ function portalSendAccessMail(array $client, $password) {
         . '<p style="margin:0 0 8px"><strong>Email :</strong> ' . $email . '</p>'
         . '<p style="margin:0"><strong>Mot de passe temporaire :</strong> <code style="font-size:15px">' . $passwordHtml . '</code></p>'
         . '</div>'
-        . '<p>Pour votre securite, changez ce mot de passe apres votre premiere connexion dans l’onglet <strong>Mon compte</strong>.</p>'
-        . '<p style="margin-top:22px;color:#606775;font-size:13px">Si vous n’avez pas demande cet acces, repondez simplement a cet email.</p>'
+        . '<p>Pour votre sécurité, changez ce mot de passe après votre première connexion dans l’onglet <strong>Mon compte</strong>.</p>'
+        . '<p style="margin-top:22px;color:#606775;font-size:13px">Si vous n’avez pas demandé cet accès, répondez simplement à cet email.</p>'
         . '</div></div></body></html>';
 
     $headers = [
@@ -113,7 +113,7 @@ function portalSendAccessMail(array $client, $password) {
         'From: Code4U <' . $from . '>',
         'Reply-To: contact@code4u.fr',
     ];
-    return @mail($to, '=?UTF-8?B?' . base64_encode('Votre acces espace client Code4U') . '?=', $html, implode("\r\n", $headers));
+    return @mail($to, '=?UTF-8?B?' . base64_encode('Votre accès espace client Code4U') . '?=', $html, implode("\r\n", $headers));
 }
 
 $targets = array_slice($argv, 1);

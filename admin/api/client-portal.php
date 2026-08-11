@@ -267,11 +267,11 @@ function portalSend2faMail(array $account, $code) {
     $target = $account['account_email'] ?? $account['email'] ?? '';
     $sent = portalSendClientMail(
         ['email' => $target],
-        'Code de verification espace client Code4U',
-        'Code de verification',
-        '<p>Bonjour,</p><p>Voici votre code de connexion a votre espace client Code4U :</p>'
+        'Code de vérification espace client Code4U',
+        'Code de vérification',
+        '<p>Bonjour,</p><p>Voici votre code de connexion à votre espace client Code4U :</p>'
         . '<p style="font-size:28px;font-weight:800;letter-spacing:8px;color:#1d6fe6;margin:18px 0">' . htmlspecialchars($code, ENT_QUOTES, 'UTF-8') . '</p>'
-        . '<p>Ce code expire dans 10 minutes. Si vous n etes pas a l origine de cette connexion, ignorez cet email et contactez Code4U.</p>'
+        . '<p>Ce code expire dans 10 minutes. Si vous n’êtes pas à l’origine de cette connexion, ignorez cet email et contactez Code4U.</p>'
     );
     if (!$sent) {
         error_log('[portail-2fa] Echec envoi code vers ' . $target);
@@ -282,11 +282,11 @@ function portalSend2faMail(array $account, $code) {
 function portalSendLoginMail(array $account) {
     return portalSendClientMail(
         ['email' => $account['email']],
-        'Nouvelle connexion a votre espace client Code4U',
-        'Connexion detectee',
-        '<p>Bonjour,</p><p>Une connexion a votre espace client Code4U vient d etre validee.</p>'
+        'Nouvelle connexion à votre espace client Code4U',
+        'Connexion détectée',
+        '<p>Bonjour,</p><p>Une connexion à votre espace client Code4U vient d’être validée.</p>'
         . '<p><strong>Date :</strong> ' . date('d/m/Y H:i') . '<br><strong>IP :</strong> ' . htmlspecialchars(portalClientIp(), ENT_QUOTES, 'UTF-8') . '</p>'
-        . '<p>Si ce n etait pas vous, contactez immediatement Code4U.</p>'
+        . '<p>Si ce n’était pas vous, contactez immédiatement Code4U.</p>'
     );
 }
 
@@ -496,13 +496,13 @@ function portalSendInternalMail($subject, $title, $bodyHtml) {
 function portalSendNewTicketInternalMail(array $ticket, array $client, $message, $kind = 'new') {
     $safe = function ($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); };
     $isReply = $kind === 'reply';
-    $body = '<p style="margin:0 0 14px">' . ($isReply ? 'Un client vient de repondre a un ticket depuis l espace client.' : 'Un nouveau ticket vient d etre cree depuis l espace client.') . '</p>'
+    $body = '<p style="margin:0 0 14px">' . ($isReply ? 'Un client vient de répondre à un ticket depuis l’espace client.' : 'Un nouveau ticket vient d’être créé depuis l’espace client.') . '</p>'
         . '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">'
         . '<tr><td style="padding:7px 0;color:#6b7a90;width:34%">Client</td><td style="padding:7px 0;font-weight:700">' . $safe($client['company_name'] ?? $ticket['customer_name'] ?? 'Client Code4U') . '</td></tr>'
         . '<tr><td style="padding:7px 0;color:#6b7a90">Email</td><td style="padding:7px 0">' . $safe($client['email'] ?? $ticket['customer_email'] ?? '-') . '</td></tr>'
-        . '<tr><td style="padding:7px 0;color:#6b7a90">Telephone</td><td style="padding:7px 0">' . $safe($client['phone'] ?? $ticket['customer_phone'] ?? '-') . '</td></tr>'
-        . '<tr><td style="padding:7px 0;color:#6b7a90">Priorite</td><td style="padding:7px 0">' . $safe($ticket['priority'] ?? 'medium') . '</td></tr>'
-        . '<tr><td style="padding:7px 0;color:#6b7a90">Categorie</td><td style="padding:7px 0">' . $safe($ticket['category'] ?? 'support') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Téléphone</td><td style="padding:7px 0">' . $safe($client['phone'] ?? $ticket['customer_phone'] ?? '-') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Priorité</td><td style="padding:7px 0">' . $safe($ticket['priority'] ?? 'medium') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Catégorie</td><td style="padding:7px 0">' . $safe($ticket['category'] ?? 'support') . '</td></tr>'
         . '</table>'
         . '<div style="background:#f3f7fb;border-left:4px solid #1689e0;padding:14px">'
         . '<strong>' . $safe($ticket['subject'] ?? '') . '</strong><br>' . nl2br($safe($message))
@@ -518,17 +518,17 @@ function portalSendNewTicketInternalMail(array $ticket, array $client, $message,
 function portalStatusLabel($status) {
     $labels = [
         'active' => 'Actif',
-        'annulee' => 'Annulee',
+        'annulee' => 'Annulée',
         'brouillon' => 'Brouillon',
-        'envoye' => 'Envoye',
-        'envoyee' => 'Envoyee',
-        'emise' => 'Emise',
-        'payee' => 'Payee',
+        'envoye' => 'Envoyé',
+        'envoyee' => 'Envoyée',
+        'emise' => 'Émise',
+        'payee' => 'Payée',
         'partielle' => 'Partielle',
-        'impayee' => 'Impayee',
-        'accepte' => 'Accepte',
-        'refuse' => 'Refuse',
-        'expire' => 'Expire',
+        'impayee' => 'Impayée',
+        'accepte' => 'Accepté',
+        'refuse' => 'Refusé',
+        'expire' => 'Expiré',
         'paused' => 'En pause',
         'cancelled' => 'Annulé',
         'draft' => 'Brouillon',
@@ -1411,7 +1411,7 @@ function portalEnsureSupportSubscriptionTable(PDO $db) {
     }
 }
 
-/** Signature de devis : cree le meme lien public que l'envoi email ERP. */
+/** Signature de devis : crée le même lien public que l'envoi email ERP. */
 function portalSignQuote(PDO $db, array $client, array $input) {
     if (!portalTableExists($db, 'devis')) {
         portalRespond(['success' => false, 'message' => 'Devis indisponibles.'], 503);
@@ -1430,7 +1430,7 @@ function portalSignQuote(PDO $db, array $client, array $input) {
         portalRespond(['success' => false, 'message' => 'Devis introuvable.'], 404);
     }
     if (!in_array($quote['statut'], ['pending', 'quote_sent', 'brouillon', 'envoye'], true)) {
-        portalRespond(['success' => false, 'message' => 'Ce devis ne peut plus etre signe.'], 422);
+        portalRespond(['success' => false, 'message' => 'Ce devis ne peut plus être signé.'], 422);
     }
 
     $token = $quote['signature_token'] ?: bin2hex(random_bytes(32));
@@ -1486,7 +1486,7 @@ function portalPayInvoiceOnline(PDO $db, array $client, array $input) {
     $check->execute([':id' => $invoiceId, ':cid' => (int)$client['id']]);
     $savedToken = (string)$check->fetchColumn();
     if (!preg_match('/^[a-f0-9]{32,64}$/i', $savedToken)) {
-        portalRespond(['success' => false, 'message' => 'Impossible de preparer le lien de paiement.'], 500);
+        portalRespond(['success' => false, 'message' => 'Impossible de préparer le lien de paiement.'], 500);
     }
     return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=invoice&token=' . rawurlencode($savedToken)];
 }
@@ -1503,10 +1503,10 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
         portalRespond(['success' => false, 'message' => 'Abonnement introuvable.'], 404);
     }
     if (!empty($sub['stripe_subscription_id'])) {
-        portalRespond(['success' => false, 'message' => 'Le paiement automatique est deja actif.'], 422);
+        portalRespond(['success' => false, 'message' => 'Le paiement automatique est déjà actif.'], 422);
     }
     if ($sub['status'] === 'cancelled') {
-        portalRespond(['success' => false, 'message' => 'Cet abonnement est resilie.'], 422);
+        portalRespond(['success' => false, 'message' => 'Cet abonnement est résilié.'], 422);
     }
     if ((float)$sub['monthly_price'] <= 0) {
         portalRespond(['success' => false, 'message' => 'Montant d’abonnement invalide.'], 422);
@@ -1520,7 +1520,7 @@ function portalSubscribeOnline(PDO $db, array $client, array $input) {
     $check->execute([':id' => $subId, ':cid' => (int)$client['id']]);
     $savedToken = (string)$check->fetchColumn();
     if (!preg_match('/^[a-f0-9]{32,64}$/i', $savedToken)) {
-        portalRespond(['success' => false, 'message' => 'Impossible de preparer le lien d abonnement.'], 500);
+        portalRespond(['success' => false, 'message' => 'Impossible de préparer le lien d’abonnement.'], 500);
     }
     return ['success' => true, 'pay_url' => portalPublicSignBase() . '/checkout.html?type=subscription&token=' . rawurlencode($savedToken)];
 }
@@ -1593,7 +1593,7 @@ function portalCreateSubscription(PDO $db, array $client, array $input) {
     $existingStmt->execute([':cid' => (int)$client['id']]);
     $existing = $existingStmt->fetch(PDO::FETCH_ASSOC);
     if ($existing && !empty($existing['stripe_subscription_id'])) {
-        portalRespond(['success' => false, 'message' => 'Vous avez deja un abonnement support.'], 422);
+        portalRespond(['success' => false, 'message' => 'Vous avez déjà un abonnement support.'], 422);
     }
     if ($existing) {
         $stmt = $db->prepare("
@@ -1820,7 +1820,7 @@ function portalChangePassword(PDO $db, array $client, array $input) {
     $current = (string)($input['current_password'] ?? '');
     $new = (string)($input['new_password'] ?? '');
     if (!portalStrongPassword($new)) {
-        portalRespond(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 12 caracteres avec majuscule, minuscule, chiffre et symbole.'], 422);
+        portalRespond(['success' => false, 'message' => 'Le nouveau mot de passe doit faire au moins 12 caractères avec majuscule, minuscule, chiffre et symbole.'], 422);
     }
     $stmt = $db->prepare("SELECT password_hash FROM client_portal_accounts WHERE client_id = :id AND status = 'active' LIMIT 1");
     $stmt->execute([':id' => (int)$client['id']]);
@@ -2019,7 +2019,7 @@ try {
         $stmt->execute([':email' => $email]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($account && !empty($account['locked_until']) && strtotime((string)$account['locked_until'] . ' UTC') > time()) {
-            portalRespond(['success' => false, 'message' => 'Compte temporairement verrouille. Reessayez plus tard.'], 423);
+            portalRespond(['success' => false, 'message' => 'Compte temporairement verrouillé. Réessayez plus tard.'], 423);
         }
         if (!$account || !password_verify($password, $account['password_hash'])) {
             if ($account) {
@@ -2057,7 +2057,7 @@ try {
         portalRespond([
             'success' => true,
             'requires_2fa' => true,
-            'message' => 'Code de verification envoye par email.',
+            'message' => 'Code de vérification envoyé par email.',
             'email' => $account['account_email'] ?? $email,
         ]);
     }
@@ -2066,7 +2066,7 @@ try {
         $accountId = (int)($_SESSION['pending_client_account_id'] ?? 0);
         $code = trim((string)($input['code'] ?? ''));
         if (!$accountId || !preg_match('/^[0-9]{6}$/', $code)) {
-            portalRespond(['success' => false, 'message' => 'Code de verification invalide.'], 422);
+            portalRespond(['success' => false, 'message' => 'Code de vérification invalide.'], 422);
         }
         $stmt = $db->prepare("
             SELECT
@@ -2099,7 +2099,7 @@ try {
         $stmt->execute([':id' => $accountId]);
         $account = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$account || empty($account['two_factor_code_hash']) || strtotime((string)$account['two_factor_expires_at'] . ' UTC') < time()) {
-            portalRespond(['success' => false, 'message' => 'Code expire. Reconnectez-vous.'], 401);
+            portalRespond(['success' => false, 'message' => 'Code expiré. Reconnectez-vous.'], 401);
         }
         if ((int)$account['two_factor_attempts'] >= 5) {
             portalRespond(['success' => false, 'message' => 'Trop de tentatives. Reconnectez-vous.'], 423);

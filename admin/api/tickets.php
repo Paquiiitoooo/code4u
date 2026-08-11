@@ -41,7 +41,7 @@ try {
             break;
         default:
             http_response_code(405);
-            echo json_encode(['success' => false, 'message' => 'Method not allowed'], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => false, 'message' => 'Méthode non autorisée'], JSON_UNESCAPED_UNICODE);
     }
 } catch (Exception $e) {
     http_response_code(500);
@@ -172,7 +172,7 @@ function getSingleTicket($db) {
     $id = $_GET['id'] ?? null;
     if (!$id) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Ticket ID required']);
+        echo json_encode(['success' => false, 'message' => 'Identifiant du ticket requis']);
         return;
     }
     
@@ -189,7 +189,7 @@ function getSingleTicket($db) {
     
     if (!$ticket) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Ticket not found'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Ticket introuvable'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -263,7 +263,7 @@ function createTicket($db) {
     foreach ($required as $field) {
         if (empty($data[$field])) {
             http_response_code(400);
-            echo json_encode(['success' => false, 'message' => "Field $field is required"], JSON_UNESCAPED_UNICODE);
+            echo json_encode(['success' => false, 'message' => "Champ requis manquant : $field"], JSON_UNESCAPED_UNICODE);
             exit;
         }
     }
@@ -308,12 +308,12 @@ function createTicket($db) {
     sendEmailNotification($data['customer_email'], $emailSubject, $emailBody);
 
     if (defined('TICKET_NOTIFICATION_EMAIL') && TICKET_NOTIFICATION_EMAIL) {
-        $adminBody = "Nouveau ticket cree dans l'ERP.\n\n";
+        $adminBody = "Nouveau ticket créé dans l'ERP.\n\n";
         $adminBody .= "Ticket : $ticketNumber\n";
         $adminBody .= "Client : " . sanitize($data['customer_name']) . "\n";
         $adminBody .= "Email : " . sanitize($data['customer_email']) . "\n";
-        $adminBody .= "Telephone : " . sanitize($data['customer_phone'] ?? '-') . "\n";
-        $adminBody .= "Priorite : " . sanitize($data['priority'] ?? 'medium') . "\n";
+        $adminBody .= "Téléphone : " . sanitize($data['customer_phone'] ?? '-') . "\n";
+        $adminBody .= "Priorité : " . sanitize($data['priority'] ?? 'medium') . "\n";
         $adminBody .= "Sujet : " . sanitize($data['subject']) . "\n\n";
         $adminBody .= sanitize($data['description']);
         sendEmailNotification(TICKET_NOTIFICATION_EMAIL, "Nouveau ticket $ticketNumber - " . sanitize($data['subject']), $adminBody);
@@ -338,7 +338,7 @@ function createTicket($db) {
     
     echo json_encode([
         'success' => true,
-        'message' => 'Ticket created successfully',
+        'message' => 'Ticket créé avec succès',
         'data' => [
             'id' => $ticketId, 
             'ticket_number' => $ticketNumber,
@@ -352,7 +352,7 @@ function addMessage($db) {
     
     if (empty($data['ticket_id']) || empty($data['message'])) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Ticket ID and message required'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Identifiant du ticket et message requis'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -380,7 +380,7 @@ function addMessage($db) {
         logActivity($db, 'ticket_message_added', 'ticket', $data['ticket_id'], "Admin added message");
     }
     
-    echo json_encode(['success' => true, 'message' => 'Message added successfully'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => true, 'message' => 'Message ajouté avec succès'], JSON_UNESCAPED_UNICODE);
 }
 
 function handlePut($db, $action) {
@@ -389,7 +389,7 @@ function handlePut($db, $action) {
     
     if (!$id) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Ticket ID required'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Identifiant du ticket requis'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -406,7 +406,7 @@ function handlePut($db, $action) {
     
     if (empty($updates)) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'No valid fields to update'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Aucun champ valide à mettre à jour'], JSON_UNESCAPED_UNICODE);
         exit;
     }
     
@@ -427,7 +427,7 @@ function handlePut($db, $action) {
     // Log activity
     logActivity($db, 'ticket_updated', 'ticket', $id, "Ticket updated");
     
-    echo json_encode(['success' => true, 'message' => 'Ticket updated successfully'], JSON_UNESCAPED_UNICODE);
+    echo json_encode(['success' => true, 'message' => 'Ticket mis à jour avec succès'], JSON_UNESCAPED_UNICODE);
 }
 
 function handleDelete($db, $action) {
@@ -435,7 +435,7 @@ function handleDelete($db, $action) {
     
     if (!$id) {
         http_response_code(400);
-        echo json_encode(['success' => false, 'message' => 'Ticket ID required'], JSON_UNESCAPED_UNICODE);
+        echo json_encode(['success' => false, 'message' => 'Identifiant du ticket requis'], JSON_UNESCAPED_UNICODE);
         return;
     }
     
