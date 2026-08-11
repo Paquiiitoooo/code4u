@@ -306,6 +306,18 @@ function createTicket($db) {
     $emailBody .= "Cordialement,\nL'équipe Code4U";
     
     sendEmailNotification($data['customer_email'], $emailSubject, $emailBody);
+
+    if (defined('TICKET_NOTIFICATION_EMAIL') && TICKET_NOTIFICATION_EMAIL) {
+        $adminBody = "Nouveau ticket cree dans l'ERP.\n\n";
+        $adminBody .= "Ticket : $ticketNumber\n";
+        $adminBody .= "Client : " . sanitize($data['customer_name']) . "\n";
+        $adminBody .= "Email : " . sanitize($data['customer_email']) . "\n";
+        $adminBody .= "Telephone : " . sanitize($data['customer_phone'] ?? '-') . "\n";
+        $adminBody .= "Priorite : " . sanitize($data['priority'] ?? 'medium') . "\n";
+        $adminBody .= "Sujet : " . sanitize($data['subject']) . "\n\n";
+        $adminBody .= sanitize($data['description']);
+        sendEmailNotification(TICKET_NOTIFICATION_EMAIL, "Nouveau ticket $ticketNumber - " . sanitize($data['subject']), $adminBody);
+    }
     
     // Add initial message
     if (!empty($data['description'])) {
@@ -466,4 +478,3 @@ function generateTicketNumber($db) {
     
     return sprintf("%s-%s-%06d", $prefix, $year, $newNum);
 }
-

@@ -635,6 +635,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const cookieBanner = document.getElementById('cookieBanner');
         const cookieModal = document.getElementById('cookieModal');
         const cookieAccept = document.getElementById('cookieAccept');
+        const cookieRejectBanner = document.getElementById('cookieRejectBanner');
         const cookiePreferencesBtn = document.getElementById('cookiePreferences');
         const cookieModalClose = document.getElementById('cookieModalClose');
         const cookieSavePreferences = document.getElementById('cookieSavePreferences');
@@ -662,6 +663,14 @@ document.addEventListener('DOMContentLoaded', function() {
             cookieAccept.addEventListener('click', () => {
                 localStorage.setItem('cookieConsent', 'all');
                 localStorage.setItem('cookieAnalytics', 'true');
+                cookieBanner.classList.remove('visible');
+            });
+        }
+
+        if (cookieRejectBanner) {
+            cookieRejectBanner.addEventListener('click', () => {
+                localStorage.setItem('cookieConsent', 'essential');
+                localStorage.setItem('cookieAnalytics', 'false');
                 cookieBanner.classList.remove('visible');
             });
         }

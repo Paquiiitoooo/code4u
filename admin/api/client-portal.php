@@ -452,6 +452,69 @@ function portalSendClientMail($client, $subject, $title, $bodyHtml) {
     return portalSmtpSend($to, $subject, $html);
 }
 
+function portalConfigMailValue(array $names) {
+    foreach ($names as $name) {
+        if (defined($name)) {
+            $value = trim((string)constant($name));
+            if ($value !== '' && filter_var($value, FILTER_VALIDATE_EMAIL)) return $value;
+        }
+        $value = trim((string)getenv($name));
+        if ($value !== '' && filter_var($value, FILTER_VALIDATE_EMAIL)) return $value;
+    }
+    return '';
+}
+
+function portalInternalMailAddress() {
+    $email = portalConfigMailValue(['ADMIN_EMAIL', 'NOTIFICATION_EMAIL', 'CONTACT_EMAIL', 'SMTP_USER', 'SMTP_FROM_EMAIL']);
+    return $email ?: 'contact@code4u.fr';
+}
+
+function portalSendInternalMail($subject, $title, $bodyHtml) {
+    $to = portalInternalMailAddress();
+    if (!$to || !filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
+
+    $html = '<!doctype html><html><head><meta charset="utf-8"></head>'
+        . '<body style="margin:0;background:#eef2f7;font-family:Inter,Arial,sans-serif;color:#16263f">'
+        . '<div style="max-width:620px;margin:0 auto;padding:24px">'
+        . '<div style="background:#16263f;color:#fff;padding:18px 22px;font-weight:800;font-size:18px">Code4U ERP</div>'
+        . '<div style="background:#fff;padding:24px;border:1px solid #d8e0ea;border-top:0">'
+        . '<h1 style="margin:0 0 16px;font-size:20px;color:#1689e0">' . $title . '</h1>'
+        . $bodyHtml
+        . '<p style="margin-top:24px;font-size:12px;color:#6b7a90">Notification interne automatique Code4U ERP.</p>'
+        . '</div></div></body></html>';
+
+    if (defined('IS_LOCAL') && IS_LOCAL) {
+        error_log('[portal-internal-mail DEV] to=' . $to . ' | ' . $subject);
+        return true;
+    }
+
+    $sent = portalSmtpSend($to, $subject, $html);
+    if (!$sent) error_log('[portal-internal-mail] Echec envoi vers ' . $to . ' | ' . $subject);
+    return $sent;
+}
+
+function portalSendNewTicketInternalMail(array $ticket, array $client, $message, $kind = 'new') {
+    $safe = function ($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); };
+    $isReply = $kind === 'reply';
+    $body = '<p style="margin:0 0 14px">' . ($isReply ? 'Un client vient de repondre a un ticket depuis l espace client.' : 'Un nouveau ticket vient d etre cree depuis l espace client.') . '</p>'
+        . '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">'
+        . '<tr><td style="padding:7px 0;color:#6b7a90;width:34%">Client</td><td style="padding:7px 0;font-weight:700">' . $safe($client['company_name'] ?? $ticket['customer_name'] ?? 'Client Code4U') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Email</td><td style="padding:7px 0">' . $safe($client['email'] ?? $ticket['customer_email'] ?? '-') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Telephone</td><td style="padding:7px 0">' . $safe($client['phone'] ?? $ticket['customer_phone'] ?? '-') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Priorite</td><td style="padding:7px 0">' . $safe($ticket['priority'] ?? 'medium') . '</td></tr>'
+        . '<tr><td style="padding:7px 0;color:#6b7a90">Categorie</td><td style="padding:7px 0">' . $safe($ticket['category'] ?? 'support') . '</td></tr>'
+        . '</table>'
+        . '<div style="background:#f3f7fb;border-left:4px solid #1689e0;padding:14px">'
+        . '<strong>' . $safe($ticket['subject'] ?? '') . '</strong><br>' . nl2br($safe($message))
+        . '</div>';
+
+    portalSendInternalMail(
+        ($isReply ? 'Reponse client ticket ' : 'Nouveau ticket ') . ($ticket['ticket_number'] ?? '') . ' - ' . ($ticket['subject'] ?? ''),
+        ($isReply ? 'Reponse client ' : 'Nouveau ticket ') . $safe($ticket['ticket_number'] ?? ''),
+        $body
+    );
+}
+
 function portalStatusLabel($status) {
     $labels = [
         'active' => 'Actif',
@@ -869,11 +932,26 @@ function portalNormalizeTicketAttachments(array $input) {
     }
     foreach (($input['files'] ?? []) as $file) {
         if (!is_array($file) || empty($file['name'])) continue;
+        $mime = substr(strip_tags((string)($file['mime'] ?? $file['type'] ?? 'application/octet-stream')), 0, 120);
+        $dataUrl = (string)($file['data_url'] ?? '');
+        $size = max(0, (int)($file['size'] ?? 0));
+        if ($dataUrl !== '' && $size <= 3 * 1024 * 1024 && preg_match('#^data:([a-z0-9.+-]+/[a-z0-9.+-]+);base64,[a-z0-9+/=\r\n]+$#i', $dataUrl, $matches)) {
+            $detectedMime = substr($matches[1], 0, 120);
+            $items[] = [
+                'type' => 'file',
+                'name' => substr(strip_tags((string)$file['name']), 0, 180),
+                'size' => $size,
+                'mime' => $detectedMime ?: $mime,
+                'is_image' => strpos($detectedMime ?: $mime, 'image/') === 0,
+                'data_url' => $dataUrl,
+            ];
+            continue;
+        }
         $items[] = [
             'type' => 'file_ref',
             'name' => substr(strip_tags((string)$file['name']), 0, 180),
-            'size' => max(0, (int)($file['size'] ?? 0)),
-            'mime' => substr(strip_tags((string)($file['type'] ?? '')), 0, 120),
+            'size' => $size,
+            'mime' => $mime,
         ];
     }
     return array_slice($items, 0, 20);
@@ -915,9 +993,15 @@ function portalFetchTicketThread(PDO $db, array $client, array $input) {
             'updated_at' => $ticket['updated_at'],
         ],
         'messages' => array_map(function ($row) {
+            $attachments = [];
+            if (!empty($row['attachments'])) {
+                $decoded = json_decode($row['attachments'], true);
+                if (is_array($decoded)) $attachments = $decoded;
+            }
             return [
                 'sender_type' => $row['sender_type'],
                 'message' => $row['message'],
+                'attachments' => $attachments,
                 'created_at' => $row['created_at'],
             ];
         }, $messageRows),
@@ -944,9 +1028,15 @@ function portalFetchTicketMessages(PDO $db, $ticketId) {
     ");
     $msg->execute([':id' => $ticketId]);
     return array_map(function ($row) {
+            $attachments = [];
+            if (!empty($row['attachments'])) {
+                $decoded = json_decode($row['attachments'], true);
+                if (is_array($decoded)) $attachments = $decoded;
+            }
             return [
                 'sender_type' => $row['sender_type'],
                 'message' => $row['message'],
+                'attachments' => $attachments,
                 'created_at' => $row['created_at'],
             ];
         }, $msg->fetchAll(PDO::FETCH_ASSOC));
@@ -959,7 +1049,7 @@ function portalReplyTicket(PDO $db, array $client, array $input) {
     if ($message === '') {
         portalRespond(['success' => false, 'message' => 'Message requis.'], 422);
     }
-    $stmt = $db->prepare("SELECT id, status FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
+    $stmt = $db->prepare("SELECT id, ticket_number, subject, customer_name, customer_email, customer_phone, priority, category, status FROM tickets WHERE id = :id AND customer_email = :email LIMIT 1");
     $stmt->execute([':id' => $ticketId, ':email' => $client['email']]);
     $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
     if (!$ticket) {
@@ -978,6 +1068,7 @@ function portalReplyTicket(PDO $db, array $client, array $input) {
     $insert->execute([':ticket_id' => $ticketId, ':message' => strip_tags($message)]);
     $upd = $db->prepare("UPDATE tickets SET status = 'waiting', updated_at = NOW() WHERE id = :id");
     $upd->execute([':id' => $ticketId]);
+    portalSendNewTicketInternalMail($ticket, $client, $message, 'reply');
     return portalFetchTicketThread($db, $client, ['ticket_id' => $ticketId]);
 }
 
@@ -1143,6 +1234,15 @@ function portalCreateTicket(PDO $db, array $client, array $input, $notify = true
             . '<div style="background:#f4f1eb;border-radius:10px;padding:14px;margin:12px 0"><strong>' . htmlspecialchars($subject) . '</strong><br>' . nl2br(htmlspecialchars($description . $attachmentText)) . '</div>'
             . '<p style="margin:0">Notre équipe vous répondra rapidement. Vous pouvez suivre son avancement depuis votre espace client.</p>'
         );
+        portalSendNewTicketInternalMail([
+            'ticket_number' => $ticketNumber,
+            'subject' => $subject,
+            'customer_name' => $customerName ?: 'Client Code4U',
+            'customer_email' => $client['email'],
+            'customer_phone' => $client['phone'] ?? null,
+            'priority' => $priority,
+            'category' => $category,
+        ], $client, $description . $attachmentText);
     }
 
     return [

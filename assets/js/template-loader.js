@@ -12,6 +12,10 @@
                 const placeholder = document.getElementById(placeholderId);
                 if (placeholder) {
                     placeholder.innerHTML = data;
+                    if (placeholderId === 'footer-placeholder' && document.body.classList.contains('client-space-page')) {
+                        placeholder.querySelector('#chatbotToggle')?.remove();
+                        placeholder.querySelector('#chatbotWindow')?.remove();
+                    }
                     const event = new CustomEvent('templateLoaded', {
                         detail: { template: templatePath, placeholder: placeholderId }
                     });
