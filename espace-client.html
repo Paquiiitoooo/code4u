@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace client â€” Code4U</title>
+    <title>Espace client — Code4U</title>
     <meta name="description" content="Espace client Code4U : suivez vos abonnements support, devis, factures, paiements, tickets et projets.">
     <meta name="robots" content="noindex, nofollow, noarchive">
     <link rel="icon" type="image/png" href="assets/images/logo-carre.png">
@@ -25,10 +25,10 @@
                     <span class="section-tag">Espace client</span>
                     <h1>Un cockpit clair pour piloter votre site, vos factures et votre support.</h1>
                     <p>
-                        Retrouvez les devis Ã  signer, les factures, les paiements, les abonnements de support,
+                        Retrouvez les devis à signer, les factures, les paiements, les abonnements de support,
                         les tickets, les livrables et l'avancement projet dans un seul portail.
                     </p>
-                    <div class="client-login__features" aria-label="FonctionnalitÃ©s de l'espace client">
+                    <div class="client-login__features" aria-label="Fonctionnalités de l'espace client">
                         <span><i class="fas fa-shield-halved" aria-hidden="true"></i> Support sous abonnement</span>
                         <span><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i> Factures et paiements</span>
                         <span><i class="fas fa-list-check" aria-hidden="true"></i> Suivi projet</span>
@@ -40,12 +40,12 @@
                     <div class="client-panel__head">
                         <div>
                             <span class="client-kicker" id="loginPanelKicker">Connexion</span>
-                            <h2 id="loginPanelTitle">AccÃ¨s client</h2>
+                            <h2 id="loginPanelTitle">Accès client</h2>
                         </div>
                         <i class="fas fa-lock" id="loginPanelIcon" aria-hidden="true"></i>
                     </div>
 
-                    <!-- Ã‰tape 1 : identifiants -->
+                    <!-- Étape 1 : identifiants -->
                     <div id="loginStep1">
                         <form id="clientLoginForm" class="client-form" novalidate>
                             <div class="field">
@@ -57,24 +57,24 @@
                                 <input type="password" id="client-login-pass" name="password" autocomplete="current-password" placeholder="Votre mot de passe" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">Se connecter</button>
-                            <button type="button" class="client-link-btn" id="forgotPasswordBtn" style="justify-self:center;border:0;background:transparent;padding:0.35rem 0">Mot de passe oubliÃ© ?</button>
+                            <button type="button" class="client-link-btn" id="forgotPasswordBtn" style="justify-self:center;border:0;background:transparent;padding:0.35rem 0">Mot de passe oublié ?</button>
                             <p class="client-form__msg" id="clientLoginMsg" role="status" aria-live="polite"></p>
                         </form>
                     </div>
 
-                    <!-- Ã‰tape 2 : code 2FA -->
+                    <!-- Étape 2 : code 2FA -->
                     <div id="loginStep2" hidden>
                         <div class="login-2fa">
                             <div class="login-2fa__icon">
                                 <i class="fas fa-envelope-circle-check" aria-hidden="true"></i>
                             </div>
-                            <p class="login-2fa__hint">Code envoyÃ© Ã <br><strong id="login-2fa-email"></strong></p>
+                            <p class="login-2fa__hint">Code envoyé à<br><strong id="login-2fa-email"></strong></p>
                             <form id="client2faForm" class="client-form" novalidate>
                                 <div class="field login-2fa__field">
-                                    <label for="client-login-code" class="sr-only">Code Ã  6 chiffres</label>
+                                    <label for="client-login-code" class="sr-only">Code à 6 chiffres</label>
                                     <input type="text" id="client-login-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000">
                                 </div>
-                                <button type="submit" class="btn btn-primary btn-block">VÃ©rifier le code</button>
+                                <button type="submit" class="btn btn-primary btn-block">Vérifier le code</button>
                                 <p class="client-form__msg" id="client2faMsg" role="status" aria-live="polite"></p>
                             </form>
                             <div class="login-2fa__footer">
@@ -95,9 +95,9 @@
             <div class="client-app__shell">
                 <aside class="client-sidebar" aria-label="Navigation espace client">
                     <div class="client-sidebar__brand">
-                        <span class="client-avatar">â€”</span>
+                        <span class="client-avatar">—</span>
                         <div>
-                            <strong>Chargementâ€¦</strong>
+                            <strong>Chargement…</strong>
                             <small>Compte client</small>
                         </div>
                     </div>
@@ -114,21 +114,21 @@
                     <div class="client-sidebar__support">
                         <span>Besoin urgent ?</span>
                         <strong>Support prioritaire actif</strong>
-                        <button class="client-mini-btn" type="button" data-tab-jump="tickets">CrÃ©er un ticket</button>
+                        <button class="client-mini-btn" type="button" data-tab-jump="tickets">Créer un ticket</button>
                     </div>
                 </aside>
 
                 <div class="client-main">
-                    <!-- â•â• Ã‰cran forÃ§age mot de passe â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+                    <!-- ══ Écran forçage mot de passe ═══════════════════════ -->
                     <div id="forcePwdOverlay" class="force-pwd-overlay" hidden>
                         <div class="force-pwd-card">
                             <i class="force-pwd-icon fas fa-shield-exclamation" aria-hidden="true"></i>
                             <h2>Nouveau mot de passe requis</h2>
-                            <p>Pour des raisons de sÃ©curitÃ©, vous devez dÃ©finir un nouveau mot de passe avant d'accÃ©der Ã  votre espace client.</p>
+                            <p>Pour des raisons de sécurité, vous devez définir un nouveau mot de passe avant d'accéder à votre espace client.</p>
                             <form class="client-form" id="forcePwdForm" novalidate>
                                 <div class="field">
                                     <label for="force-pwd-current">Mot de passe actuel (temporaire)</label>
-                                    <input type="password" id="force-pwd-current" autocomplete="current-password" placeholder="Mot de passe reÃ§u par email" required>
+                                    <input type="password" id="force-pwd-current" autocomplete="current-password" placeholder="Mot de passe reçu par email" required>
                                 </div>
                                 <div class="field">
                                     <label for="force-pwd-new">Nouveau mot de passe <small style="font-weight:400">(12 car. min., maj, chiffre, symbole)</small></label>
@@ -141,11 +141,11 @@
                                     <input type="password" id="force-pwd-confirm" autocomplete="new-password" minlength="12" required>
                                 </div>
                                 <p class="client-form__msg" id="forcePwdMsg" role="status" aria-live="polite"></p>
-                                <button class="btn btn-primary btn-block" type="submit">DÃ©finir mon mot de passe</button>
+                                <button class="btn btn-primary btn-block" type="submit">Définir mon mot de passe</button>
                             </form>
                             <p style="text-align:center;margin-top:1.1rem;font-size:0.84rem">
                                 <button type="button" id="forcePwdLogoutBtn" style="background:none;border:none;color:var(--text-secondary);cursor:pointer;text-decoration:underline;font-size:0.84rem;font-family:inherit;padding:0">
-                                    Se dÃ©connecter
+                                    Se déconnecter
                                 </button>
                             </p>
                         </div>
@@ -155,17 +155,17 @@
                         <div>
                             <span class="section-tag">Espace client</span>
                             <h1>Bonjour Paquito</h1>
-                            <p>Vos services Code4U, vos paiements et votre support en temps rÃ©el.</p>
+                            <p>Vos services Code4U, vos paiements et votre support en temps réel.</p>
                         </div>
                         <div class="client-topbar__actions">
-                            <button class="btn btn-secondary" id="logoutBtn" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> DÃ©connexion</button>
+                            <button class="btn btn-secondary" id="logoutBtn" type="button"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Déconnexion</button>
                         </div>
                     </header>
 
                     <section class="client-view is-active" data-view="overview">
                         <div class="client-metrics">
                             <article class="client-metric">
-                                <span>Solde Ã  rÃ©gler</span>
+                                <span>Solde à régler</span>
                                 <strong>--</strong>
                                 <small>Chargement</small>
                             </article>
@@ -191,7 +191,7 @@
                                 <div class="client-panel__head">
                                     <div>
                                         <span class="client-kicker">Aujourd'hui</span>
-                                        <h2>Ã€ traiter</h2>
+                                        <h2>À traiter</h2>
                                     </div>
                                     <button class="client-icon-btn" type="button" aria-label="Actualiser" data-action="refresh"><i class="fas fa-rotate" aria-hidden="true"></i></button>
                                 </div>
@@ -209,15 +209,15 @@
                                     <span class="client-status client-status--ok" data-dash-sub-badge>Actif</span>
                                 </div>
                                 <div class="support-progress">
-                                    <div><span>Temps inclus utilisÃ©</span><strong>12 h 30 / 20 h</strong></div>
+                                    <div><span>Temps inclus utilisé</span><strong>12 h 30 / 20 h</strong></div>
                                     <meter min="0" max="20" value="12.5">12.5 h</meter>
                                 </div>
                                 <ul class="client-checklist">
                                     <li><i class="fas fa-check" aria-hidden="true"></i> Correctifs prioritaires</li>
                                     <li><i class="fas fa-check" aria-hidden="true"></i> Monitoring mensuel</li>
-                                    <li><i class="fas fa-check" aria-hidden="true"></i> 1 Ã©volution lÃ©gÃ¨re incluse</li>
+                                    <li><i class="fas fa-check" aria-hidden="true"></i> 1 évolution légère incluse</li>
                                 </ul>
-                                <button class="btn btn-primary" type="button" data-tab-jump="support">GÃ©rer l'abonnement</button>
+                                <button class="btn btn-primary" type="button" data-tab-jump="support">Gérer l'abonnement</button>
                             </article>
                         </div>
 
@@ -228,7 +228,7 @@
                                     <span class="client-status">A jour</span>
                                 </div>
                                 <div class="client-timeline">
-                                    <div><span></span><strong>Aucun jalon disponible</strong><small>Les Ã©tapes du projet s'afficheront ici.</small></div>
+                                    <div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s'afficheront ici.</small></div>
                                 </div>
                             </article>
 
@@ -246,14 +246,14 @@
 
                     <section class="client-view" data-view="support">
 
-                        <!-- â•â• CONFIGURATEUR (aucun abonnement actif) â•â•â•â•â•â•â•â•â•â• -->
+                        <!-- ══ CONFIGURATEUR (aucun abonnement actif) ══════════ -->
                         <article class="client-panel sub-cfg" data-sub-configurator hidden>
                             <div class="sub-cfg__grid">
 
                                 <div class="sub-cfg__left">
                                     <span class="client-kicker">Abonnement support</span>
                                     <h2 style="margin:0.25rem 0 0.6rem;font-size:clamp(1.45rem,3vw,1.95rem)">Un support mensuel clair, sans ticket perdu</h2>
-                                    <p style="margin:0 0 1.25rem;color:var(--text-secondary);line-height:1.55;font-size:0.93rem">Choisissez un volume d'heures, payez via Stripe, puis pilotez vos demandes, pauses et rÃ©siliations depuis cet espace.</p>
+                                    <p style="margin:0 0 1.25rem;color:var(--text-secondary);line-height:1.55;font-size:0.93rem">Choisissez un volume d'heures, payez via Stripe, puis pilotez vos demandes, pauses et résiliations depuis cet espace.</p>
 
                                     <div class="sub-cfg__steps" aria-label="Fonctionnement de l'abonnement">
                                         <div><i class="fas fa-sliders" aria-hidden="true"></i><span>1. Choix du volume</span></div>
@@ -266,13 +266,13 @@
                                             <input type="radio" name="sub-commitment" value="0" checked>
                                             <span class="sub-cfg__option-tag">Sans engagement</span>
                                             <strong>Flexible</strong>
-                                            <small>RÃ©siliable Ã  tout moment</small>
+                                            <small>Résiliable à tout moment</small>
                                         </label>
                                         <label class="sub-cfg__option">
                                             <input type="radio" name="sub-commitment" value="12">
-                                            <span class="sub-cfg__option-tag sub-cfg__option-tag--promo">âˆ’15 % remise</span>
+                                            <span class="sub-cfg__option-tag sub-cfg__option-tag--promo">−15 % remise</span>
                                             <strong>Engagement 12 mois</strong>
-                                            <small>Tarif rÃ©duit sur toute la durÃ©e</small>
+                                            <small>Tarif réduit sur toute la durée</small>
                                         </label>
                                     </div>
 
@@ -281,7 +281,7 @@
                                         Souscrire via Stripe
                                     </button>
                                     <p style="margin:0.75rem 0 0;font-size:0.78rem;color:var(--text-secondary)">
-                                        Paiement mensuel sÃ©curisÃ© Â· RÃ©siliable depuis cet espace Ã  tout moment
+                                        Paiement mensuel sécurisé · Résiliable depuis cet espace à tout moment
                                     </p>
                                 </div>
 
@@ -303,25 +303,25 @@
 
                                     <div class="sub-cfg__price-board">
                                         <div class="sub-cfg__price-main">
-                                            <strong id="sub-monthly">â€”</strong>
-                                            <span>â‚¬ TTC / mois</span>
+                                            <strong id="sub-monthly">—</strong>
+                                            <span>€ TTC / mois</span>
                                         </div>
                                         <div class="sub-cfg__price-sub">
-                                            <div><span>Tarif horaire</span><strong id="sub-rate">â€”</strong></div>
-                                            <div><span>Ã‰conomie vs 30â‚¬/h</span><strong id="sub-discount">â€”</strong></div>
-                                            <div><span>Engagement</span><strong id="sub-commitment-summary">â€”</strong></div>
-                                            <div><span>Budget annuel</span><strong id="sub-yearly">â€”</strong></div>
+                                            <div><span>Tarif horaire</span><strong id="sub-rate">—</strong></div>
+                                            <div><span>Économie vs 30€/h</span><strong id="sub-discount">—</strong></div>
+                                            <div><span>Engagement</span><strong id="sub-commitment-summary">—</strong></div>
+                                            <div><span>Budget annuel</span><strong id="sub-yearly">—</strong></div>
                                         </div>
-                                        <p class="sub-cfg__safe-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Le prÃ©lÃ¨vement mensuel dÃ©marre uniquement aprÃ¨s validation Stripe.</p>
+                                        <p class="sub-cfg__safe-note"><i class="fas fa-circle-info" aria-hidden="true"></i> Le prélèvement mensuel démarre uniquement après validation Stripe.</p>
                                     </div>
                                 </div>
                             </div>
                         </article>
 
-                        <!-- â•â• ABONNEMENT ACTIF â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+                        <!-- ══ ABONNEMENT ACTIF ═════════════════════════════ -->
                         <div data-sub-active></div>
 
-                        <!-- â•â• HISTORIQUE CONSOMMATION â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• -->
+                        <!-- ══ HISTORIQUE CONSOMMATION ══════════════════════ -->
                         <article class="client-panel">
                             <div class="client-panel__head">
                                 <div><span class="client-kicker">Historique</span><h2>Consommation support</h2></div>
@@ -330,7 +330,7 @@
                                 <table class="client-table">
                                     <thead><tr><th>Date</th><th>Demande</th><th>Temps</th><th>Statut</th></tr></thead>
                                     <tbody data-support-usage>
-                                        <tr><td colspan="4">Chargementâ€¦</td></tr>
+                                        <tr><td colspan="4">Chargement…</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -346,21 +346,21 @@
                                 </div>
                                 <div class="client-table-wrap">
                                     <table class="client-table">
-                                        <thead><tr><th>NumÃ©ro</th><th>Date</th><th>Montant TTC dÃ»</th><th>Statut</th><th></th></tr></thead>
-                                        <tbody><tr><td colspan="5" class="client-loading">Chargement des facturesâ€¦</td></tr></tbody>
+                                        <thead><tr><th>Numéro</th><th>Date</th><th>Montant TTC dû</th><th>Statut</th><th></th></tr></thead>
+                                        <tbody><tr><td colspan="5" class="client-loading">Chargement des factures…</td></tr></tbody>
                                     </table>
                                 </div>
                             </article>
 
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Abonnement</span><h2>Prochaine mensualitÃ©</h2></div>
+                                    <div><span class="client-kicker">Abonnement</span><h2>Prochaine mensualité</h2></div>
                                 </div>
                                 <div class="payment-summary">
-                                    <div><span>Prochain prÃ©lÃ¨vement TTC</span><strong>â€”</strong></div>
-                                    <div><span>Date</span><strong>â€”</strong></div>
+                                    <div><span>Prochain prélèvement TTC</span><strong>—</strong></div>
+                                    <div><span>Date</span><strong>—</strong></div>
                                 </div>
-                                <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0;">Le paiement automatique s'active lors de la souscription Ã  votre abonnement support.</p>
+                                <p style="font-size:0.82rem;color:var(--text-secondary);margin:0.5rem 0 0;">Le paiement automatique s'active lors de la souscription à votre abonnement support.</p>
                             </article>
                         </div>
                     </section>
@@ -368,13 +368,13 @@
                     <section class="client-view" data-view="quotes">
                         <article class="client-panel">
                             <div class="client-panel__head">
-                                <div><span class="client-kicker">Devis</span><h2>Ã€ signer ou consulter</h2></div>
+                                <div><span class="client-kicker">Devis</span><h2>À signer ou consulter</h2></div>
                                 <button class="btn btn-primary" type="button" data-action="request-quote">Demander un devis</button>
                             </div>
                             <div class="client-table-wrap">
                                 <table class="client-table">
-                                        <thead><tr><th>NumÃ©ro</th><th>Objet</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th></th></tr></thead>
-                                    <tbody><tr><td colspan="6" class="client-loading">Chargement des devisâ€¦</td></tr></tbody>
+                                        <thead><tr><th>Numéro</th><th>Objet</th><th>Date</th><th>Montant TTC</th><th>Statut</th><th></th></tr></thead>
+                                    <tbody><tr><td colspan="6" class="client-loading">Chargement des devis…</td></tr></tbody>
                                 </table>
                             </div>
                         </article>
@@ -384,7 +384,7 @@
                         <div class="client-layout client-layout--wide" id="projects-container">
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">Projet</span><h2>Chargementâ€¦</h2></div>
+                                    <div><span class="client-kicker">Projet</span><h2>Chargement…</h2></div>
                                 </div>
                             </article>
                         </div>
@@ -398,13 +398,13 @@
                                     <button class="btn btn-primary" type="button" data-action="focus-ticket-form">Nouveau ticket</button>
                                 </div>
                                 <div class="ticket-list">
-                                    <div class="client-loading">Chargement des ticketsâ€¦</div>
+                                    <div class="client-loading">Chargement des tickets…</div>
                                 </div>
                             </article>
 
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">CrÃ©er</span><h2>Nouvelle demande</h2></div>
+                                    <div><span class="client-kicker">Créer</span><h2>Nouvelle demande</h2></div>
                                 </div>
                                 <form class="client-form" id="clientTicketForm">
                                     <div class="field">
@@ -412,7 +412,7 @@
                                         <input id="ticket-subject" type="text" placeholder="Ex : modifier un prix sur la carte">
                                     </div>
                                     <div class="field">
-                                        <label for="ticket-priority">PrioritÃ©</label>
+                                        <label for="ticket-priority">Priorité</label>
                                         <select id="ticket-priority">
                                             <option value="medium">Normale</option>
                                             <option value="high">Haute</option>
@@ -422,18 +422,18 @@
                                     </div>
                                     <div class="field">
                                         <label for="ticket-description">Description</label>
-                                        <textarea id="ticket-description" rows="4" placeholder="DÃ©crivez votre demande"></textarea>
+                                        <textarea id="ticket-description" rows="4" placeholder="Décrivez votre demande"></textarea>
                                     </div>
                                     <div class="field">
                                         <label for="ticket-links">Liens utiles, photos ou documents</label>
-                                        <textarea id="ticket-links" rows="3" placeholder="Collez ici vos liens : page concernÃ©e, capture Ã©cran, Google Drive, WeTransfer, document partagÃ©..."></textarea>
+                                        <textarea id="ticket-links" rows="3" placeholder="Collez ici vos liens : page concernée, capture écran, Google Drive, WeTransfer, document partagé..."></textarea>
                                     </div>
                                     <div class="field">
-                                        <label for="ticket-files">Fichiers Ã  signaler</label>
+                                        <label for="ticket-files">Fichiers à signaler</label>
                                         <input id="ticket-files" type="file" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt">
-                                        <small style="color:var(--text-secondary)">Les noms des fichiers sont ajoutÃ©s au ticket. Pour un envoi volumineux, ajoutez aussi un lien de partage ci-dessus.</small>
+                                        <small style="color:var(--text-secondary)">Les noms des fichiers sont ajoutés au ticket. Pour un envoi volumineux, ajoutez aussi un lien de partage ci-dessus.</small>
                                     </div>
-                                    <button class="btn btn-secondary" type="submit">CrÃ©er le ticket</button>
+                                    <button class="btn btn-secondary" type="submit">Créer le ticket</button>
                                     <p class="client-form__msg" id="clientTicketMsg" role="status" aria-live="polite"></p>
                                 </form>
                             </article>
@@ -443,27 +443,27 @@
                     <section class="client-view" data-view="documents">
                         <article class="client-panel">
                             <div class="client-panel__head">
-                                <div><span class="client-kicker">Documents</span><h2>BibliothÃ¨que client</h2></div>
+                                <div><span class="client-kicker">Documents</span><h2>Bibliothèque client</h2></div>
                             </div>
                             <div class="document-grid">
-                                <div class="client-loading" style="grid-column:1/-1">Chargement des documentsâ€¦</div>
+                                <div class="client-loading" style="grid-column:1/-1">Chargement des documents…</div>
                             </div>
                         </article>
                     </section>
 
                     <section class="client-view" data-view="account">
 
-                        <!-- Hero identitÃ© -->
+                        <!-- Hero identité -->
                         <div class="account-hero">
                             <div class="account-avatar" id="account-avatar">?</div>
                             <div class="account-hero__info">
-                                <h2 id="account-display-name">Chargementâ€¦</h2>
+                                <h2 id="account-display-name">Chargement…</h2>
                                 <p class="account-display-email" id="account-display-email"></p>
                                 <span class="client-status client-status--ok" style="font-size:0.76rem;padding:0.18rem 0.55rem">Compte actif</span>
                             </div>
                             <div class="account-hero__meta" id="account-hero-meta">
-                                <span>DerniÃ¨re connexion</span>
-                                <strong id="account-last-login">â€”</strong>
+                                <span>Dernière connexion</span>
+                                <strong id="account-last-login">—</strong>
                             </div>
                         </div>
 
@@ -477,7 +477,7 @@
                                 <form class="client-form" id="clientProfileForm">
                                     <div class="client-form__row">
                                         <div class="field">
-                                            <label for="account-company">SociÃ©tÃ© / nom</label>
+                                            <label for="account-company">Société / nom</label>
                                             <input type="text" id="account-company" disabled>
                                         </div>
                                         <div class="field">
@@ -486,7 +486,7 @@
                                         </div>
                                     </div>
                                     <div class="field">
-                                        <label for="account-phone">TÃ©lÃ©phone</label>
+                                        <label for="account-phone">Téléphone</label>
                                         <input type="tel" id="account-phone" autocomplete="tel" placeholder="+33 6 00 00 00 00">
                                     </div>
                                     <div class="field">
@@ -504,14 +504,14 @@
                                         </div>
                                     </div>
                                     <p class="client-form__msg" id="clientProfileMsg" role="status" aria-live="polite"></p>
-                                    <button class="btn btn-primary" type="submit">Enregistrer mes coordonnÃ©es</button>
+                                    <button class="btn btn-primary" type="submit">Enregistrer mes coordonnées</button>
                                 </form>
                             </article>
 
-                            <!-- SÃ©curitÃ© -->
+                            <!-- Sécurité -->
                             <article class="client-panel">
                                 <div class="client-panel__head">
-                                    <div><span class="client-kicker">SÃ©curitÃ©</span><h2>Mot de passe</h2></div>
+                                    <div><span class="client-kicker">Sécurité</span><h2>Mot de passe</h2></div>
                                     <i class="fas fa-shield-halved" style="color:var(--text-secondary);font-size:1.1rem" aria-hidden="true"></i>
                                 </div>
                                 <div class="account-security-badge is-ok" id="account-security-badge">
@@ -544,10 +544,10 @@
         </section>
     </main>
 
-    <!-- Modal dialog â”€â”€ remplace window.confirm / window.prompt / window.alert -->
+    <!-- Modal dialog ── remplace window.confirm / window.prompt / window.alert -->
     <dialog id="client-modal" class="client-modal">
         <div class="client-modal__box">
-            <button class="client-modal__close" type="button" id="modalCloseBtn" aria-label="Fermer">âœ•</button>
+            <button class="client-modal__close" type="button" id="modalCloseBtn" aria-label="Fermer">✕</button>
             <div class="client-modal__icon" id="modalIcon" aria-hidden="true"></div>
             <h3 class="client-modal__title" id="modalTitle"></h3>
             <div class="client-modal__body" id="modalBody"></div>
@@ -556,7 +556,7 @@
         </div>
     </dialog>
 
-    <!-- Toast global â”€â”€ remplace notify() qui Ã©crivait dans le form ticket -->
+    <!-- Toast global ── remplace notify() qui écrivait dans le form ticket -->
     <div id="clientToast" class="client-toast" role="status" aria-live="polite"></div>
 
     <div id="footer-placeholder"></div>
@@ -593,7 +593,7 @@
             }
 
             function dateFr(value) {
-                if (!value) return 'â€”';
+                if (!value) return '—';
                 var date = new Date(value);
                 if (Number.isNaN(date.getTime())) return value;
                 return date.toLocaleDateString('fr-FR');
@@ -606,10 +606,10 @@
             }
 
             function dateTimeFr(value) {
-                if (!value) return 'â€”';
+                if (!value) return '—';
                 var d = new Date(value);
                 if (Number.isNaN(d.getTime())) return value;
-                return d.toLocaleDateString('fr-FR') + ' Ã  ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                return d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
             }
 
             function pwdStrength(pass) {
@@ -630,14 +630,14 @@
                 input.addEventListener('input', function () {
                     var s = pwdStrength(input.value);
                     var colors = ['transparent', '#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
-                    var labels = ['', 'Trop faible', 'Faible', 'Moyen', 'Fort', 'TrÃ¨s fort'];
+                    var labels = ['', 'Trop faible', 'Faible', 'Moyen', 'Fort', 'Très fort'];
                     bar.style.width = (s * 20) + '%';
                     bar.style.backgroundColor = colors[s] || 'transparent';
                     if (hint) hint.textContent = labels[s] || '';
                 });
             }
 
-            /* â”€â”€ Toast global â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Toast global ──────────────────────────────────────────── */
             var _toastTimer = null;
             function notify(message, type) {
                 var toast = document.getElementById('clientToast');
@@ -650,7 +650,7 @@
                 }, 4500);
             }
 
-            /* â”€â”€ Modal systÃ¨me â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Modal système ─────────────────────────────────────────── */
             var _modalResolve = null;
             var _modalEscHandler = null;
 
@@ -770,15 +770,15 @@
             }
 
             function openConfirm(title, body, opts) {
-                return _setupModal(Object.assign({ icon: 'âš ï¸', title: title, body: body, confirmLabel: 'Confirmer' }, opts || {}));
+                return _setupModal(Object.assign({ icon: '⚠️', title: title, body: body, confirmLabel: 'Confirmer' }, opts || {}));
             }
 
             function openInfo(title, body, opts) {
-                return _setupModal(Object.assign({ icon: 'â„¹ï¸', title: title, body: body, cancelLabel: false, confirmLabel: 'Fermer' }, opts || {}));
+                return _setupModal(Object.assign({ icon: 'ℹ️', title: title, body: body, cancelLabel: false, confirmLabel: 'Fermer' }, opts || {}));
             }
 
             function openForm(title, body, fields, opts) {
-                return _setupModal(Object.assign({ icon: 'ðŸ“', title: title, body: body, fields: fields, confirmLabel: 'Envoyer' }, opts || {}));
+                return _setupModal(Object.assign({ icon: '📝', title: title, body: body, fields: fields, confirmLabel: 'Envoyer' }, opts || {}));
             }
 
             async function refresh(message, type) {
@@ -811,13 +811,13 @@
                 if (isInvoice && window.Code4UInvoicePDF && typeof window.Code4UInvoicePDF.downloadInvoice === 'function') {
                     return window.Code4UInvoicePDF.downloadInvoice(item, (state && state.client) || {})
                         .catch(function (error) {
-                            notify((error && error.message) || 'Impossible de gÃ©nÃ©rer le PDF.', 'error');
+                            notify((error && error.message) || 'Impossible de générer le PDF.', 'error');
                         });
                 }
                 if (!isInvoice && window.Code4UInvoicePDF && typeof window.Code4UInvoicePDF.downloadQuote === 'function') {
                     return window.Code4UInvoicePDF.downloadQuote(item, (state && state.client) || {})
                         .catch(function (error) {
-                            notify((error && error.message) || 'Impossible de gÃ©nÃ©rer le PDF.', 'error');
+                            notify((error && error.message) || 'Impossible de générer le PDF.', 'error');
                         });
                 }
                 var docLabel = isInvoice ? 'FACTURE' : 'DEVIS';
@@ -826,8 +826,8 @@
                 var currency = item.currency || 'EUR';
                 var paid = isInvoice && ((item.remaining_amount != null ? item.remaining_amount : (item.amount - (item.paid_amount || 0))) <= 0.01) && (item.amount || 0) > 0;
 
-                // Ã‰metteur (identique Ã  l'ERP)
-                var issuer = ['VANTINI PacÃ´me', '114 AVENUE DE THIONVILLE', '57050 METZ', 'SIREN : 101 274 983', 'Entreprise individuelle â€“ Micro-entrepreneur', 'contact@code4u.fr'];
+                // Émetteur (identique à l'ERP)
+                var issuer = ['VANTINI Pacôme', '114 AVENUE DE THIONVILLE', '57050 METZ', 'SIREN : 101 274 983', 'Entreprise individuelle – Micro-entrepreneur', 'contact@code4u.fr'];
 
                 // Bloc client
                 var clientLines = [client.company_name || 'Client'];
@@ -835,7 +835,7 @@
                 var cpVille = [client.code_postal, client.ville].filter(Boolean).join(' ');
                 if (cpVille) clientLines.push(cpVille);
                 if (client.email) clientLines.push('Email : ' + client.email);
-                if (client.phone) clientLines.push('TÃ©l : ' + client.phone);
+                if (client.phone) clientLines.push('Tél : ' + client.phone);
 
                 // Lignes
                 var lines = item.lines || [];
@@ -857,11 +857,11 @@
                 var totalsRows = ''
                     + '<div class="row ttc"><span>Total TTC</span><strong>' + money(item.amount || 0, currency) + '</strong></div>';
                 if (isInvoice && (item.paid_amount || 0) > 0) {
-                    totalsRows += '<div class="row"><span>PayÃ©</span><strong>' + money(item.paid_amount || 0, currency) + '</strong></div>'
-                        + '<div class="row"><span>Reste Ã  payer</span><strong>' + money(Math.max(0, item.amount - (item.paid_amount || 0)), currency) + '</strong></div>';
+                    totalsRows += '<div class="row"><span>Payé</span><strong>' + money(item.paid_amount || 0, currency) + '</strong></div>'
+                        + '<div class="row"><span>Reste à payer</span><strong>' + money(Math.max(0, item.amount - (item.paid_amount || 0)), currency) + '</strong></div>';
                 }
 
-                var stampHtml = paid ? '<div class="stamp">PAYÃ‰E<small>le ' + dateFr(item.date) + '</small></div>' : '';
+                var stampHtml = paid ? '<div class="stamp">PAYÉE<small>le ' + dateFr(item.date) + '</small></div>' : '';
 
                 var css = 'body{font-family:Inter,Arial,sans-serif;color:#212529;margin:0;padding:32px;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
                     + '.sheet{max-width:780px;margin:0 auto;position:relative}'
@@ -897,12 +897,12 @@
                     + '<div class="sheet">'
                     + stampHtml
                     + '<div class="top"><div class="issuer">' + issuer.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div>'
-                    + '<div class="doc-title"><img class="logo" src="assets/images/logo.png" alt="Code4U" onerror="this.style.display=\'none\'"><h1>' + docLabel + ' NÂ°' + esc(item.number || '') + '</h1></div></div>'
+                    + '<div class="doc-title"><img class="logo" src="assets/images/logo.png" alt="Code4U" onerror="this.style.display=\'none\'"><h1>' + docLabel + ' N°' + esc(item.number || '') + '</h1></div></div>'
                     + '<div class="blocks">'
                     + '<div class="block"><h3>Client</h3><div class="body">' + clientLines.map(function (l) { return '<p>' + esc(l) + '</p>'; }).join('') + '</div></div>'
-                    + '<div class="block"><h3>Informations</h3><div class="body"><p><strong>NÂ° :</strong> ' + esc(item.number || '') + '</p><p><strong>Date :</strong> ' + dateFr(item.date) + '</p>' + (item.due_date ? '<p><strong>Ã‰chÃ©ance :</strong> ' + dateFr(item.due_date) + '</p>' : '') + '<p><strong>Statut :</strong> ' + esc(item.status_label || '') + '</p></div></div>'
+                    + '<div class="block"><h3>Informations</h3><div class="body"><p><strong>N° :</strong> ' + esc(item.number || '') + '</p><p><strong>Date :</strong> ' + dateFr(item.date) + '</p>' + (item.due_date ? '<p><strong>Échéance :</strong> ' + dateFr(item.due_date) + '</p>' : '') + '<p><strong>Statut :</strong> ' + esc(item.status_label || '') + '</p></div></div>'
                     + '</div>'
-                    + '<table><thead><tr><th>Description</th><th class="r">QtÃ©</th><th class="r">Total TTC</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>'
+                    + '<table><thead><tr><th>Description</th><th class="r">Qté</th><th class="r">Total TTC</th></tr></thead><tbody>' + rowsHtml + '</tbody></table>'
                     + '<div class="totals">' + totalsRows + '</div>'
                     + '<div class="legal">TVA non applicable, art. 293 B du CGI.</div>'
                     + (item.conditions ? '<div class="notes">' + esc(item.conditions) + '</div>' : '')
@@ -934,7 +934,7 @@
 
             function activateTab(name) {
                 if (state && state.security && state.security.password_change_required) {
-                    return; /* bloquÃ© tant que le mdp n'est pas changÃ© */
+                    return; /* bloqué tant que le mdp n'est pas changé */
                 }
                 document.querySelectorAll('.client-tab').forEach(function (tab) {
                     tab.classList.toggle('is-active', tab.dataset.tab === name);
@@ -963,10 +963,10 @@
                 var summary = data.summary || {};
                 var metrics = document.querySelectorAll('.client-metric');
                 var values = [
-                    [summary.due_amount_label || money(0), summary.due_date ? 'Ã‰chÃ©ance le ' + dateFr(summary.due_date) : 'Aucune Ã©chÃ©ance'],
+                    [summary.due_amount_label || money(0), summary.due_date ? 'Échéance le ' + dateFr(summary.due_date) : 'Aucune échéance'],
                     [summary.support_plan || 'Aucun', (summary.support_remaining_hours || 0) + ' h restantes ce mois-ci'],
-                    [(summary.active_project_progress != null ? summary.active_project_progress + ' %' : 'â€”'), summary.active_project_name || 'Aucun projet actif'],
-                    [summary.open_tickets || 0, (summary.quotes_to_sign || 0) + ' devis Ã  traiter']
+                    [(summary.active_project_progress != null ? summary.active_project_progress + ' %' : '—'), summary.active_project_name || 'Aucun projet actif'],
+                    [summary.open_tickets || 0, (summary.quotes_to_sign || 0) + ' devis à traiter']
                 ];
                 metrics.forEach(function (metric, index) {
                     var strong = metric.querySelector('strong');
@@ -982,7 +982,7 @@
                 var projects = (data.projects || []);
 
                 var statusLabelFr = function (s) {
-                    return { planned: 'PlanifiÃ©', in_progress: 'En cours', review: 'Recette', completed: 'TerminÃ©', paused: 'En pause' }[s] || s || 'â€”';
+                    return { planned: 'Planifié', in_progress: 'En cours', review: 'Recette', completed: 'Terminé', paused: 'En pause' }[s] || s || '—';
                 };
                 var statusBadgeClass = function (s) {
                     if (s === 'completed') return 'client-status--ok';
@@ -991,7 +991,7 @@
                 };
                 var buildMilestones = function (milestones) {
                     var sorted = (milestones || []).slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
-                    if (!sorted.length) return '<p style="color:var(--c-text-muted,#6b7280);margin:0.5rem 0 0">Aucune Ã©tape dÃ©finie.</p>';
+                    if (!sorted.length) return '<p style="color:var(--c-text-muted,#6b7280);margin:0.5rem 0 0">Aucune étape définie.</p>';
                     return sorted.map(function (step) {
                         var cls = step.status === 'done' ? 'is-done' : (step.status === 'current' ? 'is-current' : '');
                         var sub = step.description || (step.due_date ? dateFr(step.due_date) : '');
@@ -1006,7 +1006,7 @@
                                 '<div><span class="client-kicker">Projets</span><h2>Aucun projet en cours</h2></div>' +
                             '</div>' +
                             '<p style="color:var(--c-text-muted,#6b7280);margin:1rem 0 0">Vous n\'avez pas de projet actif pour le moment.<br>' +
-                            'N\'hÃ©sitez pas Ã  <a href="https://code4u.fr/#contact" target="_blank" rel="noopener">nous contacter</a> pour en dÃ©marrer un.</p>' +
+                            'N\'hésitez pas à <a href="https://code4u.fr/#contact" target="_blank" rel="noopener">nous contacter</a> pour en démarrer un.</p>' +
                         '</article>';
                     return;
                 }
@@ -1041,7 +1041,7 @@
                 var timeline = panel.querySelector('.client-timeline');
 
                 var statusLabelFr = function (s) {
-                    return { planned: 'PlanifiÃ©', in_progress: 'En cours', review: 'Recette', completed: 'TerminÃ©', paused: 'En pause' }[s] || s || 'A jour';
+                    return { planned: 'Planifié', in_progress: 'En cours', review: 'Recette', completed: 'Terminé', paused: 'En pause' }[s] || s || 'A jour';
                 };
                 var statusBadgeClass = function (s) {
                     if (s === 'completed') return 'client-status--ok';
@@ -1051,12 +1051,12 @@
                 var milestoneHtml = function (milestones) {
                     var sorted = (milestones || []).slice().sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); }).slice(0, 4);
                     if (!sorted.length) {
-                        return '<div><span></span><strong>Aucun jalon disponible</strong><small>Les Ã©tapes du projet s\'afficheront ici.</small></div>';
+                        return '<div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s\'afficheront ici.</small></div>';
                     }
                     return sorted.map(function (step) {
                         var cls = step.status === 'done' ? 'is-done' : (step.status === 'current' ? 'is-current' : '');
                         var sub = step.description || (step.due_date ? dateFr(step.due_date) : '');
-                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title || 'Ã‰tape') + '</strong>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
+                        return '<div class="' + cls + '"><span></span><strong>' + esc(step.title || 'Étape') + '</strong>' + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</div>';
                     }).join('');
                 };
 
@@ -1067,7 +1067,7 @@
                         badge.textContent = 'A jour';
                     }
                     if (timeline) {
-                        timeline.innerHTML = '<div><span></span><strong>Aucun jalon disponible</strong><small>Les Ã©tapes du projet s\'afficheront ici.</small></div>';
+                        timeline.innerHTML = '<div><span></span><strong>Aucun jalon disponible</strong><small>Les étapes du projet s\'afficheront ici.</small></div>';
                     }
                     return;
                 }
@@ -1103,7 +1103,7 @@
                 if (!list) return;
                 list.innerHTML = actions.length ? actions.map(function (item) {
                     return '<div class="client-action"><i class="fas ' + item.icon + '" aria-hidden="true"></i><div><strong>' + esc(item.title) + '</strong><span>' + esc(item.text) + '</span></div><button type="button" data-action="' + esc(item.action) + '" data-id="' + esc(item.id) + '">' + esc(item.label) + '</button></div>';
-                }).join('') : '<div class="client-action"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Tout est Ã  jour</strong><span>Aucune action urgente pour le moment.</span></div><button type="button" data-action="refresh">OK</button></div>';
+                }).join('') : '<div class="client-action"><i class="fas fa-circle-check" aria-hidden="true"></i><div><strong>Tout est à jour</strong><span>Aucune action urgente pour le moment.</span></div><button type="button" data-action="refresh">OK</button></div>';
             }
 
             function renderInvoices(data) {
@@ -1112,9 +1112,9 @@
                 tbody.innerHTML = (data.invoices || []).map(function (invoice) {
                     var payable = invoice.can_pay_online || ['sent', 'envoyee', 'emise', 'due', 'impayee', 'partielle'].indexOf(invoice.status) !== -1;
                     var actions = payable
-                        ? '<button type="button" class="client-icon-action btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '" aria-label="Payer via Stripe" title="Payer via Stripe"><i class="fas fa-credit-card" aria-hidden="true"></i></button><button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="TÃ©lÃ©charger la facture" title="TÃ©lÃ©charger"><i class="fas fa-download" aria-hidden="true"></i></button>'
-                        : '<button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="TÃ©lÃ©charger la facture" title="TÃ©lÃ©charger"><i class="fas fa-download" aria-hidden="true"></i></button>';
-                    return '<tr><td data-label="NumÃ©ro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant TTC">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
+                        ? '<button type="button" class="client-icon-action btn-pay-online" data-action="pay-invoice-online" data-id="' + esc(invoice.id) + '" aria-label="Payer via Stripe" title="Payer via Stripe"><i class="fas fa-credit-card" aria-hidden="true"></i></button><button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>'
+                        : '<button type="button" class="client-icon-action" data-action="open-invoice" data-id="' + esc(invoice.id) + '" aria-label="Télécharger la facture" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
+                    return '<tr><td data-label="Numéro">' + esc(invoice.number) + '</td><td data-label="Date">' + dateFr(invoice.date) + '</td><td data-label="Montant TTC">' + money(invoice.remaining_amount || invoice.amount, invoice.currency) + '</td><td data-label="Statut"><span class="' + statusClass(invoice.tone) + '">' + esc(invoice.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
                 }).join('') || '<tr><td colspan="5">Aucune facture.</td></tr>';
             }
 
@@ -1124,16 +1124,16 @@
                 if (card) {
                     card.innerHTML = methods.length ? methods.map(function (method) {
                         var icon = method.brand && method.brand.toLowerCase().indexOf('visa') !== -1 ? 'fa-cc-visa' : 'fa-credit-card';
-                        var actions = method.is_default ? '<span class="client-status client-status--ok">Par dÃ©faut</span>' : '<button type="button" data-action="set-default-payment-method" data-id="' + esc(method.id) + '">DÃ©faut</button>';
+                        var actions = method.is_default ? '<span class="client-status client-status--ok">Par défaut</span>' : '<button type="button" data-action="set-default-payment-method" data-id="' + esc(method.id) + '">Défaut</button>';
                         return '<div class="payment-method-row"><i class="fab ' + icon + '" aria-hidden="true"></i><div><strong>' + esc(method.label) + '</strong><span>Expire ' + esc(method.expires_at || '-') + '</span></div>' + actions + '<button type="button" data-action="disable-payment-method" data-id="' + esc(method.id) + '">Retirer</button></div>';
-                    }).join('') : '<div><strong>Aucun moyen enregistrÃ©</strong><span>Ajoutez une carte ou un mandat.</span></div>';
+                    }).join('') : '<div><strong>Aucun moyen enregistré</strong><span>Ajoutez une carte ou un mandat.</span></div>';
                 }
 
                 var sub = data.subscription || {};
                 var summary = document.querySelector('.payment-summary');
                 if (summary && sub.plan_name) {
                     var pendingPayment = sub.payment_status === 'pending_payment';
-                    var summaryLabel = pendingPayment ? 'Paiement Ã  finaliser' : 'Prochain prÃ©lÃ¨vement TTC';
+                    var summaryLabel = pendingPayment ? 'Paiement à finaliser' : 'Prochain prélèvement TTC';
                     var summaryDate = pendingPayment ? 'Stripe' : dateFr(sub.renewal_date);
                     summary.innerHTML = '<div><span>' + summaryLabel + '</span><strong>' + money(sub.monthly_price, sub.currency) + '</strong></div><div><span>Date</span><strong>' + summaryDate + '</strong></div>';
                 }
@@ -1146,8 +1146,8 @@
                     var signBtn = quote.can_sign || quote.signature_url
                         ? '<button type="button" class="client-icon-action" data-action="sign-quote" data-id="' + esc(quote.id) + '" aria-label="Signer le devis" title="Signer"><i class="fas fa-signature" aria-hidden="true"></i></button>'
                         : '';
-                    var actions = signBtn + '<button type="button" class="client-icon-action" data-action="download-quote" data-id="' + esc(quote.id) + '" aria-label="TÃ©lÃ©charger le devis" title="TÃ©lÃ©charger"><i class="fas fa-download" aria-hidden="true"></i></button>';
-                    return '<tr><td data-label="NumÃ©ro">' + esc(quote.number) + '</td><td data-label="Objet">' + esc(quote.title) + '</td><td data-label="Date">' + dateFr(quote.date) + '</td><td data-label="Montant TTC">' + money(quote.amount, quote.currency) + '</td><td data-label="Statut"><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
+                    var actions = signBtn + '<button type="button" class="client-icon-action" data-action="download-quote" data-id="' + esc(quote.id) + '" aria-label="Télécharger le devis" title="Télécharger"><i class="fas fa-download" aria-hidden="true"></i></button>';
+                    return '<tr><td data-label="Numéro">' + esc(quote.number) + '</td><td data-label="Objet">' + esc(quote.title) + '</td><td data-label="Date">' + dateFr(quote.date) + '</td><td data-label="Montant TTC">' + money(quote.amount, quote.currency) + '</td><td data-label="Statut"><span class="' + statusClass(quote.tone) + '">' + esc(quote.status_label) + '</span></td><td class="client-table__actions">' + actions + '</td></tr>';
                 }).join('') || '<tr><td colspan="6">Aucun devis.</td></tr>';
             }
 
@@ -1155,8 +1155,8 @@
                 var list = document.querySelector('.ticket-list');
                 if (!list) return;
                 list.innerHTML = (data.tickets || []).map(function (ticket) {
-                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' â€” ' + esc(ticket.subject) + '</strong><small>PrioritÃ© ' + esc(ticket.priority || 'normale') + '</small></div><button class="client-icon-action" type="button" data-action="open-ticket" data-id="' + esc(ticket.id) + '" aria-label="Ouvrir le ticket" title="Ouvrir"><i class="fas fa-comments" aria-hidden="true"></i></button></div>';
-                }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est Ã  jour.</small></div><button type="button" data-action="focus-ticket-form">CrÃ©er</button></div>';
+                    return '<div class="ticket-row"><span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label) + '</span><div><strong>#' + esc(ticket.number) + ' — ' + esc(ticket.subject) + '</strong><small>Priorité ' + esc(ticket.priority || 'normale') + '</small></div><button class="client-icon-action" type="button" data-action="open-ticket" data-id="' + esc(ticket.id) + '" aria-label="Ouvrir le ticket" title="Ouvrir"><i class="fas fa-comments" aria-hidden="true"></i></button></div>';
+                }).join('') || '<div class="ticket-row"><span class="client-status client-status--ok">OK</span><div><strong>Aucun ticket ouvert</strong><small>Votre support est à jour.</small></div><button type="button" data-action="focus-ticket-form">Créer</button></div>';
             }
 
             function renderDocuments(data) {
@@ -1171,7 +1171,7 @@
                 if (grid) {
                     grid.innerHTML = docs.map(function (doc) {
                         return '<a href="' + esc(doc.file_url || '#') + '" target="_blank" rel="noopener"><i class="fas fa-file-lines" aria-hidden="true"></i><strong>' + esc(doc.title) + '</strong><span>' + esc(doc.amount_label || doc.category) + '</span></a>';
-                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><strong>Aucun document</strong><span>DÃ©posez un premier fichier.</span></a>';
+                    }).join('') || '<a href="#"><i class="fas fa-folder-open" aria-hidden="true"></i><strong>Aucun document</strong><span>Déposez un premier fichier.</span></a>';
                 }
             }
 
@@ -1223,10 +1223,10 @@
                     var progress = ((p.hours - min) / (max - min)) * 100;
                     slider.style.background = 'linear-gradient(to right, var(--accent-color) 0%, var(--accent-color) ' + progress + '%, var(--border-color) ' + progress + '%)';
                     if (out) out.textContent = p.hours + ' h';
-                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' â‚¬/h TTC';
-                    if (discEl) discEl.textContent = 'âˆ’' + p.discount + ' % Â· Ã©conomie ' + p.savings + ' â‚¬/mois';
+                    if (rateEl) rateEl.textContent = p.rate.toFixed(2).replace('.', ',') + ' €/h TTC';
+                    if (discEl) discEl.textContent = '−' + p.discount + ' % · économie ' + p.savings + ' €/mois';
                     if (monthEl) monthEl.textContent = p.monthly;
-                    if (yearlyEl) yearlyEl.textContent = (p.monthly * 12) + ' â‚¬ TTC';
+                    if (yearlyEl) yearlyEl.textContent = (p.monthly * 12) + ' € TTC';
                     if (commitmentEl) commitmentEl.textContent = p.commitmentLabel;
                     document.querySelectorAll('[data-sub-hours-preset]').forEach(function (btn) {
                         btn.classList.toggle('is-active', parseInt(btn.dataset.subHoursPreset || '0', 10) === p.hours);
@@ -1261,7 +1261,7 @@
                 var hasSub = sub && sub.status !== 'cancelled';
                 if (configurator) configurator.hidden = !!hasSub;
 
-                /* â”€â”€ Carte rÃ©sumÃ© du dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Carte résumé du dashboard ──────────────────────── */
                 var dashCard = document.querySelector('[data-dash-sub-card]');
                 if (dashCard) {
                     if (!sub) {
@@ -1277,8 +1277,8 @@
                             var isPendingD = sub.payment_status === 'pending_payment';
                             dashBadge.className = 'client-status'
                                 + (isCancelledD ? '' : (isPendingD || isPausedD ? ' client-status--wait' : ' client-status--ok'));
-                            dashBadge.textContent = isCancelledD ? 'RÃ©siliÃ©'
-                                : (isPendingD ? 'Paiement Ã  finaliser'
+                            dashBadge.textContent = isCancelledD ? 'Résilié'
+                                : (isPendingD ? 'Paiement à finaliser'
                                 : (isPausedD ? 'En pause'
                                 : (sub.status_label || 'Actif')));
                         }
@@ -1291,7 +1291,7 @@
                     return;
                 }
 
-                /* â”€â”€ Abonnement actif : rendu dynamique complet â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Abonnement actif : rendu dynamique complet ──────── */
                 var pendingPayment = sub.payment_status === 'pending_payment';
                 var isCancelled = sub.status === 'cancelled';
                 var isPaused    = sub.status === 'paused';
@@ -1301,7 +1301,7 @@
                 var badgeCls = pendingPayment ? 'client-status--wait'
                              : (isCancelled   ? ''
                              : (isPaused      ? 'client-status--wait' : 'client-status--ok'));
-                var badgeTxt = pendingPayment ? 'Paiement Ã  finaliser'
+                var badgeTxt = pendingPayment ? 'Paiement à finaliser'
                              : (sub.status_label || 'Actif');
 
                 /* Boutons d'action */
@@ -1310,25 +1310,25 @@
                     : '<button class="btn btn-primary" type="button" data-action="subscribe-online">' + (pendingPayment ? 'Finaliser le paiement' : 'Activer Stripe') + '</button>';
                 var actions = '';
                 if (isCancelled) {
-                    actions = '<span class="client-status">Abonnement rÃ©siliÃ©</span>';
+                    actions = '<span class="client-status">Abonnement résilié</span>';
                 } else if (pendingPayment) {
                     actions = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Annuler</button>';
                 } else if (isPaused) {
-                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">RÃ©activer</button><button class="client-link-btn" type="button" data-action="cancel-subscription">RÃ©silier</button>';
+                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="resume-subscription">Réactiver</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                 } else if (sub.stripe_subscription_id) {
-                    actions = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">RÃ©silier</button>';
+                    actions = subscribeBtn + '<button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                 } else {
-                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">RÃ©silier</button>';
+                    actions = subscribeBtn + '<button class="btn btn-secondary" type="button" data-action="pause-subscription">Mettre en pause</button><button class="client-link-btn" type="button" data-action="cancel-subscription">Résilier</button>';
                 }
 
-                var renewalLabel = sub.renewal_date ? dateFr(sub.renewal_date) : 'â€”';
+                var renewalLabel = sub.renewal_date ? dateFr(sub.renewal_date) : '—';
                 var paymentLabel = sub.stripe_subscription_id ? 'Paiement automatique actif'
-                                 : (pendingPayment ? 'Paiement Stripe Ã  finaliser' : 'Paiement manuel ou non configurÃ©');
+                                 : (pendingPayment ? 'Paiement Stripe à finaliser' : 'Paiement manuel ou non configuré');
                 var helperText = pendingPayment
-                    ? 'Votre abonnement est prÃ©parÃ©. Finalisez Stripe pour activer le support mensuel.'
+                    ? 'Votre abonnement est préparé. Finalisez Stripe pour activer le support mensuel.'
                     : (isPaused
-                        ? 'Votre support est en pause. RÃ©activez-le pour reprendre les heures incluses.'
-                        : 'Votre support est prÃªt : suivez vos heures et ouvrez vos tickets depuis cet espace.');
+                        ? 'Votre support est en pause. Réactivez-le pour reprendre les heures incluses.'
+                        : 'Votre support est prêt : suivez vos heures et ouvrez vos tickets depuis cet espace.');
 
                 activeBlock.innerHTML =
                     '<article class="client-panel sub-active-card">' +
@@ -1353,12 +1353,12 @@
                             '<div><span>Heures incluses</span><strong>' + (sub.included_hours || 0) + ' h / mois</strong></div>' +
                             '<div><span>SLA</span><strong>' + esc(sub.response_sla || 'Standard') + '</strong></div>' +
                             '<div><span>Renouvellement</span><strong>' + renewalLabel + '</strong></div>' +
-                            '<div><span>DÃ©passement TTC</span><strong>' + (sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non dÃ©fini') + '</strong></div>' +
+                            '<div><span>Dépassement TTC</span><strong>' + (sub.overage_rate ? money(sub.overage_rate, sub.currency) + ' / h' : 'Non défini') + '</strong></div>' +
                         '</div>' +
 
                         '<div class="sub-active__usage">' +
                             '<div class="sub-active__usage-header">' +
-                                '<span>Heures utilisÃ©es ce mois</span>' +
+                                '<span>Heures utilisées ce mois</span>' +
                                 '<strong>' + sub.used_hours + ' h / ' + sub.included_hours + ' h (' + useFill + ' %)</strong>' +
                             '</div>' +
                             '<div class="sub-progress-bar"><div class="sub-progress-fill' + fillClass + '" style="width:' + useFill + '%"></div></div>' +
@@ -1382,7 +1382,7 @@
                 var rows = data.support_usage || [];
                 tbody.innerHTML = rows.length ? rows.map(function (item) {
                     return '<tr><td data-label="Date">' + dateFr(item.date) + '</td><td data-label="Demande">' + esc(item.title) + '</td><td data-label="Temps">' + formatDuration(item.duration) + '</td><td data-label="Statut"><span class="' + statusClass(item.tone) + '">' + esc(item.status_label) + '</span></td></tr>';
-                }).join('') : '<tr><td colspan="4">Aucune intervention enregistrÃ©e pour le moment.</td></tr>';
+                }).join('') : '<tr><td colspan="4">Aucune intervention enregistrée pour le moment.</td></tr>';
             }
 
             function renderTicketThread(thread) {
@@ -1391,18 +1391,18 @@
                 var attachments = thread.attachments || [];
                 var header = '<div class="ticket-thread__meta">'
                     + '<span class="' + statusClass(ticket.tone) + '">' + esc(ticket.status_label || ticket.status) + '</span>'
-                    + '<span>PrioritÃ© ' + esc(ticket.priority || 'normale') + '</span>'
+                    + '<span>Priorité ' + esc(ticket.priority || 'normale') + '</span>'
                     + '</div>'
                     + '<p class="ticket-thread__description">' + esc(ticket.description || 'Aucune description initiale.').replace(/\n/g, '<br>') + '</p>';
                 var attachmentRows = attachments.map(function (item) {
-                    var label = item.label || item.name || item.url || 'PiÃ¨ce jointe';
+                    var label = item.label || item.name || item.url || 'Pièce jointe';
                     if (item.url) {
                         return '<li><a href="' + esc(item.url) + '" target="_blank" rel="noopener">' + esc(label) + '</a></li>';
                     }
                     return '<li>' + esc(label) + '</li>';
                 }).join('');
                 var attachmentBlock = attachmentRows
-                    ? '<div class="ticket-thread__attachments"><strong>Liens et piÃ¨ces</strong><ul>' + attachmentRows + '</ul></div>'
+                    ? '<div class="ticket-thread__attachments"><strong>Liens et pièces</strong><ul>' + attachmentRows + '</ul></div>'
                     : '';
                 var rows = messages.map(function (msg) {
                     var mine = msg.sender_type === 'customer';
@@ -1412,7 +1412,7 @@
                         + '<small>' + dateFr(msg.created_at) + '</small>'
                         + '</div>';
                 }).join('');
-                return '<div class="ticket-thread">' + header + attachmentBlock + '<div class="ticket-thread__messages">' + (rows || '<p class="ticket-thread__empty">Aucun Ã©change pour le moment.</p>') + '</div></div>';
+                return '<div class="ticket-thread">' + header + attachmentBlock + '<div class="ticket-thread__messages">' + (rows || '<p class="ticket-thread__empty">Aucun échange pour le moment.</p>') + '</div></div>';
             }
 
             function renderAccount(data) {
@@ -1433,11 +1433,11 @@
                 var name = client.company_name || client.email || '?';
                 var initials = name.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase();
                 setText('account-avatar', initials);
-                setText('account-display-name', client.company_name || client.email || 'â€”');
+                setText('account-display-name', client.company_name || client.email || '—');
                 setText('account-display-email', client.email || '');
-                setText('account-last-login', security.last_login_at ? dateTimeFr(security.last_login_at) : 'â€”');
+                setText('account-last-login', security.last_login_at ? dateTimeFr(security.last_login_at) : '—');
 
-                /* Badge sÃ©curitÃ© */
+                /* Badge sécurité */
                 var badge = document.getElementById('account-security-badge');
                 var icon = document.getElementById('account-security-icon');
                 var note = document.getElementById('account-security-note');
@@ -1450,8 +1450,8 @@
                         badge.className = 'account-security-badge is-ok';
                         if (icon) icon.className = 'fas fa-circle-check';
                         if (note) note.textContent = security.password_expires_at
-                            ? 'Mot de passe Ã  jour. Expiration le ' + dateFr(security.password_expires_at) + '.'
-                            : 'Mot de passe Ã  jour.';
+                            ? 'Mot de passe à jour. Expiration le ' + dateFr(security.password_expires_at) + '.'
+                            : 'Mot de passe à jour.';
                     }
                 }
             }
@@ -1473,7 +1473,7 @@
                 renderAccount(data);
                 show(true);
 
-                /* Overlay forÃ§age mot de passe */
+                /* Overlay forçage mot de passe */
                 var overlay = document.getElementById('forcePwdOverlay');
                 if (overlay) {
                     var needsPwdChange = state && state.security && state.security.password_change_required;
@@ -1486,13 +1486,13 @@
                 var id = button.dataset.id;
                 if (!action) return;
 
-                /* â”€â”€ Actualiser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Actualiser ─────────────────────────────────────── */
                 if (action === 'refresh') {
-                    await refresh('DonnÃ©es actualisÃ©es.');
+                    await refresh('Données actualisées.');
                     return;
                 }
 
-                /* â”€â”€ Focus form ticket â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Focus form ticket ──────────────────────────────── */
                 if (action === 'focus-ticket-form') {
                     activateTab('tickets');
                     var subjectEl = document.getElementById('ticket-subject');
@@ -1500,16 +1500,16 @@
                     return;
                 }
 
-                /* â”€â”€ Voir facture (PDF) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Voir facture (PDF) ─────────────────────────────── */
                 if (action === 'open-invoice') {
                     var inv = findById(state && state.invoices, id);
                     if (inv) printableDocument('invoice', inv);
                     return;
                 }
 
-                /* â”€â”€ Payer facture EN LIGNE (Stripe) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Payer facture EN LIGNE (Stripe) ────────────────── */
                 /* NOTE : pay-invoice (marquage direct sans paiement) est
-                   intentionnellement absent â€” tout paiement passe par Stripe. */
+                   intentionnellement absent — tout paiement passe par Stripe. */
                 if (action === 'pay-invoice-online') {
                     var onlineInvoice = findById(state && state.invoices, id);
                     if (!onlineInvoice) return;
@@ -1525,7 +1525,7 @@
                         if (resp && resp.pay_url) {
                             window.location.href = resp.pay_url;
                         } else {
-                            notify('Paiement en ligne indisponible â€” contactez-nous.', 'error');
+                            notify('Paiement en ligne indisponible — contactez-nous.', 'error');
                             button.innerHTML = origHtml;
                             button.removeAttribute('aria-busy');
                         }
@@ -1537,18 +1537,18 @@
                     return;
                 }
 
-                /* â”€â”€ Activer paiement auto abonnement (Stripe) â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Activer paiement auto abonnement (Stripe) ─────── */
                 if (action === 'subscribe-online') {
                     var sub = state && state.subscription;
                     if (!sub) return;
                     var origText2 = button.textContent;
-                    button.textContent = 'Redirectionâ€¦';
+                    button.textContent = 'Redirection…';
                     try {
                         var subResp = await api('subscribe-online', { subscription_id: sub.id });
                         if (subResp && subResp.pay_url) {
                             window.location.href = subResp.pay_url;
                         } else {
-                            notify('Paiement automatique indisponible â€” contactez-nous.', 'error');
+                            notify('Paiement automatique indisponible — contactez-nous.', 'error');
                             button.textContent = origText2;
                         }
                     } catch (e) {
@@ -1558,7 +1558,7 @@
                     return;
                 }
 
-                /* â”€â”€ Souscrire abonnement (self-service) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Souscrire abonnement (self-service) ────────────── */
                 if (action === 'create-subscription') {
                     var hoursInput = document.getElementById('sub-hours');
                     var hours = parseInt(hoursInput ? hoursInput.value : '10', 10) || 10;
@@ -1566,14 +1566,14 @@
                     var p = subscriptionPrice(hours, commitmentMonths);
                     var confirmed = await openConfirm(
                         'Confirmer votre abonnement',
-                        '<strong>' + hours + ' h / mois</strong><br>' + esc(p.commitmentLabel) + '<br><br>Tarif : <strong>' + p.rate.toFixed(2).replace('.', ',') + ' â‚¬ TTC/h</strong><br>Soit <strong>' + p.monthly + ' â‚¬ TTC / mois</strong><br><br>Vous serez redirigÃ© vers Stripe pour le paiement mensuel sÃ©curisÃ©.',
-                        { icon: 'ðŸ”’', confirmLabel: 'Continuer vers le paiement' }
+                        '<strong>' + hours + ' h / mois</strong><br>' + esc(p.commitmentLabel) + '<br><br>Tarif : <strong>' + p.rate.toFixed(2).replace('.', ',') + ' € TTC/h</strong><br>Soit <strong>' + p.monthly + ' € TTC / mois</strong><br><br>Vous serez redirigé vers Stripe pour le paiement mensuel sécurisé.',
+                        { icon: '🔒', confirmLabel: 'Continuer vers le paiement' }
                     );
                     if (!confirmed) return;
                     var configMsg = document.getElementById('subConfigMsg');
-                    if (configMsg) configMsg.textContent = 'CrÃ©ation en coursâ€¦';
+                    if (configMsg) configMsg.textContent = 'Création en cours…';
                     button.disabled = true;
-                    button.textContent = 'Traitementâ€¦';
+                    button.textContent = 'Traitement…';
                     try {
                         var createResp = await api('create-subscription', { hours: hours, commitment_months: commitmentMonths });
                         if (createResp && createResp.pay_url) {
@@ -1586,7 +1586,7 @@
                             button.textContent = 'Souscrire via Stripe';
                         }
                     } catch (e) {
-                        notify(e.message || 'Impossible de crÃ©er l\'abonnement.', 'error');
+                        notify(e.message || 'Impossible de créer l\'abonnement.', 'error');
                         if (configMsg) configMsg.textContent = '';
                         button.disabled = false;
                         button.textContent = 'Souscrire via Stripe';
@@ -1594,7 +1594,7 @@
                     return;
                 }
 
-                /* â”€â”€ TÃ©lÃ©charger / signer devis â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Télécharger / signer devis ─────────────────────── */
                 if (action === 'download-quote' || action === 'open-quote') {
                     var quote = findById(state && state.quotes, id);
                     if (!quote) return;
@@ -1628,7 +1628,7 @@
                             button.removeAttribute('aria-busy');
                         }
                     } catch (e) {
-                        notify(e.message || 'Impossible dâ€™ouvrir la signature.', 'error');
+                        notify(e.message || 'Impossible d’ouvrir la signature.', 'error');
                         button.disabled = false;
                         button.innerHTML = origHtml3;
                         button.removeAttribute('aria-busy');
@@ -1636,26 +1636,26 @@
                     return;
                 }
 
-                /* â”€â”€ Demander un devis (modal form) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Demander un devis (modal form) ─────────────────── */
                 if (action === 'request-quote') {
                     var formValues = await openForm(
                         'Demander un devis',
-                        'DÃ©crivez briÃ¨vement votre besoin. L\'Ã©quipe Code4U vous recontacte sous 24 h.',
+                        'Décrivez brièvement votre besoin. L\'équipe Code4U vous recontacte sous 24 h.',
                         [
-                            { name: 'subject', label: 'Objet de la demande', type: 'text', placeholder: 'Ex : nouvelle page de vente, intÃ©gration CRMâ€¦', required: true },
-                            { name: 'description', label: 'Description (optionnel)', tag: 'textarea', rows: 3, placeholder: 'Contexte, contraintes, dÃ©lai souhaitÃ©â€¦' }
+                            { name: 'subject', label: 'Objet de la demande', type: 'text', placeholder: 'Ex : nouvelle page de vente, intégration CRM…', required: true },
+                            { name: 'description', label: 'Description (optionnel)', tag: 'textarea', rows: 3, placeholder: 'Contexte, contraintes, délai souhaité…' }
                         ],
-                        { icon: 'ðŸ“‹', confirmLabel: 'Envoyer la demande' }
+                        { icon: '📋', confirmLabel: 'Envoyer la demande' }
                     );
                     if (!formValues || !formValues.subject) return;
                     await api('request-quote', { subject: formValues.subject, description: formValues.description || formValues.subject });
-                    notify('Demande envoyÃ©e â€” un ticket de suivi a Ã©tÃ© crÃ©Ã©.', 'success');
+                    notify('Demande envoyée — un ticket de suivi a été créé.', 'success');
                     await refresh();
                     activateTab('tickets');
                     return;
                 }
 
-                /* â”€â”€ Ouvrir ticket â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Ouvrir ticket ──────────────────────────────────── */
                 if (action === 'open-ticket') {
                     var ticket = findById(state && state.tickets, id);
                     if (!ticket) return;
@@ -1665,15 +1665,15 @@
                     if (resolved) {
                         var resolvedChoice = await openForm(
                             'Ticket #' + ticket.number,
-                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est marquÃ© rÃ©solu. Validez la rÃ©solution ou indiquez pourquoi la demande doit Ãªtre rouverte.</p>',
+                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est marqué résolu. Validez la résolution ou indiquez pourquoi la demande doit être rouverte.</p>',
                             [
                                 { name: 'decision', label: 'Votre validation', tag: 'select', value: 'accepted', options: [
-                                    { value: 'accepted', label: 'Oui, la demande est traitÃ©e' },
+                                    { value: 'accepted', label: 'Oui, la demande est traitée' },
                                     { value: 'rejected', label: 'Non, je veux rouvrir le ticket' }
                                 ] },
-                                { name: 'reason', label: 'Motif si non', tag: 'textarea', rows: 3, placeholder: 'Expliquez ce qui reste Ã  corriger...' }
+                                { name: 'reason', label: 'Motif si non', tag: 'textarea', rows: 3, placeholder: 'Expliquez ce qui reste à corriger...' }
                             ],
-                            { icon: 'ðŸŽ«', confirmLabel: 'Envoyer ma validation', cancelLabel: 'Fermer' }
+                            { icon: '🎫', confirmLabel: 'Envoyer ma validation', cancelLabel: 'Fermer' }
                         );
                         if (resolvedChoice) {
                             await api('resolve-ticket-feedback', {
@@ -1681,15 +1681,15 @@
                                 accepted: resolvedChoice.decision !== 'rejected',
                                 reason: resolvedChoice.reason || ''
                             });
-                            await refresh(resolvedChoice.decision === 'rejected' ? 'Ticket rouvert.' : 'Ticket clÃ´turÃ©. Merci pour votre validation.', 'success');
+                            await refresh(resolvedChoice.decision === 'rejected' ? 'Ticket rouvert.' : 'Ticket clôturé. Merci pour votre validation.', 'success');
                         }
                         return;
                     }
                     if (closed) {
                         await openInfo(
                             'Ticket #' + ticket.number,
-                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est clÃ´turÃ©. Aucune nouvelle rÃ©ponse ne peut Ãªtre ajoutÃ©e.</p>',
-                            { icon: 'ðŸŽ«' }
+                            '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread) + '<p class="ticket-thread__empty">Ce ticket est clôturé. Aucune nouvelle réponse ne peut être ajoutée.</p>',
+                            { icon: '🎫' }
                         );
                         return;
                     }
@@ -1697,27 +1697,27 @@
                         'Ticket #' + ticket.number,
                         '<strong>' + esc(ticket.subject) + '</strong>' + renderTicketThread(thread),
                         [
-                            { name: 'message', label: 'RÃ©pondre', tag: 'textarea', rows: 4, placeholder: 'Votre messageâ€¦' }
+                            { name: 'message', label: 'Répondre', tag: 'textarea', rows: 4, placeholder: 'Votre message…' }
                         ],
-                        { icon: 'ðŸŽ«', confirmLabel: 'Envoyer la rÃ©ponse', cancelLabel: 'Fermer' }
+                        { icon: '🎫', confirmLabel: 'Envoyer la réponse', cancelLabel: 'Fermer' }
                     );
                     if (reply && reply.message && reply.message.trim()) {
                         await api('reply-ticket', { ticket_id: ticket.id, message: reply.message.trim() });
-                        await refresh('RÃ©ponse envoyÃ©e.', 'success');
+                        await refresh('Réponse envoyée.', 'success');
                     }
                     return;
                 }
 
-                /* â”€â”€ GÃ©rer abonnement (pause / rÃ©siliation) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Gérer abonnement (pause / résiliation) ─────────── */
                 if (action === 'pause-subscription' || action === 'resume-subscription' || action === 'cancel-subscription') {
                     var sub2 = state && state.subscription;
                     if (!sub2) return;
                     var labels = {
-                        'pause-subscription':  ['Mettre en pause', 'Votre abonnement sera suspendu. Vous pouvez le rÃ©activer Ã  tout moment.', 'â¸ï¸'],
-                        'resume-subscription': ['RÃ©activer l\'abonnement', 'Votre abonnement reprendra normalement.', 'â–¶ï¸'],
+                        'pause-subscription':  ['Mettre en pause', 'Votre abonnement sera suspendu. Vous pouvez le réactiver à tout moment.', 'â¸️'],
+                        'resume-subscription': ['Réactiver l\'abonnement', 'Votre abonnement reprendra normalement.', '▶️'],
                         'cancel-subscription': sub2.payment_status === 'pending_payment'
-                            ? ['Annuler la souscription en attente', 'Le paiement Stripe en attente sera abandonnÃ© et aucun prÃ©lÃ¨vement ne sera lancÃ©.', 'ðŸ›‘']
-                            : ['RÃ©silier l\'abonnement', (sub2.stripe_subscription_id ? 'Vous serez redirigÃ© vers Stripe pour confirmer la rÃ©siliation. Le support inclus sâ€™arrÃªtera selon les rÃ¨gles de lâ€™abonnement.' : 'Cette action arrÃªte lâ€™abonnement cÃ´tÃ© espace client.'), 'ðŸ›‘']
+                            ? ['Annuler la souscription en attente', 'Le paiement Stripe en attente sera abandonné et aucun prélèvement ne sera lancé.', '🛑']
+                            : ['Résilier l\'abonnement', (sub2.stripe_subscription_id ? 'Vous serez redirigé vers Stripe pour confirmer la résiliation. Le support inclus s’arrêtera selon les règles de l’abonnement.' : 'Cette action arrête l’abonnement côté espace client.'), '🛑']
                     };
                     var lconf = labels[action];
                     var danger = action === 'cancel-subscription';
@@ -1728,24 +1728,24 @@
                         window.location.href = subActionResp.cancel_url;
                         return;
                     }
-                    await refresh(action === 'cancel-subscription' ? 'Abonnement rÃ©siliÃ©.' : 'Abonnement mis Ã  jour.', 'success');
+                    await refresh(action === 'cancel-subscription' ? 'Abonnement résilié.' : 'Abonnement mis à jour.', 'success');
                     return;
                 }
 
-                /* â”€â”€ Retirer moyen de paiement â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Retirer moyen de paiement ──────────────────────── */
                 if (action === 'set-default-payment-method' || action === 'disable-payment-method') {
                     if (action === 'disable-payment-method') {
-                        var confirmed3 = await openConfirm('Retirer ce moyen de paiement', 'Cette carte ne sera plus utilisable pour vos paiements.', { icon: 'ðŸ’³', danger: true });
+                        var confirmed3 = await openConfirm('Retirer ce moyen de paiement', 'Cette carte ne sera plus utilisable pour vos paiements.', { icon: '💳', danger: true });
                         if (!confirmed3) return;
                     }
                     await api(action, { payment_method_id: id });
-                    await refresh(action === 'disable-payment-method' ? 'Moyen de paiement retirÃ©.' : 'Moyen de paiement mis par dÃ©faut.', 'success');
+                    await refresh(action === 'disable-payment-method' ? 'Moyen de paiement retiré.' : 'Moyen de paiement mis par défaut.', 'success');
                     return;
                 }
 
-                /* â”€â”€ Export facturation CSV â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+                /* ── Export facturation CSV ─────────────────────────── */
                 if (action === 'export-billing') {
-                    var lines = [['Type', 'NumÃ©ro', 'Date', 'Montant TTC', 'Statut']];
+                    var lines = [['Type', 'Numéro', 'Date', 'Montant TTC', 'Statut']];
                     (state && state.invoices || []).forEach(function (invoice) {
                         lines.push(['Facture', invoice.number, dateFr(invoice.date), money(invoice.amount, invoice.currency), invoice.status_label]);
                     });
@@ -1756,7 +1756,7 @@
                         return line.map(function (cell) { return '"' + String(cell).replace(/"/g, '""') + '"'; }).join(';');
                     }).join('\n');
                     downloadText('facturation-code4u.csv', csv, 'text/csv;charset=utf-8');
-                    notify('Export CSV tÃ©lÃ©chargÃ©.', 'success');
+                    notify('Export CSV téléchargé.', 'success');
                     return;
                 }
             }
@@ -1773,8 +1773,8 @@
                 if (step === 2) {
                     if (s1) s1.hidden = true;
                     if (s2) s2.hidden = false;
-                    if (kicker) kicker.textContent = 'VÃ©rification';
-                    if (title) title.textContent = 'Code reÃ§u par email';
+                    if (kicker) kicker.textContent = 'Vérification';
+                    if (title) title.textContent = 'Code reçu par email';
                     if (icon) icon.className = 'fas fa-envelope-circle-check';
                     var emailHint = document.getElementById('login-2fa-email');
                     if (emailHint) emailHint.textContent = loginEmail;
@@ -1786,19 +1786,19 @@
                     if (s1) s1.hidden = false;
                     if (s2) s2.hidden = true;
                     if (kicker) kicker.textContent = 'Connexion';
-                    if (title) title.textContent = 'AccÃ¨s client';
+                    if (title) title.textContent = 'Accès client';
                     if (icon) icon.className = 'fas fa-lock';
                     pending2fa = false;
                     if (msg) { msg.textContent = ''; msg.className = 'client-form__msg'; }
                 }
             }
 
-            /* â”€â”€ Ã‰tape 1 : identifiants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Étape 1 : identifiants ──────────────────────────────── */
             if (form) {
                 form.addEventListener('submit', async function (event) {
                     event.preventDefault();
                     var btn = form.querySelector('[type="submit"]');
-                    if (msg) { msg.textContent = 'Connexion en coursâ€¦'; msg.className = 'client-form__msg visible'; }
+                    if (msg) { msg.textContent = 'Connexion en cours…'; msg.className = 'client-form__msg visible'; }
                     if (btn) btn.disabled = true;
                     loginEmail = (document.getElementById('client-login-email') || {}).value || '';
                     loginPassword = (document.getElementById('client-login-pass') || {}).value || '';
@@ -1821,23 +1821,23 @@
                 });
             }
 
-            /* â”€â”€ Ã‰tape 2 : code 2FA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Étape 2 : code 2FA ──────────────────────────────────── */
             var forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
             if (forgotPasswordBtn) {
                 forgotPasswordBtn.addEventListener('click', async function () {
                     var currentEmail = (document.getElementById('client-login-email') || {}).value || loginEmail || '';
                     var values = await openForm(
-                        'Mot de passe oubliÃ©',
-                        'Saisissez votre e-mail de connexion. Si le compte existe, un mot de passe temporaire vous sera envoyÃ©.',
+                        'Mot de passe oublié',
+                        'Saisissez votre e-mail de connexion. Si le compte existe, un mot de passe temporaire vous sera envoyé.',
                         [
                             { name: 'email', label: 'Adresse e-mail', type: 'email', value: currentEmail, placeholder: 'client@exemple.fr', required: true }
                         ],
-                        { icon: 'ðŸ”', confirmLabel: 'Recevoir un accÃ¨s temporaire' }
+                        { icon: '🔐', confirmLabel: 'Recevoir un accès temporaire' }
                     );
                     if (!values || !values.email) return;
                     try {
                         await api('forgot-password', { email: values.email });
-                        if (msg) { msg.textContent = 'Si ce compte existe, un e-mail de rÃ©initialisation vient dâ€™Ãªtre envoyÃ©.'; msg.className = 'client-form__msg visible'; }
+                        if (msg) { msg.textContent = 'Si ce compte existe, un e-mail de réinitialisation vient d’être envoyé.'; msg.className = 'client-form__msg visible'; }
                     } catch (error) {
                         if (msg) { msg.textContent = error.message || 'Impossible de traiter la demande.'; msg.className = 'client-form__msg visible'; }
                     }
@@ -1850,7 +1850,7 @@
                     event.preventDefault();
                     var wm = document.getElementById('client2faMsg');
                     var btn = twoFaForm.querySelector('[type="submit"]');
-                    if (wm) { wm.textContent = 'VÃ©rificationâ€¦'; wm.className = 'client-form__msg visible'; }
+                    if (wm) { wm.textContent = 'Vérification…'; wm.className = 'client-form__msg visible'; }
                     if (btn) btn.disabled = true;
                     try {
                         var code = (document.getElementById('client-login-code') || {}).value || '';
@@ -1866,22 +1866,22 @@
                 });
             }
 
-            /* â”€â”€ Retour Ã©tape 1 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Retour étape 1 ──────────────────────────────────────── */
             var loginBackBtn = document.getElementById('loginBackBtn');
             if (loginBackBtn) {
                 loginBackBtn.addEventListener('click', function () { showLoginStep(1); });
             }
 
-            /* â”€â”€ Renvoyer le code â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Renvoyer le code ────────────────────────────────────── */
             var loginResendBtn = document.getElementById('loginResendBtn');
             if (loginResendBtn) {
                 loginResendBtn.addEventListener('click', async function () {
                     var wm = document.getElementById('client2faMsg');
                     loginResendBtn.disabled = true;
-                    if (wm) { wm.textContent = 'Renvoi en coursâ€¦'; wm.className = 'client-form__msg visible'; }
+                    if (wm) { wm.textContent = 'Renvoi en cours…'; wm.className = 'client-form__msg visible'; }
                     try {
                         await api('login', { email: loginEmail, password: loginPassword });
-                        if (wm) { wm.textContent = 'Nouveau code envoyÃ©.'; wm.className = 'client-form__msg visible'; }
+                        if (wm) { wm.textContent = 'Nouveau code envoyé.'; wm.className = 'client-form__msg visible'; }
                         var codeInput = document.getElementById('client-login-code');
                         if (codeInput) { codeInput.value = ''; codeInput.focus(); }
                     } catch (error) {
@@ -1992,11 +1992,11 @@
                         if (description) description.value = '';
                         if (links) links.value = '';
                         if (files) files.value = '';
-                        if (ticketMsg) ticketMsg.textContent = 'Ticket crÃ©Ã©. Il apparait dans votre suivi support.';
+                        if (ticketMsg) ticketMsg.textContent = 'Ticket créé. Il apparait dans votre suivi support.';
                         var data = await api('me');
                         render(data);
                     } catch (error) {
-                        if (ticketMsg) ticketMsg.textContent = error.message || 'Impossible de crÃ©er le ticket.';
+                        if (ticketMsg) ticketMsg.textContent = error.message || 'Impossible de créer le ticket.';
                     }
                 });
             }
@@ -2014,15 +2014,15 @@
                             code_postal: (document.getElementById('account-cp') || {}).value || '',
                             ville: (document.getElementById('account-ville') || {}).value || ''
                         });
-                        if (pm) pm.textContent = 'CoordonnÃ©es enregistrÃ©es.';
+                        if (pm) pm.textContent = 'Coordonnées enregistrées.';
                         render(await api('me'));
                     } catch (error) {
-                        if (pm) pm.textContent = error.message || 'Impossible dâ€™enregistrer.';
+                        if (pm) pm.textContent = error.message || 'Impossible d’enregistrer.';
                     }
                 });
             }
 
-            /* â”€â”€ Force-password form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Force-password form ───────────────────────────────────── */
             initStrengthBar('force-pwd-new', 'force-pwd-bar', 'force-pwd-hint');
             var forcePwdForm = document.getElementById('forcePwdForm');
             if (forcePwdForm) {
@@ -2037,22 +2037,22 @@
                         return;
                     }
                     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/.test(nw)) {
-                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractÃ¨res, une majuscule, une minuscule, un chiffre et un symbole.';
+                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.';
                         return;
                     }
-                    if (wm) wm.textContent = 'Modification en coursâ€¦';
+                    if (wm) wm.textContent = 'Modification en cours…';
                     try {
                         await api('change-password', { current_password: current, new_password: nw });
                         forcePwdForm.reset();
                         if (wm) { wm.textContent = ''; wm.className = 'client-form__msg'; }
-                        /* DÃ©bloquer l'UI immÃ©diatement sans attendre api('me') */
+                        /* Débloquer l'UI immédiatement sans attendre api('me') */
                         if (state && state.security) state.security.password_change_required = false;
                         var fpOverlay = document.getElementById('forcePwdOverlay');
                         if (fpOverlay) fpOverlay.hidden = true;
                         activateTab('overview');
-                        notify('Mot de passe dÃ©fini. Bienvenue dans votre espace.', 'success');
+                        notify('Mot de passe défini. Bienvenue dans votre espace.', 'success');
                         window.scrollTo(0, 0);
-                        /* RafraÃ®chir les donnÃ©es en arriÃ¨re-plan */
+                        /* Rafraîchir les données en arrière-plan */
                         api('me').then(render).catch(function () {});
                     } catch (error) {
                         if (wm) { wm.textContent = error.message || 'Impossible de changer le mot de passe.'; wm.className = 'client-form__msg visible'; }
@@ -2068,7 +2068,7 @@
                 });
             }
 
-            /* â”€â”€ Mot de passe (page Mon compte) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+            /* ── Mot de passe (page Mon compte) ────────────────────────── */
             var passwordForm = document.getElementById('clientPasswordForm');
             if (passwordForm) {
                 initStrengthBar('pwd-new', 'pwd-strength-bar', 'pwd-strength-hint');
@@ -2083,14 +2083,14 @@
                         return;
                     }
                     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{12,}$/.test(nw)) {
-                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractÃ¨res, une majuscule, une minuscule, un chiffre et un symbole.';
+                        if (wm) wm.textContent = 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un symbole.';
                         return;
                     }
                     if (wm) wm.textContent = 'Modification...';
                     try {
                         await api('change-password', { current_password: current, new_password: nw });
                         passwordForm.reset();
-                        if (wm) wm.textContent = 'Mot de passe modifiÃ©. Un email de confirmation vous a Ã©tÃ© envoyÃ©.';
+                        if (wm) wm.textContent = 'Mot de passe modifié. Un email de confirmation vous a été envoyé.';
                         render(await api('me'));
                     } catch (error) {
                         if (wm) wm.textContent = error.message || 'Impossible de changer le mot de passe.';
@@ -2104,13 +2104,13 @@
                 if (!pay) return;
                 var ref = params.get('ref') || '';
                 var messages = {
-                    success: 'Paiement rÃ©ussi' + (ref ? ' â€” ' + ref : '') + '. Merci !',
-                    sub_success: 'Abonnement activÃ©. Merci !',
-                    sub_cancelled: 'Abonnement rÃ©siliÃ©. La demande a bien Ã©tÃ© transmise Ã  Stripe.',
-                    cancel: 'Paiement annulÃ©.',
-                    already: 'Cette facture est dÃ©jÃ  rÃ©glÃ©e.',
-                    error: 'Le paiement nâ€™a pas pu Ãªtre lancÃ©. RÃ©essayez ou contactez-nous.',
-                    disabled: 'Stripe nâ€™est pas configurÃ© sur le serveur ERP. VÃ©rifiez STRIPE_SECRET_KEY puis redÃ©marrez le backend.'
+                    success: 'Paiement réussi' + (ref ? ' — ' + ref : '') + '. Merci !',
+                    sub_success: 'Abonnement activé. Merci !',
+                    sub_cancelled: 'Abonnement résilié. La demande a bien été transmise à Stripe.',
+                    cancel: 'Paiement annulé.',
+                    already: 'Cette facture est déjà réglée.',
+                    error: 'Le paiement n’a pas pu être lancé. Réessayez ou contactez-nous.',
+                    disabled: 'Stripe n’est pas configuré sur le serveur ERP. Vérifiez STRIPE_SECRET_KEY puis redémarrez le backend.'
                 };
                 if (messages[pay]) notify(messages[pay]);
                 window.history.replaceState({}, '', window.location.pathname);

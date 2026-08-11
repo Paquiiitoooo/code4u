@@ -1,15 +1,15 @@
 <?php
 /**
- * Code4U V2 â€” Orders API
+ * Code4U V2 — Orders API
  * Handles: create, list, get, update_status, add_note, stats
  *
  * Endpoints (all via this single file):
- *   POST ?action=create          â€” public, creates a new order
- *   GET  ?action=list            â€” admin, paginated order list
- *   GET  ?action=get&id=X        â€” admin/public, single order detail
- *   POST ?action=update_status   â€” admin only
- *   POST ?action=add_note        â€” admin only
- *   GET  ?action=stats           â€” admin only
+ *   POST ?action=create          — public, creates a new order
+ *   GET  ?action=list            — admin, paginated order list
+ *   GET  ?action=get&id=X        — admin/public, single order detail
+ *   POST ?action=update_status   — admin only
+ *   POST ?action=add_note        — admin only
+ *   GET  ?action=stats           — admin only
  */
 
 header('Content-Type: application/json; charset=utf-8');
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// â”€â”€ Dependencies â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Dependencies ─────────────────────────────────────────────
 $adminDir = dirname(__DIR__);
 require_once $adminDir . '/config/config.php';
 
@@ -44,13 +44,13 @@ try {
     $pdo = null;
 }
 
-// â”€â”€ Input parsing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Input parsing ─────────────────────────────────────────────
 $method   = $_SERVER['REQUEST_METHOD'];
 $rawInput = file_get_contents('php://input');
 $input    = json_decode($rawInput, true) ?? [];
 $action   = $input['action'] ?? ($_GET['action'] ?? '');
 
-// â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Helpers ───────────────────────────────────────────────────
 
 function san($v) {
     return htmlspecialchars(strip_tags(trim((string)$v)), ENT_QUOTES, 'UTF-8');
@@ -69,7 +69,7 @@ function isAdmin() {
     return isset($_SESSION['admin_id']) && !empty($_SESSION['admin_id']);
 }
 
-// â”€â”€ Router â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Router ────────────────────────────────────────────────────
 function quoteCatalog() {
     return [
         'vitrine' => [
@@ -507,7 +507,7 @@ switch ($action) {
     default:              respond(['success' => false, 'error' => 'Action inconnue: ' . $action], 400);
 }
 
-// â”€â”€ createOrder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── createOrder ───────────────────────────────────────────────
 
 function createOrder($pdo, $input) {
     $client = is_array($input['client'] ?? null) ? $input['client'] : $input;
@@ -621,7 +621,7 @@ function createOrder($pdo, $input) {
         // Log initial history entry
         $pdo->prepare("
             INSERT INTO order_history (order_id, new_status, note)
-            VALUES (?, 'pending', 'Commande crÃ©Ã©e via le site')
+            VALUES (?, 'pending', 'Commande créée via le site')
         ")->execute([$orderId]);
 
         // Trigger email workflows
@@ -652,7 +652,7 @@ function createOrder($pdo, $input) {
             'success'   => true,
             'order_id'  => $orderId,
             'reference' => $reference,
-            'message'   => 'Commande enregistrÃ©e avec succÃ¨s',
+            'message'   => 'Commande enregistrée avec succès',
         ]);
 
     } catch (Throwable $e) {
@@ -685,7 +685,7 @@ function saveOrderFallback($reference, $data) {
     }
 }
 
-// â”€â”€ listOrders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── listOrders ────────────────────────────────────────────────
 
 
 // listOrders
@@ -756,7 +756,7 @@ function listOrders($pdo) {
     ]);
 }
 
-// â”€â”€ getOrder â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── getOrder ──────────────────────────────────────────────────
 
 function getOrder($pdo, $id) {
     if (!isAdmin()) {
@@ -790,11 +790,11 @@ function getOrder($pdo, $id) {
     respond(['success' => true, 'order' => $order]);
 }
 
-// â”€â”€ updateStatus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── updateStatus ──────────────────────────────────────────────
 
 function updateStatus($pdo, $input) {
     if (!isAdmin()) {
-        respond(['success' => false, 'error' => 'Non autorisÃ©'], 401);
+        respond(['success' => false, 'error' => 'Non autorisé'], 401);
     }
 
     $orderId   = (int)($input['id'] ?? 0);
@@ -803,7 +803,7 @@ function updateStatus($pdo, $input) {
 
     $validStatuses = ['pending', 'contacted', 'quote_sent', 'in_progress', 'review', 'completed', 'cancelled'];
     if (!$orderId || !in_array($newStatus, $validStatuses)) {
-        respond(['success' => false, 'error' => 'DonnÃ©es invalides'], 422);
+        respond(['success' => false, 'error' => 'Données invalides'], 422);
     }
 
     try {
@@ -843,7 +843,7 @@ function updateStatus($pdo, $input) {
             ':note' => $note,
         ]);
 
-        respond(['success' => true, 'message' => 'Statut mis Ã  jour']);
+        respond(['success' => true, 'message' => 'Statut mis à jour']);
 
     } catch (PDOException $e) {
         error_log('[orders.php] updateStatus error: ' . $e->getMessage());
@@ -851,27 +851,27 @@ function updateStatus($pdo, $input) {
     }
 }
 
-// â”€â”€ addNote â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── addNote ───────────────────────────────────────────────────
 
 function addNote($pdo, $input) {
     if (!isAdmin()) {
-        respond(['success' => false, 'error' => 'Non autorisÃ©'], 401);
+        respond(['success' => false, 'error' => 'Non autorisé'], 401);
     }
 
     $orderId = (int)($input['id'] ?? 0);
     $note    = san($input['note'] ?? '');
 
     if (!$orderId || !$note) {
-        respond(['success' => false, 'error' => 'DonnÃ©es manquantes'], 422);
+        respond(['success' => false, 'error' => 'Données manquantes'], 422);
     }
 
     $pdo->prepare("UPDATE orders SET admin_notes = :note WHERE id = :id")
         ->execute([':note' => $note, ':id' => $orderId]);
 
-    respond(['success' => true, 'message' => 'Note enregistrÃ©e']);
+    respond(['success' => true, 'message' => 'Note enregistrée']);
 }
 
-// â”€â”€ getStats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── getStats ──────────────────────────────────────────────────
 
 function getStats($pdo) {
     if (!isAdmin()) {
