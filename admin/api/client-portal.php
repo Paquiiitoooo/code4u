@@ -812,8 +812,9 @@ function portalFetchQuotes(PDO $db, $clientId) {
         return [];
     }
 
+    $remiseSelect = portalColumnExists($db, 'devis', 'remise') ? ', remise' : '';
     $stmt = $db->prepare("
-        SELECT id, numero, date_devis, statut, montant_ht, montant_tva, montant_ttc, notes, conditions, signature_token
+        SELECT id, numero, date_devis, statut, montant_ht, montant_tva, montant_ttc, notes, conditions, signature_token{$remiseSelect}
         FROM devis
         WHERE client_id = :client_id
         ORDER BY date_devis DESC, id DESC
@@ -831,6 +832,7 @@ function portalFetchQuotes(PDO $db, $clientId) {
             'amount_ht' => (float)$row['montant_ht'],
             'amount_tva' => (float)$row['montant_tva'],
             'amount' => (float)$row['montant_ttc'],
+            'remise' => isset($row['remise']) ? (float)$row['remise'] : 0,
             'currency' => 'EUR',
             'status' => $row['statut'],
             'status_label' => portalStatusLabel($row['statut']),
