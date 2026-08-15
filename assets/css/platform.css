@@ -459,6 +459,13 @@ section { padding-block: var(--section-pad); }
     border-bottom: 1px solid var(--border-color);
 }
 .work-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.work-card__media--logo {
+    padding: clamp(2rem, 6vw, 3rem);
+    background: #f7efe3;
+}
+.work-card__media--logo img {
+    object-fit: contain;
+}
 .work-card__media--placeholder { color: var(--text-secondary); font-size: 0.85rem; padding: 1rem; text-align: center; }
 .work-card__body { padding: 1.3rem 1.4rem 1.5rem; }
 .work-card__tag { font-size: 0.76rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-color); }
