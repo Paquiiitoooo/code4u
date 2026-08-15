@@ -452,19 +452,30 @@ section { padding-block: var(--section-pad); }
 .work-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
 .work-card__media {
     aspect-ratio: 16 / 10;
-    background: var(--bg-secondary);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.66), rgba(255, 255, 255, 0.28)),
+        var(--bg-secondary);
     display: grid;
     place-items: center;
     overflow: hidden;
     border-bottom: 1px solid var(--border-color);
+    padding: clamp(1.25rem, 4vw, 2.15rem);
 }
-.work-card__media img { width: 100%; height: 100%; object-fit: cover; }
+.work-card__media img {
+    width: 100%;
+    height: 100%;
+    max-width: 82%;
+    max-height: 82%;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 20px rgba(20, 19, 26, 0.10));
+}
 .work-card__media--logo {
-    padding: clamp(2rem, 6vw, 3rem);
     background: #f7efe3;
 }
 .work-card__media--logo img {
-    object-fit: contain;
+    max-width: 76%;
+    max-height: 76%;
+    filter: none;
 }
 .work-card__media--placeholder { color: var(--text-secondary); font-size: 0.85rem; padding: 1rem; text-align: center; }
 .work-card__body { padding: 1.3rem 1.4rem 1.5rem; }
@@ -1140,9 +1151,26 @@ section { padding-block: var(--section-pad); }
 .hero-x__trust { margin-top: clamp(1.9rem, 4vw, 2.6rem); }
 .hero-x__trust-label { display: block; font-size: .7rem; letter-spacing: .14em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: .65rem; }
 .hero-x__logos { display: flex; flex-wrap: wrap; gap: .55rem; }
-.logo-chip { display: inline-flex; align-items: center; justify-content: center; height: 40px; padding: 0 .8rem;
-    background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
-.logo-chip img { height: 20px; width: auto; object-fit: contain; }
+.logo-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 118px;
+    height: 48px;
+    padding: .45rem .75rem;
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: var(--shadow-sm);
+}
+.logo-chip img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: saturate(0.95) contrast(1.04);
+}
 
 /* Maquette navigateur */
 .hero-x__visual { position: relative; perspective: 1500px; }
@@ -2286,11 +2314,11 @@ section { padding-block: var(--section-pad); }
 
 /* Logos clients */
 [data-theme="dark"] .logo-chip {
-    background: var(--bg-secondary);
-    border-color: var(--border-color);
-    box-shadow: var(--shadow-sm);
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 12px 32px -18px rgba(0, 0, 0, 0.75);
 }
-[data-theme="dark"] .logo-chip img { filter: brightness(0.88) contrast(1.05); }
+[data-theme="dark"] .logo-chip img { filter: saturate(0.95) contrast(1.04); }
 
 /* Chips flottants */
 [data-theme="dark"] .hero-x__chip {
@@ -2678,7 +2706,6 @@ section { padding-block: var(--section-pad); }
 [data-theme="dark"] .payment-method-row button,
 [data-theme="dark"] .browser,
 [data-theme="dark"] .tech-badge,
-[data-theme="dark"] .logo-chip,
 [data-theme="dark"] .hero-x__chip {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)), #111722;
     border-color: rgba(148, 163, 184, 0.18);
