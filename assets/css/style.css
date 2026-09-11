@@ -8,6 +8,8 @@
    Plus de cyan/orange/dégradés "IA".
    ============================================================ */
 :root {
+    --font-body: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Space Grotesk', 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --primary-color: #14131a;   /* encre — surfaces/CTA sombres */
     --primary-hover: #000000;
     --primary-light: #3a3942;
@@ -76,7 +78,7 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--font-body);
     line-height: 1.7;
     color: var(--text-primary);
     background-color: var(--bg-primary);
@@ -104,6 +106,7 @@ body {
 }
 
 .section-title {
+    font-family: var(--font-display);
     font-size: clamp(2rem, 5vw, 3rem);
     font-weight: 800;
     line-height: 1.2;
@@ -115,6 +118,13 @@ body {
     font-size: 1.125rem;
     color: var(--text-secondary);
     font-weight: 500;
+}
+
+button,
+input,
+textarea,
+select {
+    font-family: var(--font-body);
 }
 
 .top-bar {
@@ -2642,7 +2652,7 @@ body {
 }
 
 .client-logo:nth-child(4n+2) .logo-container i {
-    color: #F59E0B; /* Mon Estimation Travaux - Orange */
+    color: #F59E0B; /* Accent client secondaire */
 }
 
 .client-logo:nth-child(4n+3) .logo-container i {
@@ -6064,7 +6074,7 @@ body:not(.web-page) .parallax-section {
     line-height: 1;
     z-index: 0;
     pointer-events: none;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
 }
 
 .parallax-section .container {
@@ -6142,7 +6152,7 @@ body:not(.web-page) .parallax-section {
     color: rgba(255, 255, 255, 0.08);
     line-height: 1;
     margin-bottom: 1rem;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
     letter-spacing: -0.02em;
     position: relative;
     z-index: 0;
@@ -9540,7 +9550,7 @@ body:not(.web-page) .parallax-section.active {
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-xl);
     margin-top: 4px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Manrope', sans-serif;
     z-index: 10000;
 }
 

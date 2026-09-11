@@ -7,7 +7,7 @@
 
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Manrope', sans-serif;
   background: #fcfbf9;
   color: #14131a;
   overflow-x: hidden;
@@ -18,8 +18,8 @@ a { text-decoration: none; }
 /* Police d'affichage — cohérence typographique avec le site */
 h1, h2, h3, h4,
 .step-name, .form-section-title, .quote-card-title, .recap-service-name, .sidebar-logo-text {
-  font-family: 'Bricolage Grotesque', 'Inter', sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Space Grotesk', 'Manrope', sans-serif;
+  letter-spacing: 0;
 }
 
 /* Custom scrollbar */
