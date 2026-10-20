@@ -56,6 +56,11 @@ jobs:
           chmod 600 ~/.ssh/code4u_deploy
           ssh-keyscan -p "${{ secrets.VPS_PORT || '22' }}" "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
+      - name: Validate SMTP secret
+        env:
+          SITE_SMTP_PASS: ${{ secrets.SITE_SMTP_PASS }}
+        run: test -n "$SITE_SMTP_PASS"
+
       - name: Deploy files
         shell: bash
         run: |
@@ -73,6 +78,15 @@ jobs:
             --exclude '.publish-temp-*/' \
             -e "ssh -i ~/.ssh/code4u_deploy -p ${{ secrets.VPS_PORT || '22' }}" \
             ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_TARGET }}/"
+
+      - name: Configure SMTP password
+        shell: bash
+        env:
+          SITE_SMTP_PASS: ${{ secrets.SITE_SMTP_PASS }}
+        run: |
+          printf '%s' "$SITE_SMTP_PASS" | ssh -i ~/.ssh/code4u_deploy -p "${{ secrets.VPS_PORT || '22' }}" \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "php -r '\$path = \$argv[1]; \$config = is_file(\$path) ? require \$path : []; if (!is_array(\$config)) { fwrite(STDERR, \"Invalid local configuration\"); exit(1); } \$password = stream_get_contents(STDIN); if (\$password === false || \$password === \"\") { exit(1); } \$config[\"smtp_pass\"] = \$password; umask(0077); \$temp = tempnam(dirname(\$path), \"smtp-\"); if (\$temp === false) { exit(1); } if (file_put_contents(\$temp, \"<?php\\nreturn \" . var_export(\$config, true) . \";\\n\", LOCK_EX) === false || !rename(\$temp, \$path)) { exit(1); } chmod(\$path, 0640);' '${{ secrets.VPS_TARGET }}/admin/config/local.php'"
 
       - name: Remote post-deploy (proprietaire + permissions)
         shell: bash

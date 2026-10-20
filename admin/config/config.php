@@ -71,6 +71,15 @@ define('ITEMS_PER_PAGE', 20);
 // ============================================
 // CONFIGURATION EMAIL
 // ============================================
+$mailConfig = [];
+$mailConfigFile = __DIR__ . '/local.php';
+if (is_file($mailConfigFile)) {
+    $loadedMailConfig = require $mailConfigFile;
+    if (is_array($loadedMailConfig)) {
+        $mailConfig = $loadedMailConfig;
+    }
+}
+
 if (IS_LOCAL) {
     // Mode développement: emails loggés au lieu d'être envoyés
     define('EMAIL_DEV_MODE', true);
@@ -89,7 +98,7 @@ if (IS_LOCAL) {
     define('SMTP_HOST', 'smtp.ionos.fr');
     define('SMTP_PORT', 587);
     define('SMTP_USER', 'contact@code4u.fr');
-    define('SMTP_PASS', 'Nova57050*+-');
+    define('SMTP_PASS', $mailConfig['smtp_pass'] ?? (getenv('SITE_SMTP_PASS') ?: ''));
     define('SMTP_FROM_EMAIL', 'contact@code4u.fr'); // doit correspondre à SMTP_USER sur IONOS
     define('SMTP_FROM_NAME', 'Code4U');
 }

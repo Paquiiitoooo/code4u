@@ -9,6 +9,8 @@ return [
     'db_name' => 'erp_code4u',
     'db_user' => 'erp_user',
     'db_pass' => 'admin123',
+    // Mot de passe SMTP de production, fourni au deploiement hors Git.
+    'smtp_pass' => '',
     // Optionnel : clé serveur pour le chatbot IA public.
     // Ne jamais committer la vraie clé dans le dépôt.
     'anthropic_api_key' => '',
